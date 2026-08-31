@@ -651,7 +651,7 @@
     <div class="benefit">
       <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
       <div class="benefit-title">Reserva por horas</div>
-      <div class="benefit-text">Reserva desde 2 horas. Paga solo lo que usas, sin desperdiciar espacio ni dinero.</div>
+      <div class="benefit-text">Reserva desde 1 hora. Paga solo lo que usas, sin desperdiciar espacio ni dinero.</div>
     </div>
     <div class="benefit">
       <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -827,7 +827,7 @@
           </div>
           <div class="form-group">
             <label for="horas">Número de horas *</label>
-            <input type="number" id="horas" name="horas" min="2" max="12" value="2" oninput="onHorasChange()" />
+            <input type="number" id="horas" name="horas" min="1" max="12" value="1" oninput="onHorasChange()" />
           </div>
           <div class="form-group">
             <label for="personas">Personas estimadas <span id="personasHint" class="field-hint">(1–2)</span></label>
@@ -889,7 +889,7 @@
       </details>
       <details>
         <summary>¿Cuál es la renta mínima?</summary>
-        <p>La renta mínima es de 2 horas. Puedes reservar en bloques de 1 hora adicional a partir de ese mínimo.</p>
+        <p>La renta mínima es de 1 hora. Puedes reservar en bloques de 1 hora adicional a partir de ese mínimo.</p>
       </details>
       <details>
         <summary>¿Cómo recibo el acceso a la oficina?</summary>
@@ -986,11 +986,11 @@
   let horaSeleccionada = null;
 
   const PLANES = {
-    individual_7:   { nombre: "Por hora (mín. 2 hrs)", precio: 100, porHora: true,  tipo: "7" },
+    individual_7:   { nombre: "Por hora (mín. 1 hr)", precio: 100, porHora: true,  tipo: "7" },
     bloque5_7:      { nombre: "Paquete básico — 5 horas",       precio: 460,  porHora: false, horas: 5,  tipo: "7" },
     bloque10_7:     { nombre: "Paquete profesional — 10 horas", precio: 860,  porHora: false, horas: 10, tipo: "7" },
     bloque20_7:     { nombre: "Paquete intensivo — 20 horas",   precio: 1600, porHora: false, horas: 20, tipo: "7" },
-    individual_12:  { nombre: "Por hora (mín. 2 hrs)", precio: 150, porHora: true,  tipo: "12" },
+    individual_12:  { nombre: "Por hora (mín. 1 hr)", precio: 150, porHora: true,  tipo: "12" },
     bloque5_12:     { nombre: "Paquete básico — 5 horas",       precio: 690,  porHora: false, horas: 5,  tipo: "12" },
     bloque10_12:    { nombre: "Paquete profesional — 10 horas", precio: 1290, porHora: false, horas: 10, tipo: "12" },
     bloque20_12:    { nombre: "Paquete intensivo — 20 horas",   precio: 2400, porHora: false, horas: 20, tipo: "12" }
@@ -1102,7 +1102,7 @@
 
   function renderSlots() {
     const box = $("slotsBox");
-    const horasNecesarias = Math.max(2, Number($("horas").value || 2));
+    const horasNecesarias = Math.max(1, Number($("horas").value || 1));
     const HORA_CIERRE = 22; // 10pm — debe coincidir con el Apps Script
 
     if (!slotsDisponibles.length) {
@@ -1178,7 +1178,7 @@
     const nombre = `${$("nombre").value} ${$("apellidos").value}`.trim();
     const tipo = tipoOficina($("espacio").value);
     const tarifaRef = tipo === "12" ? 120 : 100;
-    const hrs = Math.max(2, Number($("horas").value || 2));
+    const hrs = Math.max(1, Number($("horas").value || 1));
     const hora = $("hora").value;
     const horaFin = addHours(hora, hrs);
 
@@ -1208,7 +1208,7 @@
     if (!$("telefono").value.trim()) errs.push("WhatsApp");
     if (!$("fecha").value) errs.push("fecha");
     if (!$("hora").value) errs.push("selecciona un horario disponible");
-    if (Number($("horas").value) < 2) errs.push("mínimo 2 horas");
+    if (Number($("horas").value) < 1) errs.push("mínimo 1 hora");
     const cap = capacidadOficina($("espacio").value);
     const personasVal = Number($("personas").value);
     if (personasVal < cap.min || personasVal > cap.max) errs.push(`personas (${cap.min}–${cap.max} para esta oficina)`);
@@ -1221,7 +1221,7 @@
     errBox.style.display = "none";
 
     // Llena el resumen del modal con los datos de la reserva
-    const hrs = Number($("horas").value || 2);
+    const hrs = Number($("horas").value || 1);
     const horaFin = addHours($("hora").value, hrs);
     $("modalResumen").innerHTML =
       `📋 <strong style="color:white">${NOMBRES_OFICINA[$("espacio").value]}</strong><br>` +
@@ -1247,7 +1247,7 @@
     btn.textContent = "Confirmando...";
     btn.disabled = true;
 
-    const hrs = Number($("horas").value || 2);
+    const hrs = Number($("horas").value || 1);
 
     try {
       const resp = await fetch(`${SERVER_URL}/crear-reserva`, {
@@ -1286,7 +1286,7 @@
   }
 
   function mostrarConfirmacion() {
-    const hrs = Number($("horas").value || 2);
+    const hrs = Number($("horas").value || 1);
     const horaFin = addHours($("hora").value, hrs);
     $("modalPreConfirm").style.display = "none";
     $("modalConfirmadoTexto").innerHTML =
