@@ -601,7 +601,7 @@
           <div class="stat-label">Apertura diaria</div>
         </div>
         <div>
-          <div class="stat-num">2h</div>
+          <div class="stat-num">1h</div>
           <div class="stat-label">Reserva mínima</div>
         </div>
       </div>
@@ -645,7 +645,7 @@
     <div class="benefit">
       <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
       <div class="benefit-title">Reserva por horas</div>
-      <div class="benefit-text">Reserva desde 2 horas. Paga solo lo que usas, sin desperdiciar espacio ni dinero.</div>
+      <div class="benefit-text">Reserva desde 1 hora. Paga solo lo que usas, sin desperdiciar espacio ni dinero.</div>
     </div>
     <div class="benefit">
       <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -721,7 +721,7 @@
       <div class="anchor-card">
         <div class="anchor-label">Oficinas 7–8 m²</div>
         <div class="anchor-from">Desde</div>
-        <div class="anchor-price">$80<span>/hr</span></div>
+        <div class="anchor-price">$100<span>/hr</span></div>
         <div class="anchor-note">con paquete de mayor ahorro · bajo disponibilidad</div>
         <hr class="anchor-divider" />
         <ul class="anchor-items">
@@ -821,7 +821,7 @@
           </div>
           <div class="form-group">
             <label for="horas">Número de horas *</label>
-            <input type="number" id="horas" name="horas" min="2" max="12" value="2" oninput="onHorasChange()" />
+            <input type="number" id="horas" name="horas" min="1" max="12" value="1" oninput="onHorasChange()" />
           </div>
           <div class="form-group">
             <label for="personas">Personas estimadas <span id="personasHint" class="field-hint">(1–2)</span></label>
@@ -863,7 +863,7 @@
       </div>
       <div class="summary-ref-row">
         <span class="summary-ref-label">Tarifa de referencia</span>
-        <span class="summary-ref-amount" id="sTarifaRef">Desde $80/hr</span>
+        <span class="summary-ref-amount" id="sTarifaRef">Desde $100/hr</span>
         <span class="summary-ref-note">El precio final se confirma por WhatsApp según el paquete y disponibilidad</span>
       </div>
       <div class="summary-status">○ Lista para enviar por WhatsApp</div>
@@ -883,7 +883,7 @@
       </details>
       <details>
         <summary>¿Cuál es la renta mínima?</summary>
-        <p>La renta mínima es de 2 horas. Puedes reservar en bloques de 1 hora adicional a partir de ese mínimo.</p>
+        <p>La renta mínima es de 1 hora. Puedes reservar en bloques de 1 hora adicional a partir de ese mínimo.</p>
       </details>
       <details>
         <summary>¿Cómo recibo el acceso a la oficina?</summary>
@@ -1081,7 +1081,7 @@
 
   function renderSlots() {
     const box = $("slotsBox");
-    const horasNecesarias = Math.max(2, Number($("horas").value || 2));
+    const horasNecesarias = Math.max(1, Number($("horas").value || 1));
     const HORA_CIERRE = 22; // 10pm — debe coincidir con el Apps Script
 
     if (!slotsDisponibles.length) {
@@ -1130,7 +1130,7 @@
 
   function buildMessage() {
     const tipo = tipoOficina($("espacio").value);
-    const tarifaRef = tipo === "12" ? 120 : 80;
+    const tarifaRef = tipo === "12" ? 120 : 100;
     const horaFin = addHours($("hora").value, $("horas").value) || "—";
     return `Hola, quiero hacer una pre-reserva en D Espacios 🏢\n\n` +
       `*Datos personales*\n` +
@@ -1156,8 +1156,8 @@
   function updateSummary() {
     const nombre = `${$("nombre").value} ${$("apellidos").value}`.trim();
     const tipo = tipoOficina($("espacio").value);
-    const tarifaRef = tipo === "12" ? 120 : 80;
-    const hrs = Math.max(2, Number($("horas").value || 2));
+    const tarifaRef = tipo === "12" ? 120 : 100;
+    const hrs = Math.max(1, Number($("horas").value || 1));
     const hora = $("hora").value;
     const horaFin = addHours(hora, hrs);
 
@@ -1187,7 +1187,7 @@
     if (!$("telefono").value.trim()) errs.push("WhatsApp");
     if (!$("fecha").value) errs.push("fecha");
     if (!$("hora").value) errs.push("selecciona un horario disponible");
-    if (Number($("horas").value) < 2) errs.push("mínimo 2 horas");
+    if (Number($("horas").value) < 1) errs.push("mínimo 1 hora");
     const cap = capacidadOficina($("espacio").value);
     const personasVal = Number($("personas").value);
     if (personasVal < cap.min || personasVal > cap.max) errs.push(`personas (${cap.min}–${cap.max} para esta oficina)`);
@@ -1200,7 +1200,7 @@
     errBox.style.display = "none";
 
     // Llena el resumen del modal con los datos de la reserva
-    const hrs = Number($("horas").value || 2);
+    const hrs = Number($("horas").value || 1);
     const horaFin = addHours($("hora").value, hrs);
     $("modalResumen").innerHTML =
       `📋 <strong style="color:white">${NOMBRES_OFICINA[$("espacio").value]}</strong><br>` +
@@ -1216,7 +1216,7 @@
   async function generarPago() {
     const tipo = tipoOficina($("espacio").value);
     const tarifaRef = tipo === "12" ? 150 : 100;
-    const hrs = Number($("horas").value || 2);
+    const hrs = Number($("horas").value || 1);
     const total = tarifaRef * hrs;
 
     const btnPago = $("btnGenerarPago");
