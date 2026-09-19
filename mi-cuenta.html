@@ -203,7 +203,7 @@
 
       <div class="form-group">
         <label for="selOficina">Oficina</label>
-        <select id="selOficina" onchange="onOficinaOFechaChange()">
+        <select id="selOficina" onchange="onOficinaOFechaInputChange()">
           <option value="oficina11">Oficina 11 — Privada (7 m²)</option>
           <option value="oficina12">Oficina 12 — Privada (7 m²)</option>
         </select>
@@ -211,7 +211,7 @@
 
       <div class="form-group">
         <label for="selFecha">Fecha</label>
-        <input type="date" id="selFecha" onchange="onOficinaOFechaChange()" />
+        <input type="date" id="selFecha" onchange="onOficinaOFechaInputChange()" />
       </div>
 
       <div class="form-group">
@@ -340,7 +340,7 @@
     }
 
     if (puedeAgendar) {
-      $("selFecha").min = new Date().toISOString().split("T")[0];
+      $("selFecha").min = fechaLocalISO(new Date());
       if (saldoActual.espacio && NOMBRES_OFICINA[saldoActual.espacio]) {
         $("selOficina").value = saldoActual.espacio;
       }
@@ -360,6 +360,14 @@
     actualizarResumen();
   }
 
+  // Cambiar de oficina o fecha reinicia "Horas a usar" a 1 — evita que un
+  // bloqueo por cierre calculado con una duración anterior confunda al
+  // elegir un horario nuevo.
+  function onOficinaOFechaInputChange() {
+    $("numHoras").value = 1;
+    onOficinaOFechaChange();
+  }
+
   async function onOficinaOFechaChange() {
     const oficina = $("selOficina").value;
     const fecha = $("selFecha").value;
@@ -371,10 +379,18 @@
       box.innerHTML = '<div class="slots-empty">Selecciona una fecha para ver horarios disponibles</div>';
       return;
     }
+
+    // Cerrado los domingos
+    const diaSemana = new Date(fecha + "T00:00:00").getDay(); // 0 = domingo
+    if (diaSemana === 0) {
+      box.innerHTML = '<div class="slots-empty">Cerrado los domingos — elige otro día.</div>';
+      return;
+    }
+
     box.innerHTML = '<div class="slots-loading">Consultando disponibilidad...</div>';
     try {
       const url = `${SERVER_URL}/disponibilidad?oficina=${oficina}&fecha=${fecha}`;
-      const resp = await fetch(url);
+      const resp = await fetch(url, { cache: "no-store" });
       const data = await resp.json();
       if (data.error) {
         box.innerHTML = `<div class="slots-empty">No se pudo cargar disponibilidad: ${data.error}</div>`;
@@ -398,12 +414,19 @@
       return;
     }
 
+    // Si la fecha elegida es hoy, bloquea horas que ya pasaron o están en curso.
+    const fechaSel = $("selFecha").value;
+    const ahora = new Date();
+    const esHoy = fechaSel === fechaLocalISO(ahora);
+    const horaMinimaHoy = ahora.getHours() + 1;
+
     box.innerHTML = "";
     slotsDisponibles.forEach(slot => {
+      const yaPaso = esHoy && slot.hora < horaMinimaHoy;
       const terminaEn = slot.hora + horasNecesarias;
       const respetaCierre = terminaEn <= HORA_CIERRE;
       const idx = slotsDisponibles.findIndex(s => s.hora === slot.hora);
-      let cabeBloque = respetaCierre;
+      let cabeBloque = respetaCierre && !yaPaso;
       if (cabeBloque) {
         for (let i = 0; i < horasNecesarias; i++) {
           const siguiente = slotsDisponibles[idx + i];
@@ -414,6 +437,7 @@
       btn.type = "button";
       btn.className = "slot-btn" + (!cabeBloque ? " slot-disabled" : "") + (horaSeleccionada === slot.horaTexto ? " slot-selected" : "");
       btn.textContent = slot.horaTexto;
+      btn.title = yaPaso ? "Ese horario ya pasó" : "";
       btn.disabled = !cabeBloque;
       btn.onclick = () => {
         horaSeleccionada = slot.horaTexto;
@@ -422,6 +446,14 @@
       };
       box.appendChild(btn);
     });
+  }
+
+  // Fecha de hoy en la zona horaria LOCAL del navegador (nunca toISOString() para esto).
+  function fechaLocalISO(d) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
   }
 
   function addHours(time, hours) {
@@ -480,6 +512,9 @@
         errBox.style.display = "block";
         btn.textContent = "Confirmar y agendar";
         btn.disabled = false;
+        // Refresca disponibilidad: si el error fue por choque de horario,
+        // el horario ocupado ya no debe verse como disponible.
+        onOficinaOFechaChange();
         return;
       }
 
