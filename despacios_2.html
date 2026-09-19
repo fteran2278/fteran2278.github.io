@@ -718,7 +718,7 @@
     }
     .modal-overlay.active { display: flex; }
     .modal-box {
-      background: var(--white); border-radius: var(--radius-lg);
+      background: var(--surface); border-radius: var(--radius-lg);
       padding: 48px; max-width: 440px; width: 100%;
       text-align: center;
     }
@@ -735,11 +735,13 @@
     .modal-actions { display: flex; gap: 12px; flex-direction: column; }
     .btn-wa {
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      background: #25D366; color: var(--white);
-      padding: 14px 28px; border-radius: 2px;
-      font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
-      border: none; cursor: pointer; text-decoration: none;
+      background: var(--white); color: var(--black);
+      padding: 14px 28px; border-radius: 2px; border: 1px solid var(--line);
+      font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+      cursor: pointer; text-decoration: none; transition: 0.2s;
     }
+    .btn-wa:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-wa svg { fill: #25D366; flex-shrink: 0; }
     .btn-close {
       background: transparent; color: var(--muted);
       padding: 12px; border: 1px solid var(--line); border-radius: 2px;
@@ -747,12 +749,13 @@
       cursor: pointer;
     }
     .btn-pago {
-      background: #009ee3; color: white; border: none;
+      background: var(--gold); color: var(--black); border: none;
       padding: 16px; border-radius: 2px; cursor: pointer;
-      font-size: 14px; font-weight: 500; width: 100%;
+      font-size: 12px; font-weight: 500; width: 100%;
+      letter-spacing: 0.1em; text-transform: uppercase;
       transition: background 0.2s;
     }
-    .btn-pago:hover:not(:disabled) { background: #007ab8; }
+    .btn-pago:hover:not(:disabled) { background: var(--gold-light); }
     .btn-pago:disabled { opacity: 0.6; cursor: not-allowed; }
     .modal-resumen {
       font-size: 13px; color: var(--ash);
@@ -763,21 +766,23 @@
     /* Tarjeta de resumen dentro del modal de hora suelta, mismo formato que
        la tarjeta de resumen de Planes (.paquete-resumen-card) */
     .modal-resumen-card {
-      text-align: left; border: 1px solid var(--line); border-radius: 4px;
-      padding: 20px; background: var(--surface); margin-bottom: 20px;
+      text-align: left; border: 1px solid var(--gold-light); border-radius: 6px;
+      padding: 22px; background: var(--gold-pale); margin-bottom: 20px;
     }
     .modal-resumen-card .summary-row {
       display: flex; justify-content: space-between; align-items: baseline;
-      gap: 12px; padding: 5px 0;
+      gap: 12px; padding: 6px 0;
     }
-    .modal-resumen-card .summary-key { color: var(--muted); font-size: 12px; }
+    .modal-resumen-card .summary-key {
+      color: var(--gold); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
+    }
     .modal-resumen-card .summary-val { color: var(--black); font-weight: 600; font-size: 14px; text-align: right; }
     .modal-resumen-card .summary-row-total {
-      border-top: 1px solid var(--line); margin-top: 8px; padding-top: 14px;
+      border-top: 1px solid var(--gold-light); margin-top: 8px; padding-top: 14px;
     }
     .modal-resumen-card .summary-row-total .summary-key { font-weight: 600; color: var(--black); }
     .modal-resumen-card .summary-row-total .summary-val {
-      font-size: 20px; font-family: var(--font-display); color: var(--gold);
+      font-size: 22px; font-family: var(--font-display); color: var(--gold);
     }
 
     /* ── WA FLOAT ── */
@@ -1121,7 +1126,7 @@
           <select id="plan" name="plan" style="display:none"></select>
           <div class="form-group">
             <label for="fecha">Fecha *</label>
-            <input type="date" id="fecha" name="fecha" onchange="onEspacioOFechaChange()" />
+            <input type="date" id="fecha" name="fecha" onchange="onFechaChange()" />
           </div>
           <div class="form-group form-full">
             <label>Horario disponible *</label>
@@ -1446,19 +1451,18 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box">
     <div id="modalPreConfirm">
-      <div class="modal-icon">📋</div>
       <div class="modal-title">Confirma tu reserva</div>
       <div class="modal-resumen-card" id="modalResumen"></div>
       <p class="error-msg" id="modalError"></p>
       <div class="modal-actions">
         <button class="btn-pago" id="btnConfirmarReserva" onclick="confirmarReserva()">
-          ✅ Confirmar reserva
+          Confirmar reserva →
         </button>
         <a class="btn-wa" id="modalWaBtn" href="#" target="_blank" rel="noopener">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           Prefiero coordinar por WhatsApp
         </a>
-        <button class="btn-close" onclick="closeModal()">← Volver a editar</button>
+        <button class="btn-close" onclick="volverAEditar()">← Volver a editar</button>
       </div>
     </div>
     <div id="modalConfirmado" style="display:none">
@@ -1760,6 +1764,15 @@
     paqueteVolverStep1();
   }
 
+  // Fecha de hoy en la zona horaria LOCAL del navegador (nunca usar toISOString()
+  // para esto: da la fecha en UTC y en UTC-6 puede adelantarse un día por la tarde/noche).
+  function fechaLocalISO(d) {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
   function addHours(time, hours) {
     if (!time) return null;
     const [h, m] = time.split(":").map(Number);
@@ -1783,9 +1796,18 @@
   }
 
   function onEspacioChange() {
+    $("horas").value = 1; // evita bloqueos "heredados" de una duración elegida para otra oficina
     poblarPlanesSegunOficina();
     ajustarPersonasSegunOficina();
     updateSummary(); // refleja la oficina/tarifa nueva de inmediato, sin esperar la consulta de disponibilidad
+    onEspacioOFechaChange();
+  }
+
+  // Cambiar de fecha reinicia "número de horas" a 1 — evita que un bloqueo
+  // por cierre calculado con una duración anterior confunda al elegir un
+  // horario nuevo en la fecha nueva.
+  function onFechaChange() {
+    $("horas").value = 1;
     onEspacioOFechaChange();
   }
 
@@ -1804,11 +1826,19 @@
       return;
     }
 
+    // Cerrado los domingos
+    const diaSemana = new Date(fecha + "T00:00:00").getDay(); // 0 = domingo
+    if (diaSemana === 0) {
+      box.innerHTML = '<div class="slots-empty">Cerrado los domingos — elige otro día.</div>';
+      updateSummary();
+      return;
+    }
+
     box.innerHTML = '<div class="slots-loading">Consultando disponibilidad...</div>';
 
     try {
       const url = `${SERVER_URL}/disponibilidad?oficina=${oficina}&fecha=${fecha}`;
-      const resp = await fetch(url);
+      const resp = await fetch(url, { cache: "no-store" });
       const data = await resp.json();
 
       if (data.error) {
@@ -1835,15 +1865,25 @@
       return;
     }
 
+    // Regla 0: si la fecha elegida es hoy, bloquea horas que ya pasaron o que
+    // ya están en curso (no alcanza a prepararse). Ej: si son las 4:30pm,
+    // el bloque de las 4:00pm ya no se puede tomar.
+    const fechaSel = $("fecha").value;
+    const ahora = new Date();
+    const esHoy = fechaSel === fechaLocalISO(ahora);
+    const horaMinimaHoy = ahora.getHours() + 1;
+
     box.innerHTML = "";
     slotsDisponibles.forEach(slot => {
+      const yaPaso = esHoy && slot.hora < horaMinimaHoy;
+
       // Regla 1: la reserva debe terminar antes o justo en el horario de cierre
       const terminaEn = slot.hora + horasNecesarias;
       const respetaCierre = terminaEn <= HORA_CIERRE;
 
       // Regla 2: deben existir y estar libres todos los bloques consecutivos necesarios
       const idx = slotsDisponibles.findIndex(s => s.hora === slot.hora);
-      let cabeBloque = respetaCierre;
+      let cabeBloque = respetaCierre && !yaPaso;
       if (cabeBloque) {
         for (let i = 0; i < horasNecesarias; i++) {
           const siguiente = slotsDisponibles[idx + i];
@@ -1855,7 +1895,7 @@
       btn.type = "button";
       btn.className = "slot-btn" + (!cabeBloque ? " slot-disabled" : "") + (horaSeleccionada === slot.horaTexto ? " slot-selected" : "");
       btn.textContent = slot.horaTexto;
-      btn.title = !respetaCierre ? "Se saldría del horario de cierre (10pm)" : "";
+      btn.title = yaPaso ? "Ese horario ya pasó" : (!respetaCierre ? "Se saldría del horario de cierre (10pm)" : "");
       btn.disabled = !cabeBloque;
       btn.onclick = () => {
         horaSeleccionada = slot.horaTexto;
@@ -1960,13 +2000,13 @@
       `<div class="summary-row"><span class="summary-key">Oficina</span><span class="summary-val">${NOMBRES_OFICINA[$("espacio").value]}</span></div>` +
       `<div class="summary-row"><span class="summary-key">Fecha y horario</span><span class="summary-val">${$("fecha").value} · ${$("hora").value} – ${horaFin}</span></div>` +
       `<div class="summary-row"><span class="summary-key">Personas</span><span class="summary-val">${$("personas").value}</span></div>` +
-      `<div class="summary-row summary-row-total"><span class="summary-key">Total estimado</span><span class="summary-val">${money(totalEstimado)}</span></div>`;
+      `<div class="summary-row summary-row-total"><span class="summary-key">Total de tu reserva</span><span class="summary-val">${money(totalEstimado)}</span></div>`;
 
     // Reinicia el modal al estado inicial (por si se había confirmado antes)
     $("modalPreConfirm").style.display = "block";
     $("modalConfirmado").style.display = "none";
     $("modalError").style.display = "none";
-    $("btnConfirmarReserva").textContent = "✅ Confirmar reserva";
+    $("btnConfirmarReserva").textContent = "Confirmar reserva →";
     $("btnConfirmarReserva").disabled = false;
 
     $("modalWaBtn").href = waUrl();
@@ -2004,7 +2044,7 @@
       if (data.error) {
         errBox.textContent = data.error;
         errBox.style.display = "block";
-        btn.textContent = "✅ Confirmar reserva";
+        btn.textContent = "Confirmar reserva →";
         btn.disabled = false;
         // Refresca disponibilidad: si el error fue por choque de horario,
         // el horario ocupado ya no debe verse como disponible.
@@ -2016,7 +2056,7 @@
     } catch (err) {
       errBox.textContent = "Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.";
       errBox.style.display = "block";
-      btn.textContent = "✅ Confirmar reserva";
+      btn.textContent = "Confirmar reserva →";
       btn.disabled = false;
       console.error(err);
     }
@@ -2039,6 +2079,14 @@
 
   function closeModal() {
     $("modalOverlay").classList.remove("active");
+  }
+
+  // Al volver a editar, vuelve a consultar disponibilidad en vivo — corrige
+  // el caso donde el horario mostrado ya no es válido (pasó tiempo, alguien
+  // más reservó, o cambió la hora actual) y antes se quedaba "pegado".
+  function volverAEditar() {
+    closeModal();
+    onEspacioOFechaChange();
   }
 
   // Igual que "Hacer otro pedido" en Planes: cierra el modal y deja lista
@@ -2067,7 +2115,7 @@
     if (e.target === this) closeModal();
   });
 
-  $("fecha").min = new Date().toISOString().split("T")[0];
+  $("fecha").min = fechaLocalISO(new Date());
   poblarPlanesSegunOficina();
   ajustarPersonasSegunOficina();
   updateSummary();
