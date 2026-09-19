@@ -1309,7 +1309,7 @@
 
           <p class="error-msg" id="paqueteErrorBox">Por favor captura tu nombre y teléfono.</p>
           <p class="form-notice">Al confirmar tu compra, se realiza el cobro y tu saldo de horas queda activo de inmediato, vigente 30 días desde la compra. <a href="#faq-planes-cambios" class="policy-link" onclick="const d=document.getElementById('faq-planes-cambios'); if(d) d.open=true;">Ver política de cambios y reembolsos →</a></p>
-          <button type="button" class="btn-anchor btn-anchor-gold" onclick="confirmarCompraPaquete()">Confirmar mi compra →</button>
+          <button type="button" id="btnConfirmarCompraPaquete" class="btn-anchor btn-anchor-gold" onclick="confirmarCompraPaquete()">Confirmar mi compra →</button>
           <button type="button" class="paquete-back-btn" onclick="paqueteVolverStep2()">← Cambiar de plan</button>
         </div>
 
@@ -1668,7 +1668,7 @@
     return { total, cantidad, horasSueltas, info };
   }
 
-  function confirmarCompraPaquete() {
+  async function confirmarCompraPaquete() {
     const nombre = $("paqueteNombre").value.trim();
     const telefono = $("paqueteTelefono").value.trim();
     const errBox = $("paqueteErrorBox");
@@ -1686,28 +1686,49 @@
     const nombreOf = nombreOficinaCorta(paqueteOficinaSel);
     const apellidos = $("paqueteApellidos").value.trim();
     const correo = $("paqueteCorreo").value.trim();
-    const ocupacion = $("paqueteOcupacion").value.trim();
 
-    let msg = "Hola, quiero confirmar este pedido de plan de horas:\n" +
-      `Nombre: ${nombre} ${apellidos}\n` +
-      `Teléfono: ${telefono}\n` +
-      (correo ? `Correo: ${correo}\n` : "") +
-      (ocupacion ? `Ocupación: ${ocupacion}\n` : "") +
-      `Oficina: ${nombreOf}\n` +
-      `Plan: ${info.nombre} × ${cantidad} (${info.horas * cantidad} hrs)\n`;
-    if (horasSueltas > 0) {
-      msg += `Horas sueltas adicionales: ${horasSueltas} hrs a $${TARIFA_SUELTA_7M2}/hr\n`;
+    const horasTotales = info.horas * cantidad + horasSueltas;
+    const paqueteDesc = (cantidad > 1 ? `${info.nombre} x${cantidad}` : info.nombre) +
+      (horasSueltas > 0 ? ` + ${horasSueltas} hrs sueltas` : "");
+
+    const btn = $("btnConfirmarCompraPaquete");
+    if (btn) { btn.textContent = "Procesando..."; btn.disabled = true; }
+
+    try {
+      const resp = await fetch(`${SERVER_URL}/crear-paquete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre,
+          apellidos,
+          telefono,
+          correo,
+          espacio: paqueteOficinaSel,
+          paquete: paqueteDesc,
+          horas: horasTotales,
+        }),
+      });
+
+      const data = await resp.json();
+
+      if (data.error) {
+        errBox.textContent = data.error;
+        errBox.style.display = "block";
+        return;
+      }
+
+      $("paqueteExitoTexto").textContent =
+        `Registramos tu paquete — ${paqueteDesc} para ${nombreOf}, total ${money(total)} (vigencia 30 días). ` +
+        `Te llega un SMS al ${telefono} con tu link personal para consultar tu saldo y agendar tus horas. Coordinamos el pago por WhatsApp.`;
+      $("paqueteFormWrap").style.display = "none";
+      $("paqueteExito").style.display = "block";
+    } catch (err) {
+      errBox.textContent = "Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.";
+      errBox.style.display = "block";
+      console.error(err);
+    } finally {
+      if (btn) { btn.textContent = "Confirmar mi compra →"; btn.disabled = false; }
     }
-    msg += `Total: ${money(total)} (vigencia 30 días)\n¿Cómo puedo realizar el pago?`;
-
-    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
-
-    $("paqueteExitoTexto").textContent =
-      `Registramos tu pedido — ${info.nombre} × ${cantidad}` +
-      (horasSueltas > 0 ? ` + ${horasSueltas} hrs sueltas` : "") +
-      ` para ${nombreOf}, total ${money(total)}. Te contactamos al ${telefono} para coordinar el pago.`;
-    $("paqueteFormWrap").style.display = "none";
-    $("paqueteExito").style.display = "block";
   }
 
   function reiniciarFlujoPaquete() {
