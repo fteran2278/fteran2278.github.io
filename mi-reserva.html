@@ -262,12 +262,14 @@
       <div class="check">✓</div>
       <h3>¡Reserva actualizada!</h3>
       <p id="exitoCambioTexto"></p>
+      <span class="btn-link" style="color:var(--gold); text-decoration:underline; cursor:pointer" onclick="volverADetalle()">← Ver mi reserva</span>
     </div>
 
     <div id="bloqueExitoCancel" class="card success-box cancel" style="display:none">
       <div class="check">✕</div>
       <h3>Reserva cancelada</h3>
-      <p>Tu horario quedó liberado. Si pagaste por adelantado y necesitas la devolución de tu dinero, coordínala directo por WhatsApp:</p>
+      <p id="textoCancelPendiente">Tu horario quedó liberado. Si pagaste por adelantado y necesitas la devolución de tu dinero, coordínala directo por WhatsApp:</p>
+      <p id="textoCancelReembolsado" style="display:none">Tu horario quedó liberado y tu reembolso ya fue procesado. Si tienes dudas, escríbenos por WhatsApp.</p>
       <a class="btn-wa" id="linkWaDevolucion" href="#" target="_blank" rel="noopener">Solicitar devolución por WhatsApp</a>
     </div>
   </div>
@@ -349,9 +351,13 @@
     if (reservaActual.estado === "cancelada") {
       $("bloqueDetalle").style.display = "none";
       $("bloqueExitoCancel").style.display = "block";
-      $("linkWaDevolucion").href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Hola, cancelé mi reserva en D Espacios y necesito la devolución de mi pago.')}`;
+      renderEstadoReembolso();
       return;
     }
+
+    $("bloqueDetalle").style.display = "block";
+    $("bloqueExitoCambio").style.display = "none";
+    $("bloqueCambio").style.display = "none";
 
     const horaFin = addHours(reservaActual.hora, reservaActual.horas);
     $("dOficina").textContent = NOMBRES_OFICINA[reservaActual.oficina] || reservaActual.oficina;
@@ -550,6 +556,42 @@
     }
   }
 
+  // Mensaje de WhatsApp para pedir devolución — incluye el identificador de la
+  // reserva y el teléfono para que se pueda ubicar en la hoja "Reservas" con
+  // Ctrl+F (el ID de reserva es la columna reservaId, ej. "RES1A2B3C").
+  // Muestra el bloque de "cancelada" según si ya se procesó el reembolso
+  // (columna "reembolsado" en Sheets, marcada manualmente por la esposa de
+  // Fernando) — evita que el cliente pida un reembolso que ya recibió.
+  function renderEstadoReembolso() {
+    const yaReembolsado = !!(reservaActual && reservaActual.reembolsado);
+    $("textoCancelPendiente").style.display = yaReembolsado ? "none" : "block";
+    $("textoCancelReembolsado").style.display = yaReembolsado ? "block" : "none";
+    $("linkWaDevolucion").style.display = yaReembolsado ? "none" : "inline-flex";
+    if (!yaReembolsado) {
+      $("linkWaDevolucion").href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(mensajeDevolucion())}`;
+    }
+  }
+
+  function mensajeDevolucion() {
+    const r = reservaActual || {};
+    const detalle = [
+      r.reservaId ? `ID: ${r.reservaId}` : null,
+      r.telefono ? `tel: ${r.telefono}` : null,
+      r.oficina && r.fecha ? `${NOMBRES_OFICINA[r.oficina] || r.oficina}, ${r.fecha}` : null,
+    ].filter(Boolean).join(" · ");
+    return `Hola, cancelé mi reserva en D Espacios (${detalle}) y necesito la devolución de mi pago.`;
+  }
+
+  // Vuelve a la vista de detalle tras un cambio exitoso, re-consultando la
+  // reserva (ya con la fecha/hora/oficina nuevas) en vez de dejar al cliente
+  // varado en la pantalla de "reserva actualizada" sin salida.
+  async function volverADetalle() {
+    $("bloqueExitoCambio").style.display = "none";
+    $("estadoCarga").style.display = "block";
+    $("contenido").style.display = "none";
+    await cargarReserva();
+  }
+
   async function cancelarReserva() {
     if (!confirm("¿Seguro que quieres cancelar esta reserva?")) return;
     try {
@@ -563,9 +605,11 @@
         alert(data.error);
         return;
       }
+      reservaActual.estado = "cancelada";
+      reservaActual.reembolsado = false; // recién cancelada — el reembolso nunca puede estar ya procesado
       $("bloqueDetalle").style.display = "none";
       $("bloqueExitoCancel").style.display = "block";
-      $("linkWaDevolucion").href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Hola, cancelé mi reserva en D Espacios y necesito la devolución de mi pago.')}`;
+      renderEstadoReembolso();
     } catch (err) {
       alert("Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.");
       console.error(err);
