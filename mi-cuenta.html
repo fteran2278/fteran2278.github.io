@@ -167,6 +167,20 @@
   .btn-mini:disabled { opacity: 0.4; cursor: not-allowed; }
   .reserva-nota { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
+  .historial-item {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid var(--line); opacity: 0.7;
+  }
+  .historial-item:last-child { border-bottom: none; }
+  .historial-info .of { font-size: 13px; font-weight: 500; }
+  .historial-info .cuando { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .historial-badge {
+    font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 9px;
+    border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+  }
+  .historial-badge.completada { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+  .historial-badge.cancelada { background: #FBEAEA; color: var(--danger); border: 1px solid #E8B8B8; }
+
   footer.pie { text-align: center; margin-top: 32px; font-size: 12px; color: var(--muted); }
   footer.pie a { color: var(--gold); text-decoration: none; }
 
@@ -237,6 +251,12 @@
     <div class="card" id="bloqueMisReservas" style="display:none">
       <div class="section-title">Mis próximas reservas</div>
       <div id="listaReservas"></div>
+    </div>
+
+    <div class="card" id="bloqueHistorial" style="display:none">
+      <div class="section-title">Historial</div>
+      <div id="listaHistorial"></div>
+      <button type="button" class="btn-outline" id="btnVerMasHistorial" style="display:none" onclick="cargarHistorial(false)">Ver más</button>
     </div>
 
     <div id="bloqueAgendar" class="card" style="display:none">
@@ -320,6 +340,8 @@
   let slotsDisponibles = [];
   let horaSeleccionada = null;
   let misReservas = [];
+  let historialOffset = 0;
+  const HISTORIAL_LIMITE = 10;
   // Estado de "modo cambio": cuando el cliente da clic en Cambiar sobre una
   // reserva existente, el mismo formulario de agendar se reutiliza para
   // mandar /cambiar-reserva en vez de /redimir-horas.
@@ -352,6 +374,7 @@
       saldoActual = data;
       renderSaldo();
       cargarMisReservas();
+      cargarHistorial(true);
     } catch (err) {
       mostrarError("Error de conexión. Intenta de nuevo en unos minutos o contáctanos por WhatsApp.");
       console.error(err);
@@ -387,11 +410,72 @@
         <div class="reserva-info">
           <div class="of">${NOMBRES_OFICINA[r.oficina] || r.oficina}</div>
           <div class="cuando">${fechaLegible(r.fecha)} · ${r.hora} – ${horaFin}</div>
-          ${!r.puedeCambiar ? '<div class="reserva-nota">Faltan menos de 24 h — ya no se puede cambiar</div>' : ''}
+          ${!r.puedeCambiar ? '<div class="reserva-nota">Faltan menos de 24 h — ya no se puede cambiar ni cancelar</div>' : ''}
         </div>
         <div class="reserva-actions">
           <button type="button" class="btn-mini" ${!r.puedeCambiar ? 'disabled' : ''} onclick='iniciarCambio(${JSON.stringify(r)})'>Cambiar</button>
+          <button type="button" class="btn-mini" ${!r.puedeCambiar ? 'disabled' : ''} onclick='cancelarReservaIndividual(${JSON.stringify(r.reservaId)})'>Cancelar</button>
         </div>
+      `;
+      lista.appendChild(item);
+    });
+  }
+
+  // Cancela una hora reservada dentro del paquete (no el paquete completo).
+  // Restituye las horas al saldo siempre que el paquete siga vigente — misma
+  // regla de 24h de anticipación que aplica para Cambiar.
+  async function cancelarReservaIndividual(reservaId) {
+    if (!confirm("¿Cancelar esta reserva? Las horas se restituyen a tu saldo.")) return;
+    try {
+      const resp = await fetch(`${SERVER_URL}/cancelar-reserva`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reservaId }),
+      });
+      const data = await resp.json();
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+      cargarSaldo();
+    } catch (err) {
+      alert("Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.");
+      console.error(err);
+    }
+  }
+
+  // Historial: reservas ya pasadas o canceladas, paginado (10 en 10 con "Ver más")
+  // para que un cliente con muchos paquetes a lo largo del tiempo no cargue una
+  // lista sin fin en pantalla.
+  async function cargarHistorial(reiniciar) {
+    if (reiniciar) historialOffset = 0;
+    try {
+      const resp = await fetch(`${SERVER_URL}/historial-reservas?clienteId=${encodeURIComponent(clienteId)}&offset=${historialOffset}&limite=${HISTORIAL_LIMITE}`);
+      const data = await resp.json();
+      if (data.error || !data.historial) return; // silencioso — no bloquea el resto de la página
+      renderHistorial(data.historial, reiniciar);
+      historialOffset += data.historial.length;
+      $("btnVerMasHistorial").style.display = data.hayMas ? "block" : "none";
+      $("bloqueHistorial").style.display = (historialOffset > 0) ? "block" : "none";
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderHistorial(items, reiniciar) {
+    const lista = $("listaHistorial");
+    if (reiniciar) lista.innerHTML = "";
+    items.forEach(r => {
+      const item = document.createElement("div");
+      item.className = "historial-item";
+      const horaFin = addHours(r.hora, r.horas);
+      const cancelada = r.estado === "cancelada";
+      item.innerHTML = `
+        <div class="historial-info">
+          <div class="of">${NOMBRES_OFICINA[r.oficina] || r.oficina}</div>
+          <div class="cuando">${fechaLegible(r.fecha)} · ${r.hora} – ${horaFin}</div>
+        </div>
+        <span class="historial-badge ${cancelada ? 'cancelada' : 'completada'}">${cancelada ? 'Cancelada' : 'Completada'}</span>
       `;
       lista.appendChild(item);
     });
