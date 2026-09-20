@@ -543,6 +543,14 @@
       return;
     }
 
+    // Bloquea fechas anteriores a hoy. El atributo min del <input type=date>
+    // no es suficiente: en varios navegadores se puede teclear una fecha
+    // pasada directamente en el campo, saltándose el selector nativo.
+    if (fecha < fechaLocalISO(new Date())) {
+      box.innerHTML = '<div class="slots-empty">No se pueden reservar fechas anteriores a hoy.</div>';
+      return;
+    }
+
     // Cerrado los domingos
     const diaSemana = new Date(fecha + "T00:00:00").getDay(); // 0 = domingo
     if (diaSemana === 0) {
@@ -659,6 +667,12 @@
     const oficina = $("selOficina").value;
     const fecha = $("selFecha").value;
 
+    if (fecha < fechaLocalISO(new Date())) {
+      errBox.textContent = "No se pueden reservar fechas anteriores a hoy.";
+      errBox.style.display = "block";
+      return;
+    }
+
     btn.textContent = "Agendando...";
     btn.disabled = true;
 
@@ -717,6 +731,12 @@
     const horas = Number($("numHoras").value || 1);
     const oficina = $("selOficina").value;
     const fecha = $("selFecha").value;
+
+    if (fecha < fechaLocalISO(new Date())) {
+      errBox.textContent = "No se pueden reservar fechas anteriores a hoy.";
+      errBox.style.display = "block";
+      return;
+    }
 
     btn.textContent = "Guardando cambio...";
     btn.disabled = true;
