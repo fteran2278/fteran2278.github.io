@@ -222,13 +222,8 @@
       <div class="form-group">
         <label for="selOficina">Oficina</label>
         <select id="selOficina" onchange="onOficinaOFechaChange()">
-          <option value="oficina10">Oficina 10 — 8 m²</option>
-          <option value="oficina11">Oficina 11 — 7 m²</option>
-          <option value="oficina12">Oficina 12 — 7 m²</option>
-          <option value="oficina13">Oficina 13 — 12 m²</option>
-          <option value="oficina14">Oficina 14 — 7 m²</option>
-          <option value="oficina15">Oficina 15 — 7 m²</option>
-          <option value="oficina16">Oficina 16 — 7 m²</option>
+          <option value="oficina11">Oficina 11 — Privada (7 m²)</option>
+          <option value="oficina12">Oficina 12 — Privada (7 m²)</option>
         </select>
       </div>
 
@@ -288,8 +283,8 @@
   const WA_NUMBER = "524448295401";
   const $ = id => document.getElementById(id);
   const NOMBRES_OFICINA = {
-    oficina10: "Oficina 10", oficina11: "Oficina 11", oficina12: "Oficina 12",
-    oficina13: "Oficina 13", oficina14: "Oficina 14", oficina15: "Oficina 15", oficina16: "Oficina 16"
+    oficina11: "Oficina 11 — Privada (7 m²)",
+    oficina12: "Oficina 12 — Privada (7 m²)"
   };
 
   const params = new URLSearchParams(location.search);
@@ -411,6 +406,11 @@
       return;
     }
 
+    if (fecha < fechaLocalISO(new Date())) {
+      box.innerHTML = '<div class="slots-empty">No se pueden reservar fechas anteriores a hoy.</div>';
+      return;
+    }
+
     const diaSemana = new Date(fecha + "T00:00:00").getDay();
     if (diaSemana === 0) {
       box.innerHTML = '<div class="slots-empty">Cerrado los domingos — elige otro día.</div>';
@@ -503,6 +503,12 @@
     const horas = Number($("numHoras").value || 1);
     const oficina = $("selOficina").value;
     const fecha = $("selFecha").value;
+
+    if (fecha < fechaLocalISO(new Date())) {
+      errBox.textContent = "No se pueden reservar fechas anteriores a hoy.";
+      errBox.style.display = "block";
+      return;
+    }
 
     btn.textContent = "Guardando...";
     btn.disabled = true;
