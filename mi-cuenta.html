@@ -73,6 +73,8 @@
   .vigencia-note { font-size: 13px; color: var(--muted); text-align: center; margin-top: 16px; }
   .vigencia-note strong { color: var(--ink); }
 
+  .cancelar-paquete-row { text-align: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+
   .empty-box { text-align: center; padding: 24px 8px; }
   .empty-box .icon { font-size: 32px; margin-bottom: 12px; }
   .empty-box p { color: var(--ash); margin-bottom: 18px; font-size: 15px; }
@@ -133,6 +135,13 @@
   .btn-gold:hover:not(:disabled) { background: var(--gold-light); }
   .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
 
+  .btn-outline {
+    width: 100%; padding: 12px 20px; background: transparent; color: var(--ash); border: 1px solid var(--line);
+    border-radius: 30px; font-size: 13px; font-weight: 500; letter-spacing: 0.02em; cursor: pointer;
+    margin-top: 10px;
+  }
+  .btn-outline:hover { border-color: var(--muted); }
+
   .success-box { text-align: center; padding: 10px 4px 4px; }
   .success-box .check {
     width: 52px; height: 52px; border-radius: 50%; background: var(--gold); color: white;
@@ -140,7 +149,23 @@
   }
   .success-box h3 { font-family: var(--font-display); font-size: 20px; margin-bottom: 8px; }
   .success-box p { font-size: 14px; color: var(--ash); max-width: 420px; margin: 0 auto 18px; }
-  .btn-link { display: inline-block; margin-top: 4px; font-size: 13px; color: var(--gold); cursor: pointer; text-decoration: underline; }
+  .btn-link { display: inline-block; margin-top: 4px; font-size: 13px; color: var(--gold); cursor: pointer; text-decoration: underline; background: none; border: none; font-family: inherit; }
+
+  .reserva-item {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 14px 0; border-bottom: 1px solid var(--line);
+  }
+  .reserva-item:last-child { border-bottom: none; }
+  .reserva-info .of { font-size: 14px; font-weight: 500; }
+  .reserva-info .cuando { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .reserva-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn-mini {
+    padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 500; cursor: pointer;
+    border: 1px solid var(--line); background: var(--white); color: var(--ink); white-space: nowrap;
+  }
+  .btn-mini:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+  .btn-mini:disabled { opacity: 0.4; cursor: not-allowed; }
+  .reserva-nota { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
   footer.pie { text-align: center; margin-top: 32px; font-size: 12px; color: var(--muted); }
   footer.pie a { color: var(--gold); text-decoration: none; }
@@ -148,6 +173,9 @@
   @media (max-width: 480px) {
     .saldo-grid { gap: 8px; }
     .saldo-stat .num { font-size: 24px; }
+    .reserva-item { flex-direction: column; align-items: flex-start; }
+    .reserva-actions { width: 100%; }
+    .btn-mini { flex: 1; }
   }
 </style>
 </head>
@@ -166,6 +194,12 @@
 
   <div id="estadoError" class="card state-error" style="display:none">
     <p id="estadoErrorTexto">No pudimos encontrar tu cuenta.</p>
+    <p style="margin-top:14px"><a class="btn-link" href="https://wa.me/524448295401" target="_blank" rel="noopener">Escríbenos por WhatsApp →</a></p>
+  </div>
+
+  <div id="estadoCancelado" class="card state-error" style="display:none">
+    <div class="badge badge-bad" style="margin-bottom:14px">Cancelado</div>
+    <p id="canceladoTexto">Este paquete fue cancelado.</p>
     <p style="margin-top:14px"><a class="btn-link" href="https://wa.me/524448295401" target="_blank" rel="noopener">Escríbenos por WhatsApp →</a></p>
   </div>
 
@@ -194,10 +228,19 @@
         </div>
       </div>
       <div class="vigencia-note" id="cVigencia"></div>
+
+      <div class="cancelar-paquete-row" id="bloqueCancelarPaquete" style="display:none">
+        <span class="btn-link" onclick="cancelarPaquete()">Cancelar mi paquete completo</span>
+      </div>
+    </div>
+
+    <div class="card" id="bloqueMisReservas" style="display:none">
+      <div class="section-title">Mis próximas reservas</div>
+      <div id="listaReservas"></div>
     </div>
 
     <div id="bloqueAgendar" class="card" style="display:none">
-      <div class="section-title">Agenda con tus horas</div>
+      <div class="section-title" id="tituloAgendar">Agenda con tus horas</div>
 
       <p class="error-msg" id="agendarError"></p>
 
@@ -238,6 +281,7 @@
       </div>
 
       <button type="button" class="btn-gold" id="btnAgendar" onclick="confirmarAgenda()" disabled>Confirmar y agendar</button>
+      <button type="button" class="btn-outline" id="btnCancelarCambio" style="display:none" onclick="cancelarModoCambio()">Cancelar</button>
     </div>
 
     <div id="bloqueSinSaldo" class="card empty-box" style="display:none">
@@ -248,7 +292,7 @@
 
     <div id="bloqueExito" class="card success-box" style="display:none">
       <div class="check">✓</div>
-      <h3>¡Reserva confirmada!</h3>
+      <h3 id="exitoTitulo">¡Reserva confirmada!</h3>
       <p id="exitoTexto"></p>
       <span class="btn-link" onclick="volverAAgendar()">← Agendar otra hora</span>
     </div>
@@ -261,6 +305,8 @@
 
 <script>
   const SERVER_URL = "https://despacios-server-production.up.railway.app";
+  // Número de WhatsApp para coordinar devoluciones — en variable, no hardcodeado en más de un lugar.
+  const WA_NUMBER = "524448295401";
   const $ = id => document.getElementById(id);
   const NOMBRES_OFICINA = {
     oficina11: "Oficina 11 — Privada (7 m²)",
@@ -273,6 +319,11 @@
   let saldoActual = null;
   let slotsDisponibles = [];
   let horaSeleccionada = null;
+  let misReservas = [];
+  // Estado de "modo cambio": cuando el cliente da clic en Cambiar sobre una
+  // reserva existente, el mismo formulario de agendar se reutiliza para
+  // mandar /cambiar-reserva en vez de /redimir-horas.
+  let reservaEnCambio = null; // { reservaId, horasOriginales }
 
   function fechaLegible(iso) {
     if (!iso) return "—";
@@ -294,10 +345,109 @@
           : data.error);
         return;
       }
+      if (data.cancelado) {
+        mostrarCancelado(data);
+        return;
+      }
       saldoActual = data;
       renderSaldo();
+      cargarMisReservas();
     } catch (err) {
       mostrarError("Error de conexión. Intenta de nuevo en unos minutos o contáctanos por WhatsApp.");
+      console.error(err);
+    }
+  }
+
+  async function cargarMisReservas() {
+    try {
+      const resp = await fetch(`${SERVER_URL}/mis-reservas?clienteId=${encodeURIComponent(clienteId)}`);
+      const data = await resp.json();
+      misReservas = (data.reservas || []);
+      renderMisReservas();
+    } catch (err) {
+      console.error(err);
+      // Silencioso: si falla, simplemente no se muestra la sección — no bloquea el resto de la página.
+    }
+  }
+
+  function renderMisReservas() {
+    const bloque = $("bloqueMisReservas");
+    const lista = $("listaReservas");
+    if (!misReservas.length) {
+      bloque.style.display = "none";
+      return;
+    }
+    bloque.style.display = "block";
+    lista.innerHTML = "";
+    misReservas.forEach(r => {
+      const item = document.createElement("div");
+      item.className = "reserva-item";
+      const horaFin = addHours(r.hora, r.horas);
+      item.innerHTML = `
+        <div class="reserva-info">
+          <div class="of">${NOMBRES_OFICINA[r.oficina] || r.oficina}</div>
+          <div class="cuando">${fechaLegible(r.fecha)} · ${r.hora} – ${horaFin}</div>
+          ${!r.puedeCambiar ? '<div class="reserva-nota">Faltan menos de 24 h — ya no se puede cambiar</div>' : ''}
+        </div>
+        <div class="reserva-actions">
+          <button type="button" class="btn-mini" ${!r.puedeCambiar ? 'disabled' : ''} onclick='iniciarCambio(${JSON.stringify(r)})'>Cambiar</button>
+        </div>
+      `;
+      lista.appendChild(item);
+    });
+  }
+
+  function iniciarCambio(reserva) {
+    reservaEnCambio = { reservaId: reserva.reservaId, horasOriginales: Number(reserva.horas) };
+    $("tituloAgendar").textContent = "Cambiar reserva";
+    $("btnAgendar").textContent = "Confirmar cambio";
+    $("btnCancelarCambio").style.display = "block";
+    $("selOficina").value = reserva.oficina;
+    $("selFecha").value = "";
+    $("numHoras").value = reserva.horas;
+    $("numHoras").max = Number(saldoActual.horasRestantes) + Number(reserva.horas);
+    horaSeleccionada = null;
+    $("slotsBox").innerHTML = '<div class="slots-empty">Selecciona una fecha para ver horarios disponibles</div>';
+    actualizarResumen();
+    $("bloqueAgendar").style.display = "block";
+    $("bloqueSinSaldo").style.display = "none";
+    $("bloqueExito").style.display = "none";
+    $("bloqueAgendar").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function cancelarModoCambio() {
+    reservaEnCambio = null;
+    $("tituloAgendar").textContent = "Agenda con tus horas";
+    $("btnAgendar").textContent = "Confirmar y agendar";
+    $("btnCancelarCambio").style.display = "none";
+    horaSeleccionada = null;
+    $("selFecha").value = "";
+    $("numHoras").value = 1;
+    $("slotsBox").innerHTML = '<div class="slots-empty">Selecciona una fecha para ver horarios disponibles</div>';
+    actualizarResumen();
+    renderSaldo();
+  }
+
+  async function cancelarPaquete() {
+    if (!confirm("¿Seguro que quieres cancelar tu paquete completo? Esta acción no se puede deshacer.")) return;
+    try {
+      const resp = await fetch(`${SERVER_URL}/cancelar-paquete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clienteId }),
+      });
+      const data = await resp.json();
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+      const msg = encodeURIComponent(
+        `Hola, cancelé mi paquete de D Espacios (cliente: ${data.nombre || clienteId}) y necesito la devolución de mi pago.`
+      );
+      window.open(`https://wa.me/${WA_NUMBER}?text=${msg}`, "_blank");
+      cargarSaldo();
+    } catch (err) {
+      alert("Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.");
       console.error(err);
     }
   }
@@ -306,6 +456,13 @@
     $("estadoCarga").style.display = "none";
     $("estadoErrorTexto").textContent = msg;
     $("estadoError").style.display = "block";
+  }
+
+  function mostrarCancelado(data) {
+    $("estadoCarga").style.display = "none";
+    $("canceladoTexto").textContent =
+      `${data.nombre ? data.nombre + ", tu" : "Tu"} paquete (${data.paquete || "sin nombre"}) fue cancelado. Si tienes dudas sobre tu devolución, escríbenos.`;
+    $("estadoCancelado").style.display = "block";
   }
 
   function renderSaldo() {
@@ -330,21 +487,27 @@
       ? `Tu vigencia terminó el <strong>${fechaLegible(saldoActual.fechaVencimiento)}</strong>.`
       : `Vigente hasta el <strong>${fechaLegible(saldoActual.fechaVencimiento)}</strong>.`;
 
+    // Cancelar paquete completo: solo mostramos el link si no hay horas usadas —
+    // el servidor valida además las 24h desde la compra al momento de intentarlo.
+    $("bloqueCancelarPaquete").style.display = Number(saldoActual.horasUsadas) === 0 ? "block" : "none";
+
     const puedeAgendar = !saldoActual.vencido && Number(saldoActual.horasRestantes) > 0;
-    $("bloqueAgendar").style.display = puedeAgendar ? "block" : "none";
-    $("bloqueSinSaldo").style.display = puedeAgendar ? "none" : "block";
+    if (!reservaEnCambio) {
+      $("bloqueAgendar").style.display = puedeAgendar ? "block" : "none";
+      $("bloqueSinSaldo").style.display = puedeAgendar ? "none" : "block";
+    }
     if (!puedeAgendar) {
       $("sinSaldoTexto").textContent = saldoActual.vencido
         ? "Tu paquete ya venció. Contáctanos para renovar tu saldo de horas."
         : "Ya usaste todas tus horas de este paquete. Contáctanos para comprar más.";
     }
 
-    if (puedeAgendar) {
+    if (puedeAgendar || reservaEnCambio) {
       $("selFecha").min = fechaLocalISO(new Date());
-      if (saldoActual.espacio && NOMBRES_OFICINA[saldoActual.espacio]) {
+      if (saldoActual.espacio && NOMBRES_OFICINA[saldoActual.espacio] && !reservaEnCambio) {
         $("selOficina").value = saldoActual.espacio;
       }
-      $("numHoras").max = saldoActual.horasRestantes;
+      if (!reservaEnCambio) $("numHoras").max = saldoActual.horasRestantes;
     }
   }
 
@@ -362,9 +525,9 @@
 
   // Cambiar de oficina o fecha reinicia "Horas a usar" a 1 — evita que un
   // bloqueo por cierre calculado con una duración anterior confunda al
-  // elegir un horario nuevo.
+  // elegir un horario nuevo. En modo cambio, respeta la duración original.
   function onOficinaOFechaInputChange() {
-    $("numHoras").value = 1;
+    if (!reservaEnCambio) $("numHoras").value = 1;
     onOficinaOFechaChange();
   }
 
@@ -478,12 +641,17 @@
     $("rOficina").textContent = NOMBRES_OFICINA[oficina] || oficina;
     $("rHorario").textContent = `${fecha} · ${horaSeleccionada} – ${horaFin}`;
     $("rHoras").textContent = `${horas} hora${horas !== 1 ? "s" : ""}`;
-    $("rSaldoDespues").textContent = `${saldoActual.horasRestantes - horas} hrs`;
+    const saldoBase = reservaEnCambio
+      ? Number(saldoActual.horasRestantes) + reservaEnCambio.horasOriginales
+      : Number(saldoActual.horasRestantes);
+    $("rSaldoDespues").textContent = `${saldoBase - horas} hrs`;
     box.classList.add("show");
     btn.disabled = false;
   }
 
   async function confirmarAgenda() {
+    if (reservaEnCambio) return confirmarCambio();
+
     const errBox = $("agendarError");
     errBox.style.display = "none";
     const btn = $("btnAgendar");
@@ -519,6 +687,7 @@
       }
 
       const horaFin = addHours(data.inicio || horaSeleccionada, horas);
+      $("exitoTitulo").textContent = "¡Reserva confirmada!";
       $("exitoTexto").textContent =
         `Tu oficina quedó bloqueada: ${NOMBRES_OFICINA[oficina] || oficina}, ${data.fecha || fecha} de ${data.inicio || horaSeleccionada} a ${horaFin}. ` +
         `Te llega un SMS con tu código de acceso. Saldo restante: ${data.horasRestantes} hrs.`;
@@ -529,16 +698,71 @@
       $("bloqueAgendar").style.display = "none";
       $("bloqueExito").style.display = "block";
       renderSaldo();
+      cargarMisReservas();
       $("bloqueExito").style.display = "block";
-      if (Number(data.horasRestantes) <= 0) {
-        // sin saldo restante: no reabrir el formulario de agendar al volver
-      }
     } catch (err) {
       errBox.textContent = "Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.";
       errBox.style.display = "block";
       console.error(err);
     } finally {
       btn.textContent = "Confirmar y agendar";
+      btn.disabled = false;
+    }
+  }
+
+  async function confirmarCambio() {
+    const errBox = $("agendarError");
+    errBox.style.display = "none";
+    const btn = $("btnAgendar");
+    const horas = Number($("numHoras").value || 1);
+    const oficina = $("selOficina").value;
+    const fecha = $("selFecha").value;
+
+    btn.textContent = "Guardando cambio...";
+    btn.disabled = true;
+
+    try {
+      const resp = await fetch(`${SERVER_URL}/cambiar-reserva`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reservaId: reservaEnCambio.reservaId,
+          oficina,
+          fecha,
+          hora: horaSeleccionada,
+          horas,
+        }),
+      });
+      const data = await resp.json();
+      if (data.error) {
+        errBox.textContent = data.error;
+        errBox.style.display = "block";
+        btn.textContent = "Confirmar cambio";
+        btn.disabled = false;
+        onOficinaOFechaChange();
+        return;
+      }
+
+      const horaFin = addHours(data.hora || horaSeleccionada, horas);
+      $("exitoTitulo").textContent = "¡Reserva actualizada!";
+      $("exitoTexto").textContent =
+        `Tu nueva reserva: ${NOMBRES_OFICINA[oficina] || oficina}, ${data.fecha || fecha} de ${data.hora || horaSeleccionada} a ${horaFin}. ` +
+        `Te llega un SMS con tu nuevo código de acceso.`;
+
+      reservaEnCambio = null;
+      $("tituloAgendar").textContent = "Agenda con tus horas";
+      $("btnAgendar").textContent = "Confirmar y agendar";
+      $("btnCancelarCambio").style.display = "none";
+
+      $("bloqueAgendar").style.display = "none";
+      $("bloqueExito").style.display = "block";
+      cargarSaldo();
+    } catch (err) {
+      errBox.textContent = "Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.";
+      errBox.style.display = "block";
+      console.error(err);
+    } finally {
+      btn.textContent = "Confirmar cambio";
       btn.disabled = false;
     }
   }
