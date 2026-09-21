@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Comprar paquete adicional | D Espacios</title>
+<meta name="description" content="Agrega un paquete de horas adicional a tu cuenta en D Espacios." />
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="apple-touch-icon" href="/appletouchicon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icon192.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon32.png" />
+<meta name="theme-color" content="#f5a623" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --gold: #C9933A;
+    --gold-light: #E8C278;
+    --gold-pale: #FAF4E8;
+    --black: #0E0E0D;
+    --ink: #1C1C1A;
+    --ash: #3A3A37;
+    --muted: #8A8A82;
+    --line: #E4E2DC;
+    --surface: #F8F6F1;
+    --white: #FFFFFF;
+    --danger: #B23B3B;
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --radius: 4px;
+    --radius-lg: 8px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body {
+    font-family: var(--font-body);
+    background: var(--surface);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
+  header.top { text-align: center; margin-bottom: 32px; }
+  .brand { font-family: var(--font-display); font-size: 28px; font-weight: 600; letter-spacing: 0.06em; color: var(--black); }
+  .brand span { color: var(--gold); }
+  .brand-sub { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; }
+
+  .card {
+    background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-lg);
+    padding: 28px; margin-bottom: 20px;
+  }
+  .state-loading, .state-error { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .spinner {
+    width: 28px; height: 28px; border: 2px solid var(--line); border-top-color: var(--gold);
+    border-radius: 50%; margin: 0 auto 16px; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    display: none; background: #FBEAEA; color: var(--danger); padding: 12px 14px;
+    border-radius: var(--radius); font-size: 13px; margin-bottom: 14px;
+  }
+  .btn-link { display: inline-block; margin-top: 4px; font-size: 13px; color: var(--gold); cursor: pointer; text-decoration: underline; background: none; border: none; font-family: inherit; }
+
+  h3 { font-size: 22px; font-family: var(--font-display); font-weight: 600; margin-bottom: 20px; text-align: center; }
+  .paso-nota { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); text-align: center; margin-bottom: 6px; }
+
+  .oficina-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .oficina-card {
+    cursor: pointer; border: 1px solid var(--line); border-radius: var(--radius-lg);
+    padding: 28px 16px; text-align: center; background: var(--white); transition: 0.2s;
+  }
+  .oficina-card:hover { border-color: var(--gold-light); }
+  .oficina-card.selected { border-color: var(--gold); border-width: 2px; box-shadow: 0 10px 24px rgba(201,147,58,0.22); }
+  .oficina-card .nombre { font-family: var(--font-display); font-size: 19px; font-weight: 600; }
+
+  .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 8px; }
+  @media (max-width: 640px) { .plans-grid { grid-template-columns: 1fr; } }
+  .plan-card {
+    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    padding: 22px; cursor: pointer; transition: border-color 0.2s, transform 0.15s;
+    position: relative; background: var(--white); text-align: center;
+  }
+  .plan-card:hover { border-color: var(--gold-light); }
+  .plan-card.selected { border-color: var(--gold); border-width: 2px; transform: scale(1.02); box-shadow: 0 14px 28px rgba(201,147,58,0.26); }
+  .plan-card.featured { background: var(--black); }
+  .plan-name { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .featured .plan-name { color: rgba(255,255,255,0.5); }
+  .plan-price { font-family: var(--font-display); font-size: 34px; font-weight: 500; color: var(--black); line-height: 1; margin-bottom: 4px; }
+  .featured .plan-price { color: var(--white); }
+  .plan-unit { font-size: 12px; color: var(--muted); }
+  .featured .plan-unit { color: rgba(255,255,255,0.5); }
+  .plan-select-btn {
+    width: 100%; margin-top: 14px; padding: 10px; border-radius: 2px;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500;
+    cursor: pointer; transition: 0.2s; border: 1px solid var(--line); background: transparent; color: var(--black);
+  }
+  .plan-select-btn:hover, .plan-card.selected .plan-select-btn { background: var(--gold); color: var(--black); border-color: var(--gold); }
+  .featured .plan-select-btn { border-color: var(--gold); background: var(--gold); color: var(--black); }
+
+  .resumen-card { border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+  .resumen-card .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+  .resumen-card .row span:first-child { color: var(--muted); }
+  .resumen-card .row-total { border-top: 1px solid var(--line); margin-top: 8px; padding-top: 14px; font-weight: 600; }
+  .resumen-card .row-total .val { font-family: var(--font-display); font-size: 20px; color: var(--gold); }
+
+  .btn-gold {
+    width: 100%; padding: 14px 20px; background: var(--gold); color: white; border: none;
+    border-radius: 30px; font-size: 14px; font-weight: 500; letter-spacing: 0.03em; cursor: pointer;
+    text-transform: uppercase;
+  }
+  .btn-gold:hover:not(:disabled) { background: var(--gold-light); }
+  .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-outline {
+    width: 100%; padding: 12px 20px; background: transparent; color: var(--ash); border: 1px solid var(--line);
+    border-radius: 30px; font-size: 13px; font-weight: 500; letter-spacing: 0.02em; cursor: pointer;
+    margin-top: 10px;
+  }
+  .btn-outline:hover { border-color: var(--muted); }
+
+  .success-box { text-align: center; padding: 10px 4px 4px; }
+  .success-box .check {
+    width: 52px; height: 52px; border-radius: 50%; background: var(--gold); color: white;
+    display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 16px;
+  }
+  .success-box h3 { margin-bottom: 8px; }
+  .success-box p { font-size: 14px; color: var(--ash); max-width: 420px; margin: 0 auto 18px; }
+
+  .form-notice {
+    font-size: 12px; color: var(--muted); line-height: 1.6;
+    border-left: 2px solid var(--gold); padding-left: 12px; margin-bottom: 20px;
+  }
+
+  footer.pie { text-align: center; margin-top: 32px; font-size: 12px; color: var(--muted); }
+  footer.pie a { color: var(--gold); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">D<span>·</span>Espacios</div>
+    <div class="brand-sub">Comprar paquete adicional</div>
+  </header>
+
+  <div id="estadoCarga" class="card state-loading">
+    <div class="spinner"></div>
+    Cargando tu cuenta...
+  </div>
+
+  <div id="estadoError" class="card state-error" style="display:none">
+    <p id="estadoErrorTexto">No pudimos encontrar tu cuenta.</p>
+    <p style="margin-top:14px"><a class="btn-link" href="https://wa.me/524448295401" target="_blank" rel="noopener">Escríbenos por WhatsApp →</a></p>
+  </div>
+
+  <div id="contenido" style="display:none">
+
+    <div class="card" id="pasoOficina">
+      <div class="paso-nota">Paso 1 de 2</div>
+      <h3>Elige la oficina</h3>
+      <div class="oficina-grid">
+        <div class="oficina-card" data-oficina="oficina11" onclick="elegirOficina('oficina11')">
+          <div class="nombre">Oficina 11</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Privada · 7 m²</div>
+        </div>
+        <div class="oficina-card" data-oficina="oficina12" onclick="elegirOficina('oficina12')">
+          <div class="nombre">Oficina 12</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:4px">Privada · 7 m²</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="pasoPlan" style="display:none">
+      <div class="paso-nota">Paso 2 de 2 · <span id="oficinaElegidaTxt"></span></div>
+      <h3>Elige tu plan</h3>
+      <div class="plans-grid">
+        <div class="plan-card" data-plan="basico" onclick="elegirPlan('basico')">
+          <div class="plan-name">Básico</div>
+          <div class="plan-price">$120<span style="font-size:13px">/hr</span></div>
+          <div class="plan-unit">5 horas · $600 total</div>
+          <button type="button" class="plan-select-btn">Elegir Básico</button>
+        </div>
+        <div class="plan-card" data-plan="plus" onclick="elegirPlan('plus')">
+          <div class="plan-name">Plus</div>
+          <div class="plan-price">$110<span style="font-size:13px">/hr</span></div>
+          <div class="plan-unit">10 horas · $1,100 total</div>
+          <button type="button" class="plan-select-btn">Elegir Plus</button>
+        </div>
+        <div class="plan-card featured" data-plan="business" onclick="elegirPlan('business')">
+          <div class="plan-name">Business</div>
+          <div class="plan-price">$100<span style="font-size:13px">/hr</span></div>
+          <div class="plan-unit">20 horas · $2,000 total</div>
+          <button type="button" class="plan-select-btn">Elegir Business</button>
+        </div>
+      </div>
+
+      <div class="resumen-card" id="resumenBox" style="display:none">
+        <div class="row"><span>Oficina</span><span id="rOficina">—</span></div>
+        <div class="row"><span>Plan</span><span id="rPlan">—</span></div>
+        <div class="row row-total"><span>Total a pagar</span><span class="val" id="rTotal">—</span></div>
+        <div class="row"><span>Vigencia</span><span>30 días desde hoy, independiente de tu otro saldo</span></div>
+      </div>
+
+      <p class="error-msg" id="errorBox"></p>
+      <p class="form-notice">Estas horas se SUMAN a tu saldo actual, con su propia vigencia de 30 días — no reemplazan ni mezclan la vigencia de tu paquete anterior. El pago se coordina por WhatsApp.</p>
+
+      <button type="button" class="btn-gold" id="btnConfirmar" onclick="confirmarCompra()" disabled>Confirmar mi compra →</button>
+      <button type="button" class="btn-outline" onclick="volverAOficina()">← Cambiar de oficina</button>
+    </div>
+
+    <div class="card success-box" id="bloqueExito" style="display:none">
+      <div class="check">✓</div>
+      <h3>¡Paquete agregado!</h3>
+      <p id="exitoTexto"></p>
+      <a class="btn-link" id="linkVolverCuenta" href="#">← Volver a mi cuenta</a>
+    </div>
+  </div>
+
+  <footer class="pie">
+    ¿Dudas? <a href="https://wa.me/524448295401" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
+  </footer>
+</div>
+
+<script>
+  const SERVER_URL = "https://despacios-server-production.up.railway.app";
+  const $ = id => document.getElementById(id);
+
+  const params = new URLSearchParams(location.search);
+  const clienteId = params.get("id") || params.get("clienteId");
+
+  const PAQUETES_INFO = {
+    basico:   { nombre: "Básico — 5 horas",       horas: 5,  total: 600 },
+    plus:     { nombre: "Plus — 10 horas",        horas: 10, total: 1100 },
+    business: { nombre: "Business — 20 horas",    horas: 20, total: 2000 }
+  };
+  const NOMBRES_OFICINA = { oficina11: "Oficina 11 — Privada (7 m²)", oficina12: "Oficina 12 — Privada (7 m²)" };
+
+  let oficinaSel = null;
+  let planSel = null;
+  let nombreCliente = "";
+
+  function money(v) {
+    return new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(v);
+  }
+
+  async function cargarCliente() {
+    if (!clienteId) {
+      mostrarError("El link no incluye tu clave de cliente. Contáctanos por WhatsApp para que te reenviemos tu link.");
+      return;
+    }
+    try {
+      const resp = await fetch(`${SERVER_URL}/saldo-paquete?clienteId=${encodeURIComponent(clienteId)}`);
+      const data = await resp.json();
+      if (data.error) {
+        mostrarError("No encontramos tu cuenta. Verifica el link o contáctanos por WhatsApp.");
+        return;
+      }
+      nombreCliente = data.nombre || "";
+      $("estadoCarga").style.display = "none";
+      $("contenido").style.display = "block";
+      $("linkVolverCuenta").href = `https://despacios.com.mx/mi-cuenta.html?id=${encodeURIComponent(clienteId)}`;
+    } catch (err) {
+      mostrarError("Error de conexión. Intenta de nuevo en unos minutos o contáctanos por WhatsApp.");
+      console.error(err);
+    }
+  }
+
+  function mostrarError(msg) {
+    $("estadoCarga").style.display = "none";
+    $("estadoErrorTexto").textContent = msg;
+    $("estadoError").style.display = "block";
+  }
+
+  function elegirOficina(oficinaId) {
+    oficinaSel = oficinaId;
+    document.querySelectorAll(".oficina-card").forEach(c => c.classList.toggle("selected", c.dataset.oficina === oficinaId));
+    $("oficinaElegidaTxt").textContent = NOMBRES_OFICINA[oficinaId];
+    $("pasoOficina").style.display = "none";
+    $("pasoPlan").style.display = "block";
+    $("pasoPlan").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function volverAOficina() {
+    $("pasoPlan").style.display = "none";
+    $("pasoOficina").style.display = "block";
+  }
+
+  function elegirPlan(planId) {
+    planSel = planId;
+    document.querySelectorAll(".plan-card").forEach(c => c.classList.toggle("selected", c.dataset.plan === planId));
+    const info = PAQUETES_INFO[planId];
+    $("rOficina").textContent = NOMBRES_OFICINA[oficinaSel];
+    $("rPlan").textContent = info.nombre;
+    $("rTotal").textContent = money(info.total);
+    $("resumenBox").style.display = "block";
+    $("btnConfirmar").disabled = false;
+  }
+
+  async function confirmarCompra() {
+    const errBox = $("errorBox");
+    errBox.style.display = "none";
+    if (!oficinaSel || !planSel) return;
+    const info = PAQUETES_INFO[planSel];
+
+    const btn = $("btnConfirmar");
+    btn.textContent = "Procesando...";
+    btn.disabled = true;
+
+    try {
+      const resp = await fetch(`${SERVER_URL}/agregar-paquete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clienteId,
+          espacio: oficinaSel,
+          paquete: info.nombre,
+          horas: info.horas,
+        }),
+      });
+      const data = await resp.json();
+      if (data.error) {
+        errBox.textContent = data.error;
+        errBox.style.display = "block";
+        btn.textContent = "Confirmar mi compra →";
+        btn.disabled = false;
+        return;
+      }
+
+      $("exitoTexto").textContent =
+        `${nombreCliente ? nombreCliente + ", agregamos" : "Agregamos"} ${info.horas} horas (${NOMBRES_OFICINA[oficinaSel]}) a tu cuenta, ` +
+        `vigentes hasta ${data.nuevaVigencia || "30 días"}. Coordinamos el pago por WhatsApp. Tu saldo ya está actualizado.`;
+      $("pasoPlan").style.display = "none";
+      $("bloqueExito").style.display = "block";
+    } catch (err) {
+      errBox.textContent = "Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.";
+      errBox.style.display = "block";
+      btn.textContent = "Confirmar mi compra →";
+      btn.disabled = false;
+      console.error(err);
+    }
+  }
+
+  cargarCliente();
+</script>
+</body>
+</html>
