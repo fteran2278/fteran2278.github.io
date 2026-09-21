@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-whidth, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Mi reserva | D Espacios</title>
 <meta name="description" content="Consulta, cambia o cancela tu reserva en D Espacios." />
 <meta name="robots" content="noindex" />
@@ -214,7 +214,7 @@
       </div>
 
       <p style="text-align:center; margin-top:14px">
-        <a class="btn-link" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">+ Hacer otra reserva</a>
+        <a class="btn-link" id="linkOtraReservaDetalle" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">+ Hacer otra reserva</a>
       </p>
     </div>
 
@@ -275,7 +275,7 @@
       <p id="textoCancelPendiente">Tu horario quedó liberado. Si pagaste por adelantado y necesitas la devolución de tu dinero, coordínala directo por WhatsApp:</p>
       <p id="textoCancelReembolsado" style="display:none">Tu horario quedó liberado y tu reembolso ya fue procesado. Si tienes dudas, escríbenos por WhatsApp.</p>
       <a class="btn-wa" id="linkWaDevolucion" href="#" target="_blank" rel="noopener">Solicitar devolución por WhatsApp</a>
-      <p style="margin-top:10px"><a class="btn-link" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">Reservar otra hora →</a></p>
+      <p style="margin-top:10px"><a class="btn-link" id="linkOtraReservaCancelada" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">Reservar otra hora →</a></p>
     </div>
   </div>
 
@@ -321,6 +321,22 @@
     return `${yyyy}-${mm}-${dd}`;
   }
 
+  // Construye el link "Hacer otra reserva / Reservar otra hora" hacia
+  // despacios_2.html, ya con el dominio definitivo (despacios.com.mx) y con
+  // nombre/telefono del cliente prellenados por query string para que no los
+  // vuelva a escribir en el formulario.
+  function linkComprarMas(datos) {
+    const base = "https://despacios.com.mx/despacios_2.html";
+    if (!datos) return base + "#reservar";
+    const p = new URLSearchParams();
+    if (datos.nombre) p.set("nombre", datos.nombre);
+    if (datos.telefono) p.set("tel", datos.telefono);
+    const qs = p.toString();
+    // El query string va ANTES del fragmento (#reservar) — si no, queda
+    // dentro del fragmento y location.search en despacios_2.html no lo ve.
+    return qs ? `${base}?${qs}#reservar` : `${base}#reservar`;
+  }
+
   async function cargarReserva() {
     if (!token) {
       mostrarError("El link no incluye tu clave de reserva. Contáctanos por WhatsApp para que te reenviemos tu link.");
@@ -352,6 +368,13 @@
   function renderReserva() {
     $("estadoCarga").style.display = "none";
     $("contenido").style.display = "block";
+
+    // Ambos links "hacer otra reserva" llevan el nombre y teléfono de este
+    // cliente ya prellenados — se calcula una sola vez aquí porque
+    // reservaActual está disponible sin importar la rama (activa o cancelada).
+    const linkMas = linkComprarMas(reservaActual);
+    $("linkOtraReservaDetalle").href = linkMas;
+    $("linkOtraReservaCancelada").href = linkMas;
 
     if (reservaActual.estado === "cancelada") {
       $("bloqueDetalle").style.display = "none";
