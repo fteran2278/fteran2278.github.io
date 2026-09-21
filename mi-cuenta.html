@@ -243,9 +243,10 @@
         </div>
       </div>
       <div class="vigencia-note" id="cVigencia"></div>
+      <div id="cLotes" style="margin-top:10px"></div>
 
       <p style="text-align:center; margin-top:10px">
-        <a class="btn-link" id="linkComprarMasSaldo" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">+ Comprar más horas o un nuevo paquete</a>
+        <a class="btn-link" id="linkComprarMasSaldo" href="#" target="_blank" rel="noopener">+ Comprar un paquete adicional</a>
       </p>
 
       <div class="cancelar-paquete-row" id="bloqueCancelarPaquete" style="display:none">
@@ -313,7 +314,7 @@
       <div class="icon">⏳</div>
       <p id="sinSaldoTexto">Tu paquete no tiene horas disponibles para agendar.</p>
       <a class="btn-wa" href="https://wa.me/524448295401" target="_blank" rel="noopener">Renovar por WhatsApp</a>
-      <p style="margin-top:10px"><a class="btn-link" id="linkComprarMasSinSaldo" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">O compra un nuevo paquete u hora suelta aquí →</a></p>
+      <p style="margin-top:10px"><a class="btn-link" id="linkComprarMasSinSaldo" href="#" target="_blank" rel="noopener">O compra un paquete adicional aquí →</a></p>
     </div>
 
     <div id="bloqueExito" class="card success-box" style="display:none">
@@ -376,6 +377,15 @@
     // El query string va ANTES del fragmento (#reservar) — si no, queda
     // dentro del fragmento y location.search en despacios_2.html no lo ve.
     return qs ? `${base}?${qs}#reservar` : `${base}#reservar`;
+  }
+
+  // Link "comprar un paquete adicional" para un cliente QUE YA TIENE cuenta activa
+  // (saldo vigente o sin saldo, pero no cancelado): a diferencia de linkComprarMas
+  // (que manda a despacios_2.html a crear una cuenta nueva o reservar hora suelta),
+  // este manda a una página dedicada que ya conoce su clienteId y AGREGA el nuevo
+  // paquete a su saldo con vigencia propia, sin mezclarla con la del paquete actual.
+  function linkComprarPaqueteAdicional() {
+    return `https://despacios.com.mx/comprar-paquete-adicional.html?id=${encodeURIComponent(clienteId)}`;
   }
 
   async function cargarSaldo() {
@@ -585,8 +595,9 @@
     $("cUsadas").textContent = saldoActual.horasUsadas;
     $("cRestantes").textContent = saldoActual.horasRestantes;
 
-    // Ambos links "comprar más" usan el mismo nombre del cliente ya en sesión.
-    const linkMas = linkComprarMas(saldoActual);
+    // "Comprar un paquete adicional" ya conoce el clienteId en sesión — se suma
+    // al saldo actual con vigencia propia (ver comprar-paquete-adicional.html).
+    const linkMas = linkComprarPaqueteAdicional();
     $("linkComprarMasSaldo").href = linkMas;
     $("linkComprarMasSinSaldo").href = linkMas;
 
@@ -601,6 +612,23 @@
     $("cVigencia").innerHTML = saldoActual.vencido
       ? `Tu vigencia terminó el <strong>${fechaLegible(saldoActual.fechaVencimiento)}</strong>.`
       : `Vigente hasta el <strong>${fechaLegible(saldoActual.fechaVencimiento)}</strong>.`;
+
+    // Detalle por paquete (lotes): cuando el cliente tiene más de un paquete activo
+    // (cada uno con su propia vigencia — ver punto 22 en pendientes-tecnicos.md),
+    // el total de arriba es la suma; aquí se ve qué vence primero de cada uno.
+    // "lotes" es un campo nuevo del backend — si no viene (Apps Script viejo),
+    // simplemente no se muestra nada extra y el resto de la página sigue igual.
+    const cLotes = $("cLotes");
+    if (Array.isArray(saldoActual.lotes) && saldoActual.lotes.length > 1) {
+      cLotes.innerHTML = saldoActual.lotes.map(l =>
+        `<div style="font-size:12px;color:var(--muted);display:flex;justify-content:space-between;padding:3px 0">
+          <span>${l.paquete || "Paquete"}${l.vencido ? " (vencido)" : ""}</span>
+          <span>${l.horasRestantes} hrs · vence ${fechaLegible(l.fechaVencimiento)}</span>
+        </div>`
+      ).join("");
+    } else {
+      cLotes.innerHTML = "";
+    }
 
     // Cancelar paquete completo: solo mostramos el link si no hay horas usadas —
     // el servidor valida además las 24h desde la compra al momento de intentarlo.
