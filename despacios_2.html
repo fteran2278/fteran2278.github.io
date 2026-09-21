@@ -2119,6 +2119,38 @@
   poblarPlanesSegunOficina();
   ajustarPersonasSegunOficina();
   updateSummary();
+
+  // Prellenado de nombre/telefono cuando el cliente llega desde "Comprar mas horas"
+  // (mi-cuenta.html) o "Hacer otra reserva" (mi-reserva.html), que mandan estos
+  // datos por query string para que no los vuelva a escribir. No rompe nada si
+  // los parametros no vienen: cada bloque solo actua si hay valor.
+  (function prellenarDesdeQueryParams() {
+    try {
+      const qp = new URLSearchParams(location.search);
+      const nombreQP = qp.get("nombre");
+      const telQP = qp.get("tel");
+      if (!nombreQP && !telQP) return;
+
+      // URLSearchParams.get() ya decodifica el valor — no hace falta (ni conviene)
+      // volver a llamar decodeURIComponent aqui.
+      const nombreVal = nombreQP || "";
+      const telVal = telQP || "";
+
+      // Formulario de "hora suelta"
+      if (nombreVal && $("nombre")) $("nombre").value = nombreVal;
+      if (telVal && $("telefono")) $("telefono").value = telVal;
+
+      // Formulario de "por plan de horas" (IDs propios: paqueteNombre/paqueteTelefono)
+      if (nombreVal && $("paqueteNombre")) $("paqueteNombre").value = nombreVal;
+      if (telVal && $("paqueteTelefono")) $("paqueteTelefono").value = telVal;
+
+      // Refresca los resumenes laterales para que se vea el dato ya cargado
+      if (typeof updateSummary === "function") updateSummary();
+      if (typeof actualizarTotalPaquete === "function") actualizarTotalPaquete();
+    } catch (err) {
+      console.error("No se pudo prellenar nombre/telefono desde la URL:", err);
+    }
+  })();
 </script>
 </body>
 </html>
