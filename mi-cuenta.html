@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-whidth, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Mi cuenta | D Espacios</title>
 <meta name="description" content="Consulta tu saldo de horas y agenda tus oficinas en D Espacios." />
 <meta name="robots" content="noindex" />
@@ -215,7 +215,7 @@
     <div class="badge badge-bad" style="margin-bottom:14px">Cancelado</div>
     <p id="canceladoTexto">Este paquete fue cancelado.</p>
     <p style="margin-top:14px"><a class="btn-link" href="https://wa.me/524448295401" target="_blank" rel="noopener">Escríbenos por WhatsApp →</a></p>
-    <p style="margin-top:10px"><a class="btn-link" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">Comprar un nuevo paquete u hora suelta →</a></p>
+    <p style="margin-top:10px"><a class="btn-link" id="linkComprarMasCancelado" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">Comprar un nuevo paquete u hora suelta →</a></p>
   </div>
 
   <div id="contenido" style="display:none">
@@ -245,7 +245,7 @@
       <div class="vigencia-note" id="cVigencia"></div>
 
       <p style="text-align:center; margin-top:10px">
-        <a class="btn-link" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">+ Comprar más horas o un nuevo paquete</a>
+        <a class="btn-link" id="linkComprarMasSaldo" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">+ Comprar más horas o un nuevo paquete</a>
       </p>
 
       <div class="cancelar-paquete-row" id="bloqueCancelarPaquete" style="display:none">
@@ -313,7 +313,7 @@
       <div class="icon">⏳</div>
       <p id="sinSaldoTexto">Tu paquete no tiene horas disponibles para agendar.</p>
       <a class="btn-wa" href="https://wa.me/524448295401" target="_blank" rel="noopener">Renovar por WhatsApp</a>
-      <p style="margin-top:10px"><a class="btn-link" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">O compra un nuevo paquete u hora suelta aquí →</a></p>
+      <p style="margin-top:10px"><a class="btn-link" id="linkComprarMasSinSaldo" href="https://despacios.com.mx/despacios_2.html#reservar" target="_blank" rel="noopener">O compra un nuevo paquete u hora suelta aquí →</a></p>
     </div>
 
     <div id="bloqueExito" class="card success-box" style="display:none">
@@ -357,6 +357,25 @@
     if (!iso) return "—";
     const d = new Date(iso + "T00:00:00");
     return d.toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" });
+  }
+
+  // Construye el link "Comprar más horas / hora suelta" hacia despacios_2.html,
+  // ya con el dominio definitivo (despacios.com.mx) y con nombre/telefono del
+  // cliente prellenados por query string para que no los vuelva a escribir.
+  // Limitación conocida: /saldo-paquete no regresa el teléfono del cliente en
+  // su respuesta, así que "tel" se omite aquí (solo se manda "nombre"). Si en
+  // el futuro el backend agrega ese campo a saldoActual, basta con leer
+  // datos.telefono igual que se hace con datos.nombre.
+  function linkComprarMas(datos) {
+    const base = "https://despacios.com.mx/despacios_2.html";
+    if (!datos) return base + "#reservar";
+    const p = new URLSearchParams();
+    if (datos.nombre) p.set("nombre", datos.nombre);
+    if (datos.telefono) p.set("tel", datos.telefono); // no viene hoy en /saldo-paquete, pero queda listo por si se agrega
+    const qs = p.toString();
+    // El query string va ANTES del fragmento (#reservar) — si no, queda
+    // dentro del fragmento y location.search en despacios_2.html no lo ve.
+    return qs ? `${base}?${qs}#reservar` : `${base}#reservar`;
   }
 
   async function cargarSaldo() {
@@ -552,6 +571,7 @@
     $("estadoCarga").style.display = "none";
     $("canceladoTexto").textContent =
       `${data.nombre ? data.nombre + ", tu" : "Tu"} paquete (${data.paquete || "sin nombre"}) fue cancelado. Si tienes dudas sobre tu devolución, escríbenos.`;
+    $("linkComprarMasCancelado").href = linkComprarMas(data);
     $("estadoCancelado").style.display = "block";
   }
 
@@ -564,6 +584,11 @@
     $("cTotal").textContent = saldoActual.horasTotal;
     $("cUsadas").textContent = saldoActual.horasUsadas;
     $("cRestantes").textContent = saldoActual.horasRestantes;
+
+    // Ambos links "comprar más" usan el mismo nombre del cliente ya en sesión.
+    const linkMas = linkComprarMas(saldoActual);
+    $("linkComprarMasSaldo").href = linkMas;
+    $("linkComprarMasSinSaldo").href = linkMas;
 
     const badge = $("cBadge");
     if (saldoActual.vencido) {
