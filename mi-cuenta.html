@@ -618,17 +618,28 @@
       badge.textContent = "Vigente";
       badge.className = "badge badge-ok";
     }
-    $("cVigencia").innerHTML = saldoActual.vencido
-      ? `Tu vigencia terminó el <strong>${fechaLegible(saldoActual.fechaVencimiento)}</strong>.`
-      : `Vigente hasta el <strong>${fechaLegible(saldoActual.fechaVencimiento)}</strong>.`;
+    // Con un solo paquete, la vigencia general de arriba es la del paquete —
+    // se muestra igual que siempre. Con 2+ paquetes (distintas vigencias),
+    // NO se muestra una fecha "general" arriba (confundía cuál aplicaba) —
+    // cada paquete trae su propia fecha en el detalle de abajo (cLotes).
+    const multiPaquete = Array.isArray(saldoActual.lotes) && saldoActual.lotes.length > 1;
+    const cVigencia = $("cVigencia");
+    if (multiPaquete) {
+      cVigencia.innerHTML = "";
+    } else {
+      cVigencia.innerHTML = saldoActual.vencido
+        ? `Tu vigencia terminó el <strong>${fechaLegible(saldoActual.fechaVencimiento)}</strong>.`
+        : `Vigente hasta el <strong>${fechaLegible(saldoActual.fechaVencimiento)}</strong>.`;
+    }
 
     // Detalle por paquete (lotes): cuando el cliente tiene más de un paquete activo
     // (cada uno con su propia vigencia — ver punto 22 en pendientes-tecnicos.md),
-    // el total de arriba es la suma; aquí se ve qué vence primero de cada uno.
+    // el total de arriba es la suma; aquí se ve la vigencia de cada uno por separado
+    // (reemplaza a la vigencia general, que arriba se deja vacía en este caso).
     // "lotes" es un campo nuevo del backend — si no viene (Apps Script viejo),
     // simplemente no se muestra nada extra y el resto de la página sigue igual.
     const cLotes = $("cLotes");
-    if (Array.isArray(saldoActual.lotes) && saldoActual.lotes.length > 1) {
+    if (multiPaquete) {
       cLotes.innerHTML = saldoActual.lotes.map(l =>
         `<div style="font-size:12px;color:var(--muted);display:flex;justify-content:space-between;padding:3px 0">
           <span>${l.paquete || "Paquete"}${l.vencido ? " (vencido)" : ""}</span>
