@@ -449,7 +449,7 @@
         </div>
         <div class="reserva-actions">
           <button type="button" class="btn-mini" ${!r.puedeCambiar ? 'disabled' : ''} onclick='iniciarCambio(${JSON.stringify(r)})'>Cambiar</button>
-          <button type="button" class="btn-mini" ${!r.puedeCambiar ? 'disabled' : ''} onclick='cancelarReservaIndividual(${JSON.stringify(r.reservaId)})'>Cancelar</button>
+          <button type="button" class="btn-mini" ${!r.puedeCambiar ? 'disabled' : ''} onclick='cancelarReservaIndividual(${JSON.stringify(r.reservaId)}, this)'>Cancelar</button>
         </div>
       `;
       lista.appendChild(item);
@@ -459,8 +459,15 @@
   // Cancela una hora reservada dentro del paquete (no el paquete completo).
   // Restituye las horas al saldo siempre que el paquete siga vigente — misma
   // regla de 24h de anticipación que aplica para Cambiar.
-  async function cancelarReservaIndividual(reservaId) {
+  async function cancelarReservaIndividual(reservaId, btn) {
     if (!confirm("¿Cancelar esta reserva? Las horas se restituyen a tu saldo.")) return;
+    // Deshabilita el botón mientras espera respuesta (mismo patrón que "Confirmar
+    // y agendar") — evita el doble clic cuando /cancelar-reserva tarda en
+    // responder: sin esto, un segundo clic sobre la misma reserva ya cancelada
+    // regresa "Esta reserva ya no está activa" y confunde, aunque la primera
+    // cancelación sí se haya guardado bien.
+    const textoOriginal = btn ? btn.textContent : "";
+    if (btn) { btn.disabled = true; btn.textContent = "Cancelando..."; }
     try {
       const resp = await fetch(`${SERVER_URL}/cancelar-reserva`, {
         method: "POST",
@@ -476,6 +483,8 @@
     } catch (err) {
       alert("Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.");
       console.error(err);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = textoOriginal || "Cancelar"; }
     }
   }
 
