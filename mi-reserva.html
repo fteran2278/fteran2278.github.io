@@ -210,7 +210,7 @@
 
       <div class="acciones-row" id="accionesActivas" style="display:none">
         <button type="button" class="btn-gold" onclick="mostrarFormularioCambio()">Cambiar</button>
-        <button type="button" class="btn-danger" onclick="cancelarReserva()">Cancelar</button>
+        <button type="button" class="btn-danger" id="btnCancelarReserva" onclick="cancelarReserva()">Cancelar</button>
       </div>
 
       <p style="text-align:center; margin-top:14px">
@@ -622,6 +622,11 @@
 
   async function cancelarReserva() {
     if (!confirm("¿Seguro que quieres cancelar esta reserva?")) return;
+    // Mismo patrón que mi-cuenta.html: deshabilita el botón mientras espera
+    // respuesta para evitar el doble clic (ver Hallazgo 1, pendientes-tecnicos.md).
+    const btn = $("btnCancelarReserva");
+    const textoOriginal = btn ? btn.textContent : "";
+    if (btn) { btn.disabled = true; btn.textContent = "Cancelando..."; }
     try {
       const resp = await fetch(`${SERVER_URL}/cancelar-reserva`, {
         method: "POST",
@@ -641,6 +646,8 @@
     } catch (err) {
       alert("Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.");
       console.error(err);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = textoOriginal || "Cancelar"; }
     }
   }
 
