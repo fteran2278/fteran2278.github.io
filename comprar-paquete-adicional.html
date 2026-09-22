@@ -206,7 +206,7 @@
       </div>
 
       <p class="error-msg" id="errorBox"></p>
-      <p class="form-notice">Estas horas se SUMAN a tu saldo actual, con su propia vigencia de 30 días — no reemplazan ni mezclan la vigencia de tu paquete anterior. El pago se coordina por WhatsApp.</p>
+      <p class="form-notice">Estas horas se SUMAN a tu saldo actual, con su propia vigencia de 30 días — no reemplazan ni mezclan la vigencia de tu paquete anterior.</p>
 
       <button type="button" class="btn-gold" id="btnConfirmar" onclick="confirmarCompra()" disabled>Confirmar mi compra →</button>
       <button type="button" class="btn-outline" onclick="volverAOficina()">← Cambiar de oficina</button>
@@ -337,7 +337,7 @@
 
       $("exitoTexto").textContent =
         `${nombreCliente ? nombreCliente + ", agregamos" : "Agregamos"} ${info.horas} horas (${NOMBRES_OFICINA[oficinaSel]}) a tu cuenta, ` +
-        `vigentes hasta ${data.nuevaVigencia || "30 días"}. Coordinamos el pago por WhatsApp. Tu saldo ya está actualizado.`;
+        `vigentes hasta ${data.nuevaVigencia || "30 días"}. Tu saldo ya está actualizado.`;
       $("pasoPlan").style.display = "none";
       $("bloqueExito").style.display = "block";
     } catch (err) {
