@@ -232,10 +232,15 @@
   const params = new URLSearchParams(location.search);
   const clienteId = params.get("id") || params.get("clienteId");
 
+  // "nombre" es lo que se guarda tal cual en la columna "paquete" de la hoja
+  // Clientes (se manda a /agregar-paquete → agregarPaqueteACliente) — se dejó
+  // limpio (Básico/Plus/Business, sin "— N horas") para que coincida con el
+  // formato de la compra inicial en despacios_2.html. Las horas se muestran
+  // aparte en el resumen (ver elegirPlan) y en el mensaje de éxito.
   const PAQUETES_INFO = {
-    basico:   { nombre: "Básico — 5 horas",       horas: 5,  total: 600 },
-    plus:     { nombre: "Plus — 10 horas",        horas: 10, total: 1100 },
-    business: { nombre: "Business — 20 horas",    horas: 20, total: 2000 }
+    basico:   { nombre: "Básico",       horas: 5,  total: 600 },
+    plus:     { nombre: "Plus",         horas: 10, total: 1100 },
+    business: { nombre: "Business",     horas: 20, total: 2000 }
   };
   const NOMBRES_OFICINA = { oficina11: "Oficina 11 — Privada (7 m²)", oficina12: "Oficina 12 — Privada (7 m²)" };
 
@@ -294,7 +299,7 @@
     document.querySelectorAll(".plan-card").forEach(c => c.classList.toggle("selected", c.dataset.plan === planId));
     const info = PAQUETES_INFO[planId];
     $("rOficina").textContent = NOMBRES_OFICINA[oficinaSel];
-    $("rPlan").textContent = info.nombre;
+    $("rPlan").textContent = `${info.nombre} (${info.horas} horas)`;
     $("rTotal").textContent = money(info.total);
     $("resumenBox").style.display = "block";
     $("btnConfirmar").disabled = false;
