@@ -591,12 +591,21 @@
       border: 1px solid var(--line); background: var(--white);
       color: var(--ink); cursor: pointer; transition: 0.15s;
     }
-    .slot-btn:hover:not(.slot-disabled) { border-color: var(--gold); color: var(--gold); }
+    .slot-btn:hover:not(.slot-disabled):not(.slot-nocabe) { border-color: var(--gold); color: var(--gold); }
     .slot-btn.slot-selected { background: var(--black); border-color: var(--black); color: var(--white); }
+    /* Ocupado de verdad (ya pasó o ya está tomado) — tachado, como antes */
     .slot-btn.slot-disabled {
       background: var(--surface); color: var(--line);
       border-color: var(--line); cursor: not-allowed;
       text-decoration: line-through;
+    }
+    /* No cabe con la duración elegida (pero el horario en sí está libre) —
+       se ve deshabilitado, SIN dorado y SIN tachar (para no confundirlo con
+       "de verdad ocupado", que sí lleva tachado arriba). */
+    .slot-btn.slot-nocabe {
+      background: var(--surface); color: var(--muted);
+      border-color: var(--line); cursor: not-allowed;
+      text-decoration: none;
     }
     .slots-loading { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
     .slots-loading::before {
@@ -1855,10 +1864,28 @@
     updateSummary();
   }
 
+  // Cuántas horas seguidas caben empezando en slotsDisponibles[idx] —
+  // topado por el horario de cierre y por el primer bloque ya ocupado.
+  function horasDisponiblesDesde(idx) {
+    const HORA_CIERRE = 22; // 10pm — debe coincidir con el Apps Script
+    const inicio = slotsDisponibles[idx];
+    if (!inicio) return 0;
+    const maxPorCierre = Math.max(0, HORA_CIERRE - inicio.hora);
+    let n = 0;
+    for (let i = idx; i < slotsDisponibles.length && n < maxPorCierre; i++) {
+      if (!slotsDisponibles[i].disponible) break;
+      n++;
+    }
+    return n;
+  }
+
+  function cabeDesde(idx, horasNecesarias) {
+    return horasDisponiblesDesde(idx) >= horasNecesarias;
+  }
+
   function renderSlots() {
     const box = $("slotsBox");
     const horasNecesarias = Math.max(1, Number($("horas").value || 1));
-    const HORA_CIERRE = 22; // 10pm — debe coincidir con el Apps Script
 
     if (!slotsDisponibles.length) {
       box.innerHTML = '<div class="slots-empty">No hay horarios para esta fecha</div>';
@@ -1873,31 +1900,40 @@
     const esHoy = fechaSel === fechaLocalISO(ahora);
     const horaMinimaHoy = ahora.getHours() + 1;
 
+    // Índice del horario de inicio ya elegido (si hay uno), para sombrear
+    // TODO el bloque de horas que cubre la reserva, no solo el botón donde
+    // diste clic — ej. inicio 4pm + 3 horas sombrea 4, 5 y 6pm (termina 7pm).
+    const idxSel = horaSeleccionada ? slotsDisponibles.findIndex(s => s.horaTexto === horaSeleccionada) : -1;
+
     box.innerHTML = "";
-    slotsDisponibles.forEach(slot => {
+    slotsDisponibles.forEach((slot, idx) => {
       const yaPaso = esHoy && slot.hora < horaMinimaHoy;
 
-      // Regla 1: la reserva debe terminar antes o justo en el horario de cierre
-      const terminaEn = slot.hora + horasNecesarias;
-      const respetaCierre = terminaEn <= HORA_CIERRE;
-
-      // Regla 2: deben existir y estar libres todos los bloques consecutivos necesarios
-      const idx = slotsDisponibles.findIndex(s => s.hora === slot.hora);
-      let cabeBloque = respetaCierre && !yaPaso;
-      if (cabeBloque) {
-        for (let i = 0; i < horasNecesarias; i++) {
-          const siguiente = slotsDisponibles[idx + i];
-          if (!siguiente || !siguiente.disponible) { cabeBloque = false; break; }
-        }
-      }
+      // Solo lo que de verdad no se puede tomar (ya pasó, o alguien más ya lo
+      // reservó) deshabilita el botón — sin importar cuántas horas pidas.
+      // Si la duración elegida no cabe desde aquí, el botón se queda activo:
+      // la validación se hace al dar clic (ver más abajo), no antes.
+      const ocupado = yaPaso || !slot.disponible;
+      const enBloqueSeleccionado = idxSel !== -1 && idx >= idxSel && idx < idxSel + horasNecesarias;
 
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "slot-btn" + (!cabeBloque ? " slot-disabled" : "") + (horaSeleccionada === slot.horaTexto ? " slot-selected" : "");
+      btn.className = "slot-btn"
+        + (ocupado ? " slot-disabled" : "")
+        + (enBloqueSeleccionado ? " slot-selected" : "");
       btn.textContent = slot.horaTexto;
-      btn.title = yaPaso ? "Ese horario ya pasó" : (!respetaCierre ? "Se saldría del horario de cierre (10pm)" : "");
-      btn.disabled = !cabeBloque;
+      btn.title = yaPaso ? "Ese horario ya pasó" : !slot.disponible ? "Ese horario ya está ocupado" : "";
+      btn.disabled = ocupado;
       btn.onclick = () => {
+        // Aquí sí se valida, en el momento en que te posicionas en una hora —
+        // no antes, mientras solo tienes puesto el número de horas.
+        if (!cabeDesde(idx, horasNecesarias)) {
+          const maxHoras = horasDisponiblesDesde(idx);
+          alert(maxHoras > 0
+            ? `Desde las ${slot.horaTexto} solo caben ${maxHoras} hora${maxHoras === 1 ? "" : "s"} — cerramos a las 10pm.`
+            : `Desde las ${slot.horaTexto} no alcanza — cerramos a las 10pm.`);
+          return;
+        }
         horaSeleccionada = slot.horaTexto;
         $("hora").value = slot.horaTexto;
         renderSlots();
@@ -1908,8 +1944,18 @@
   }
 
   function onHorasChange() {
-    horaSeleccionada = null;
-    $("hora").value = "";
+    // Si ya habías elegido un horario de inicio, lo conservamos mientras la
+    // nueva duración siga cabiendo desde ese mismo inicio (el sombreado del
+    // bloque solo se ajusta de tamaño) — únicamente se quita la selección si
+    // con la nueva duración ya no cabe desde ahí.
+    if (horaSeleccionada) {
+      const horasNecesarias = Math.max(1, Number($("horas").value || 1));
+      const idx = slotsDisponibles.findIndex(s => s.horaTexto === horaSeleccionada);
+      if (idx === -1 || !cabeDesde(idx, horasNecesarias)) {
+        horaSeleccionada = null;
+        $("hora").value = "";
+      }
+    }
     if (slotsDisponibles.length) renderSlots();
     updateSummary();
   }
