@@ -157,10 +157,20 @@ $('#btnRef').onclick = () => cargar();
 $('#chkPrueba').onchange = () => cargar();
 document.querySelectorAll('.tab').forEach(b => b.onclick = () => { document.querySelectorAll('.tab').forEach(x => x.classList.toggle('tab-on', x === b)); ['t1','t2','t3','t4'].forEach(t => $('#'+t).classList.toggle('hide', t !== b.dataset.t)); if (b.dataset.t === 't3') cargarIng(); });
 
+function fixCli(c) {
+  // Totales con TODOS los paquetes que aún no vencen por fecha (incluye los ya agotados)
+  const act = c.lotes.filter(l => l.vence && l.vence > D.ahora);
+  if (!act.length) { if (c.lotes.length) { c.estado = 'vencido'; c.compradas = c.usadas = c.restantes = 0; } return; }
+  c.compradas = act.reduce((t, l) => t + l.total, 0); c.usadas = act.reduce((t, l) => t + l.usadas, 0); c.restantes = act.reduce((t, l) => t + l.restantes, 0);
+  c.valor = act.reduce((t, l) => t + l.pagado, 0);
+  if (c.restantes > 0) return;
+  c.estado = 'agotado'; c.vence = act.map(l => l.vence).sort().pop(); c.dias = null;
+}
 async function cargar(silencio) {
   if (!silencio) $('#estado').textContent = 'Cargando…';
   try {
     D = await api('resumen', { incluirPruebas: $('#chkPrueba').checked });
+    D.clientes.forEach(fixCli);
     if (!fecha) fecha = D.hoy;
     $('#estado').textContent = 'Actualizado ' + D.ahora.slice(11) + ' (hora de México)';
     pintar(); if (!$('#t3').classList.contains('hide')) cargarIng();
@@ -245,9 +255,9 @@ function pintarClientes() {
   const l = listaCli();
   $('#tbCli').innerHTML = l.map(c => `<tr data-id="${esc(c.id)}" class="${selCli === c.id ? 'tb-on' : ''}">
   <td><div class="cell-name">${av(c.nombre)}<div><b>${esc(c.nombre)}</b><div class="muted num" style="font-size:12px">${esc(fmtTel(c.tel))}</div></div></div></td>
-  <td>${c.paquete ? `<b>${esc(c.paquete)}</b>` : '<span class="muted">—</span>'}${c.estado === 'sin horas' ? '<div><span class="chip c-grey">Sin horas</span></div>' : ''}</td>
+  <td>${c.paquete ? `<b>${esc(c.paquete)}</b>` : '<span class="muted">—</span>'}${c.estado === 'agotado' ? '<div><span class="chip c-amber">Horas agotadas</span></div>' : c.estado === 'vencido' ? '<div><span class="chip c-grey">Vencido</span></div>' : ''}</td>
   <td class="num">${c.estado === 'activo' || c.compradas ? `<b>${c.restantes}</b> de ${c.compradas}<div class="bar" style="margin-top:5px"><span style="width:${c.compradas ? c.restantes / c.compradas * 100 : 0}%"></span></div>` : '<span class="muted">—</span>'}</td>
-  <td>${c.estado === 'activo' ? `<div class="num">${fmtF(c.vence)}</div>${c.dias <= 7 ? `<span class="chip c-red">${c.dias} días</span>` : ''}${c.otros ? `<div class="muted" style="font-size:12px">+${c.otros} ${esc(c.otroNombre)} · ${fmtF(c.otroVence)}</div>` : ''}` : '<span class="muted">—</span>'}</td>
+  <td>${c.estado === 'activo' || c.estado === 'agotado' ? `<div class="num">${fmtF(c.vence)}</div>${c.dias !== null && c.dias <= 7 ? `<span class="chip c-red">${c.dias} días</span>` : ''}${c.otros ? `<div class="muted" style="font-size:12px">+${c.otros} ${esc(c.otroNombre)} · ${fmtF(c.otroVence)}</div>` : ''}` : '<span class="muted">—</span>'}</td>
   <td class="num">${c.valor ? money(c.valor) : '—'}</td>
   <td>${c.origen ? `<span class="chip c-grey">${esc(c.origen)}</span>` : '<span class="muted">sin dato</span>'}${c.agente ? `<div class="muted" style="font-size:12px">${esc(c.agente)}</div>` : ''}</td>
   <td class="num">${c.sueltas || '—'}</td></tr>`).join('') || '<tr><td colspan="7" class="muted" style="height:80px">Sin resultados</td></tr>';
@@ -266,7 +276,7 @@ function pintarPanel() {
     return `<div style="border:1px solid #dfe4ea;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b style="font-size:15px">${esc(l.paquete)} · ${l.total} h</b>${chipEst(l)}${primero && l.vence === primero.vence && l.paquete === primero.paquete ? '<span class="chip c-teal">Se consume primero</span>' : ''}</div>
     <div class="muted" style="font-size:13px">Comprado ${fmtF(l.compra)} · vence ${fmtF(l.vence)}${l.vence > D.ahora ? ' (' + dias + ' días)' : ''}</div>
     <div style="display:flex;justify-content:space-between;font-size:13px"><span><b>${l.usadas}</b> usadas</span><span><b>${l.restantes}</b> restantes</span></div><div class="bar"><span style="width:${l.total ? l.usadas / l.total * 100 : 0}%"></span></div>
-    <div style="display:flex;gap:14px;flex-wrap:wrap"><div class="mini"><div class="k">Pagado</div><div class="x num">${money(l.pagado)}</div></div><div class="mini"><div class="k">Valor por hora</div><div class="x num">$${l.valorHora}</div></div><div class="mini"><div class="k">Devengado</div><div class="x num">${money(dev)}</div></div><div class="mini"><div class="k">Por devengar</div><div class="x num">${money(por)}</div></div></div></div>`; }).join('') : '<div class="muted" style="font-size:13px">Sin paquetes. Solo horas sueltas.</div>';
+    <div style="display:flex;gap:14px;flex-wrap:wrap"><div class="mini"><div class="k">Pagado</div><div class="x num">${money(l.pagado)}</div></div><div class="mini"><div class="k">Valor por hora</div><div class="x num">$${l.valorHora}</div></div><div class="mini"><div class="k">Reservado</div><div class="x num">${money(dev)}</div></div><div class="mini"><div class="k">Por reservar</div><div class="x num">${money(por)}</div></div></div></div>`; }).join('') : '<div class="muted" style="font-size:13px">Sin paquetes. Solo horas sueltas.</div>';
   const reservas = rs.slice(0, 30).map(r => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:7px 0;border-bottom:1px solid #eef1f4"><span class="num">${fmtF(r.fecha)} ${r.hora}–${r.fin} · Of. ${r.oficina} · ${r.tipo === 'individual' ? 'suelta' : 'paquete'}</span><span class="chip ${r.estado === 'activa' ? 'c-teal' : 'c-grey'}">${esc(r.estado)}</span></div>`).join('') || '<div class="muted" style="font-size:13px">Sin reservas</div>';
   const datos = `<div class="muted" style="font-size:13px;margin-bottom:12px">Tel. ${esc(fmtTel(c.tel))}${c.correo ? '<br>' + esc(c.correo) : ''}<br>ID ${esc(c.id)}</div>
   <div style="border-top:1px solid #e9edf1;padding-top:14px"><div class="lbl">CÓMO LLEGÓ</div>
