@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Despacios — Panel interno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f2f4f7;color:#16212c;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button{font-family:inherit;font-size:14px;cursor:pointer}
+input,select{font-family:inherit;font-size:14px}
+.card{background:#fff;border-radius:14px;box-shadow:0 1px 2px rgba(22,33,44,.06),0 4px 16px rgba(22,33,44,.05)}
+.h2{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em}
+.muted{color:#5b6876}
+.num{font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.c-teal{background:#d9f0ec;color:#0b5149}
+.c-green{background:#d9f0e2;color:#14532d}
+.c-amber{background:#fdebc8;color:#7a4300}
+.c-pink{background:#fbdce8;color:#9d174d}
+.c-red{background:#fbe0dc;color:#9c1f12}
+.c-blue{background:#e3eaf7;color:#22407a}
+.c-grey{background:#eceff3;color:#3c4856}
+.c-dark{background:#0f6b62;color:#fff}
+.seg{display:flex;background:#eceff3;border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:8px;font-weight:500;color:#5b6876}
+.seg .on{background:#fff;color:#16212c;font-weight:600;box-shadow:0 1px 3px rgba(22,33,44,.15)}
+.btn{padding:9px 14px;border-radius:10px;border:1px solid #c5ccd5;background:#fff;color:#16212c;font-weight:600}
+.btn-main{background:#16212c;border-color:#16212c;color:#fff}
+.btn-teal{background:#0f6b62;border-color:#0f6b62;color:#fff}
+.btn-ghost{border-color:transparent;background:none;color:#5b6876}
+.btn-sm{padding:7px 12px;font-size:13px}
+.fld{width:100%;padding:9px 11px;border:1px solid #c5ccd5;border-radius:10px;background:#fff;color:#16212c}
+.fld:disabled{background:#eef0f3;color:#8793a0}
+.lbl{display:block;font-size:12px;font-weight:600;color:#3c4856;margin-bottom:4px}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex:0 0 auto}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px 14px;border-radius:12px}
+.row:hover{background:#f6f8fa}
+.bar{height:6px;border-radius:3px;background:#e3e8ee;overflow:hidden}
+.bar>span{display:block;height:100%;background:#0f6b62;border-radius:3px}
+.kpi{flex:1 1 190px;padding:16px 18px}
+.kpi .t{font-size:12px;font-weight:600;letter-spacing:.04em;color:#5b6876}
+.kpi .v{font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1.15;margin-top:4px}
+.blk{position:absolute;left:5px;right:5px;border-radius:9px;padding:6px 9px;overflow:hidden;font-size:12px;line-height:1.3}
+.blk b{display:block;font-size:13px;font-weight:600}
+.col{position:relative;height:480px;border-left:1px solid #e9edf1;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 39px,#eef1f4 39px,#eef1f4 40px)}
+.hr{height:40px;font-size:11px;color:#8793a0;text-align:right;padding:0 8px 0 0;font-variant-numeric:tabular-nums}
+.tab{display:flex;align-items:center;gap:8px;padding:13px 16px;border:0;background:none;color:#5b6876;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap}
+.tab:hover{color:#16212c}
+.tab-on{color:#0f6b62;font-weight:600;border-bottom-color:#0f6b62}
+.tab .cnt{background:#b42318;color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px}
+.tabu{padding:10px 4px;margin-right:18px;border:0;background:none;color:#5b6876;font-weight:500;border-bottom:2px solid transparent}
+.tabu-on{color:#0f6b62;font-weight:600;border-bottom-color:#0f6b62}
+.stat{flex:1;text-align:center;background:#f2f4f7;border-radius:10px;padding:10px 6px}
+.stat .n{font-size:26px;font-weight:600;line-height:1;letter-spacing:-.02em}
+.stat .l{font-size:11px;font-weight:600;color:#5b6876;margin-top:5px;letter-spacing:.03em}
+.mini{flex:1 1 90px}
+.mini .k{font-size:11px;font-weight:600;color:#5b6876}
+.mini .x{font-weight:600}
+.tb{width:100%;min-width:860px;border-collapse:collapse;table-layout:fixed}
+.tb th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.04em;color:#5b6876;border-bottom:1px solid #dfe4ea;white-space:nowrap}
+.tb td{padding:12px;border-bottom:1px solid #eef1f4;vertical-align:middle;height:66px}
+.tb tbody tr:hover{background:#f7f9fb}
+.tb .r{text-align:right}
+.tb-on{background:#eaf6f3}
+.tb tbody tr.tb-on:hover{background:#eaf6f3}
+.cell-name{display:flex;align-items:center;gap:10px}
+
+.hide{display:none!important}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.err{color:#9c1f12;font-size:13px;min-height:18px}
+.grid{display:grid;gap:16px}
+.sel{outline:2px solid #0f6b62}
+.tb tbody tr{cursor:pointer}
+@media(max-width:900px){.two{flex-direction:column}}
+</style></head><body>
+
+<div id="login" class="login"><div class="card" style="padding:28px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:38px;height:38px;border-radius:11px;background:#0f6b62;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px">D</div><div><div style="font-size:20px;font-weight:700">Despacios</div><div class="muted" style="font-size:11px;letter-spacing:.08em;text-transform:uppercase">Panel interno</div></div></div>
+<div><label class="lbl" for="pin">PIN de acceso</label><input id="pin" class="fld" type="password" autocomplete="current-password" placeholder="Escribe tu PIN"></div>
+<div id="loginErr" class="err"></div>
+<button id="btnLogin" class="btn btn-teal" type="button">Entrar</button>
+</div></div>
+
+<div id="app" class="hide" style="min-height:100vh;display:flex;flex-direction:column">
+<header style="background:#fff;box-shadow:0 1px 0 #dfe4ea,0 4px 14px rgba(22,33,44,.04)">
+<div style="max-width:1400px;margin:0 auto;padding:12px 24px 0;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:38px;height:38px;border-radius:11px;background:#0f6b62;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px">D</div><div><div style="font-size:20px;font-weight:700;line-height:1.1">Despacios</div><div class="muted" style="font-size:11px;letter-spacing:.08em;text-transform:uppercase">Panel interno</div></div></div>
+<div style="flex:1 1 240px;max-width:420px;margin-left:auto"><input id="q" class="fld" style="border-radius:999px;background:#f2f4f7;border-color:#e3e8ee" type="search" placeholder="Buscar por nombre o teléfono"></div>
+<label style="display:flex;align-items:center;gap:8px;font-weight:500;font-size:13px"><input id="chkPrueba" type="checkbox" style="accent-color:#0f6b62;width:17px;height:17px"> Incluir pruebas</label>
+<button id="btnRef" class="btn btn-sm" type="button">Actualizar</button>
+<div style="font-size:13px;line-height:1.2"><b id="usr">Administración</b><div class="muted" style="font-size:12px"><a href="#" id="salir" style="color:inherit">Salir</a></div></div>
+</div>
+<nav style="max-width:1400px;margin:0 auto;padding:6px 16px 0;display:flex;flex-wrap:wrap">
+<button class="tab tab-on" data-t="t1" type="button">Citas y clientes</button>
+<button class="tab" data-t="t2" type="button">Links y códigos</button>
+<button class="tab" data-t="t3" type="button">Oficinas</button>
+</nav></header>
+<main style="width:100%;max-width:1400px;margin:0 auto;padding:20px 24px 40px;display:flex;flex-direction:column;gap:16px">
+<div id="estado" class="muted" style="font-size:13px"></div>
+
+<section id="t1" class="grid">
+<div style="display:flex;flex-wrap:wrap;gap:16px" id="kpis"></div>
+<div class="card" style="padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><h2 class="h2" style="flex:1">Calendario de citas · <span id="calFecha"></span></h2>
+<button class="btn btn-sm" id="dPrev" type="button">‹</button><button class="btn btn-sm" id="dHoy" type="button">Hoy</button><button class="btn btn-sm" id="dNext" type="button">›</button></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><span class="chip c-teal">Paquete</span><span class="chip c-blue">Hora suelta</span><span class="chip c-dark">En curso</span></div>
+<div id="cal" style="overflow-x:auto"></div></div>
+<div class="two" style="display:flex;gap:16px;align-items:flex-start">
+<div class="card" style="flex:1 1 640px;min-width:0;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><h2 class="h2" style="flex:1">Clientes</h2><div class="seg" id="filtro"><button class="on" data-f="todos">Todos</button><button data-f="activo">Con horas</button><button data-f="porvencer">Por vencer</button></div></div>
+<div style="overflow-x:auto"><table class="tb"><colgroup><col style="width:25%"><col style="width:14%"><col style="width:14%"><col style="width:13%"><col style="width:12%"><col style="width:12%"><col style="width:10%"></colgroup><thead><tr><th>CLIENTE</th><th>PAQUETE</th><th>HORAS</th><th>VENCE</th><th>VALOR</th><th>ORIGEN</th><th>SUELTAS</th></tr></thead><tbody id="tbCli"></tbody></table></div></div>
+<aside class="card" id="panelCli" style="flex:0 0 380px;padding:20px"></aside>
+</div></section>
+
+<section id="t2" class="grid hide">
+<div class="card" style="padding:16px"><input id="q2" class="fld" style="padding:12px 14px;font-size:16px" placeholder="Escribe nombre o teléfono (puede ser parcial)"></div>
+<div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Códigos de hoy · todas las oficinas</h2><div style="overflow-x:auto"><table class="tb" style="min-width:700px"><colgroup><col style="width:13%"><col style="width:16%"><col style="width:30%"><col style="width:17%"><col style="width:24%"></colgroup><thead><tr><th>OFICINA</th><th>HORARIO</th><th>CLIENTE</th><th>CÓDIGO</th><th>ESTADO</th></tr></thead><tbody id="tbHoy"></tbody></table></div></div>
+<div id="resBusca" class="grid"></div>
+</section>
+
+<section id="t3" class="grid hide">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="h2" style="flex:1;font-size:20px">Ingresos y ocupación</h2><input id="mes" type="month" class="fld" style="width:auto"></div>
+<div id="ofi" class="grid"></div>
+<div class="muted" style="font-size:12px">Ingreso devengado = horas ya usadas × valor por hora del paquete (o tarifa de hora suelta). Programado = citas futuras del mes. Horas vencidas = horas de paquete que caducaron sin usar. Ocupación = horas reservadas ÷ 240 h al mes por oficina.</div>
+</section>
+</main></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbxBgatER8FfXet2yJlJLGUIRIEdsNa0KV_yCoG9_xwUjZ7QtSzaJ7ypApjq4-Lwn40D-w/exec';
+let PIN = '', D = null, ING = null, selCli = null, fecha = null, filtro = 'todos';
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => '$' + Math.round(n).toLocaleString('es-MX');
+const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'], DIA = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const fmtF = f => { if(!f) return '—'; const [y,m,d] = f.slice(0,10).split('-'); return +d + ' ' + MES[+m-1]; };
+const fmtTel = t => t && t.length === 10 ? t.slice(0,3) + ' ' + t.slice(3,6) + ' ' + t.slice(6) : (t || '');
+const ini = n => String(n||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+const COLS = ['#e3eaf7|#22407a','#e8e3f4|#40286b','#f4dede|#6b2020','#d9f0ec|#0b5149','#fdebc8|#7a4300'];
+const av = (n,big) => { const [b,c] = COLS[(String(n||'').length) % 5].split('|'); return `<div class="av" style="${big?'width:48px;height:48px;font-size:16px;':''}background:${b};color:${c}">${esc(ini(n))}</div>`; };
+
+async function api(accion, extra) {
+  const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ pin: PIN, accion }, extra || {})) });
+  const j = await r.json(); if (j.error) throw new Error(j.error); return j;
+}
+async function entrar() {
+  $('#loginErr').textContent = ''; PIN = $('#pin').value;
+  if (API_URL.startsWith('PEGAR')) { $('#loginErr').textContent = 'Falta configurar la URL del API en panel.html'; return; }
+  try { const r = await api('login'); sessionStorage.setItem('pin', PIN); $('#usr').textContent = r.usuario; $('#login').classList.add('hide'); $('#app').classList.remove('hide'); await cargar(); setInterval(() => { if (!document.hidden) cargar(true); }, 90000); }
+  catch (e) { $('#loginErr').textContent = e.message; }
+}
+$('#btnLogin').onclick = entrar; $('#pin').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+$('#salir').onclick = e => { e.preventDefault(); sessionStorage.removeItem('pin'); location.reload(); };
+$('#btnRef').onclick = () => cargar();
+$('#chkPrueba').onchange = () => cargar();
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => { document.querySelectorAll('.tab').forEach(x => x.classList.toggle('tab-on', x === b)); ['t1','t2','t3'].forEach(t => $('#'+t).classList.toggle('hide', t !== b.dataset.t)); if (b.dataset.t === 't3') cargarIng(); });
+
+async function cargar(silencio) {
+  if (!silencio) $('#estado').textContent = 'Cargando…';
+  try {
+    D = await api('resumen', { incluirPruebas: $('#chkPrueba').checked });
+    if (!fecha) fecha = D.hoy;
+    $('#estado').textContent = 'Actualizado ' + D.ahora.slice(11) + ' (hora de México)';
+    pintar(); if (!$('#t3').classList.contains('hide')) cargarIng();
+  } catch (e) { $('#estado').textContent = 'Error: ' + e.message; if (/PIN|intentos/.test(e.message)) { sessionStorage.removeItem('pin'); location.reload(); } }
+}
+function coincide(c, q) { q = q.trim().toLowerCase(); if (!q) return true; const d = q.replace(/\D/g,''); return c.nombre.toLowerCase().includes(q) || (d.length >= 3 && c.tel.includes(d)); }
+$('#q').oninput = () => { pintarClientes(); pintarBusqueda(); };
+$('#q2').oninput = () => { $('#q').value = $('#q2').value; pintarClientes(); pintarBusqueda(); };
+
+function pintar() { pintarKpis(); pintarCal(); pintarClientes(); pintarPanel(); pintarHoy(); pintarBusqueda(); }
+
+function pintarKpis() {
+  const k = D.kpis;
+  $('#kpis').innerHTML = [
+    ['CITAS HOY', k.citasHoy, 'reservas activas de hoy', '#16212c'],
+    ['CLIENTES CON HORAS', k.clientesActivos, 'paquetes vigentes', '#0b5149'],
+    ['VENCEN EN 7 DÍAS', k.vencen7, k.horasEnRiesgo + ' horas sin usar en riesgo', '#9c1f12'],
+  ].map(x => `<div class="card kpi"><div class="t">${x[0]}</div><div class="v num" style="color:${x[3]}">${x[1]}</div><div class="muted" style="font-size:12px">${x[2]}</div></div>`).join('');
+}
+
+function sumD(f, n) { const d = new Date(f + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0,10); }
+$('#dPrev').onclick = () => { fecha = sumD(fecha, -1); pintarCal(); };
+$('#dNext').onclick = () => { fecha = sumD(fecha, 1); pintarCal(); };
+$('#dHoy').onclick = () => { fecha = D.hoy; pintarCal(); };
+function pintarCal() {
+  const d = new Date(fecha + 'T00:00:00Z');
+  $('#calFecha').textContent = DIA[d.getUTCDay()] + ' ' + d.getUTCDate() + ' de ' + MES[d.getUTCMonth()] + (fecha === D.hoy ? ' (hoy)' : '');
+  const H0 = 8, H1 = 22, PX = 40, res = D.reservas.filter(r => r.fecha === fecha && r.estado === 'activa');
+  let h = '<div style="display:flex;min-width:560px"><div style="width:46px;padding-top:30px">';
+  for (let i = H0; i < H1; i++) h += `<div class="hr">${i}:00</div>`; h += '</div>';
+  [11,12,13].forEach(of => {
+    h += `<div style="flex:1;min-width:150px"><div style="height:30px;text-align:center;font-weight:600">Oficina ${of}</div><div class="col" style="height:${(H1-H0)*PX}px">`;
+    if (of === 13) h += '<div class="muted" style="padding:10px;font-size:12px">Sin chapa ni paquetes todavía</div>';
+    res.filter(r => r.oficina === of).forEach(r => {
+      const [a,b] = r.hora.split(':').map(Number), top = ((a - H0) + b/60) * PX + 1, hh = r.horas * PX - 2;
+      const en = fecha === D.hoy && (D.hoy + ' ' + r.hora) <= D.ahora && D.ahora < (D.hoy + ' ' + r.fin);
+      const est = en ? 'background:#0f6b62;color:#fff' : r.tipo === 'individual' ? 'background:#e3eaf7;color:#22407a;border:1px dashed #6f89bd' : 'background:#d9f0ec;color:#0b5149';
+      h += `<div class="blk" style="top:${top}px;height:${hh}px;${est}"><b>${esc(r.nombre)}</b>${r.hora}–${r.fin} · ${r.tipo === 'individual' ? 'hora suelta' : 'paquete'}</div>`;
+    });
+    if (of !== 13 && fecha === D.hoy) { const [a,b] = D.ahora.slice(11).split(':').map(Number), t = ((a - H0) + b/60) * PX; if (t >= 0 && t <= (H1-H0)*PX) h += `<div style="position:absolute;left:0;right:0;top:${t}px;border-top:2px solid #b42318"></div>`; }
+    h += '</div></div>';
+  });
+  $('#cal').innerHTML = h + '</div>';
+}
+
+document.querySelectorAll('#filtro button').forEach(b => b.onclick = () => { filtro = b.dataset.f; document.querySelectorAll('#filtro button').forEach(x => x.classList.toggle('on', x === b)); pintarClientes(); });
+function listaCli() {
+  const q = $('#q').value;
+  return D.clientes.filter(c => coincide(c, q) && (filtro === 'todos' || (filtro === 'activo' && c.estado === 'activo') || (filtro === 'porvencer' && c.estado === 'activo' && c.dias !== null && c.dias <= 7)))
+    .sort((a,b) => (a.estado === 'activo' ? 0 : 1) - (b.estado === 'activo' ? 0 : 1) || (a.vence || '9') .localeCompare(b.vence || '9'));
+}
+function pintarClientes() {
+  const l = listaCli();
+  $('#tbCli').innerHTML = l.map(c => `<tr data-id="${esc(c.id)}" class="${selCli === c.id ? 'tb-on' : ''}">
+  <td><div class="cell-name">${av(c.nombre)}<div><b>${esc(c.nombre)}</b><div class="muted num" style="font-size:12px">${esc(fmtTel(c.tel))}</div></div></div></td>
+  <td>${c.paquete ? `<b>${esc(c.paquete)}</b>` : '<span class="muted">—</span>'}${c.estado === 'sin horas' ? '<div><span class="chip c-grey">Sin horas</span></div>' : ''}</td>
+  <td class="num">${c.estado === 'activo' || c.compradas ? `<b>${c.restantes}</b> de ${c.compradas}<div class="bar" style="margin-top:5px"><span style="width:${c.compradas ? c.restantes / c.compradas * 100 : 0}%"></span></div>` : '<span class="muted">—</span>'}</td>
+  <td>${c.estado === 'activo' ? `<div class="num">${fmtF(c.vence)}</div>${c.dias <= 7 ? `<span class="chip c-red">${c.dias} días</span>` : ''}${c.otros ? `<div class="muted" style="font-size:12px">+${c.otros} ${esc(c.otroNombre)} · ${fmtF(c.otroVence)}</div>` : ''}` : '<span class="muted">—</span>'}</td>
+  <td class="num">${c.valor ? money(c.valor) : '—'}</td>
+  <td>${c.origen ? `<span class="chip c-grey">${esc(c.origen)}</span>` : '<span class="muted">sin dato</span>'}${c.agente ? `<div class="muted" style="font-size:12px">${esc(c.agente)}</div>` : ''}</td>
+  <td class="num">${c.sueltas || '—'}</td></tr>`).join('') || '<tr><td colspan="7" class="muted" style="height:80px">Sin resultados</td></tr>';
+  document.querySelectorAll('#tbCli tr[data-id]').forEach(tr => tr.onclick = () => { selCli = tr.dataset.id; pintarClientes(); pintarPanel(); });
+}
+
+const ORIGENES = ['Agente inmobiliario','Instagram','Facebook','Google','WhatsApp','Referido','Otro'];
+function pintarPanel() {
+  const c = D.clientes.find(x => x.id === selCli);
+  if (!c) { $('#panelCli').innerHTML = '<div class="muted">Selecciona un cliente para ver su detalle.</div>'; return; }
+  const rs = D.reservas.filter(r => r.clienteId === c.id).sort((a,b) => (b.fecha + b.hora).localeCompare(a.fecha + a.hora)).slice(0, 12);
+  $('#panelCli').innerHTML = `<div class="cell-name" style="gap:14px">${av(c.nombre,1)}<div><div style="font-size:18px;font-weight:600">${esc(c.nombre)}</div><div class="muted num">${esc(fmtTel(c.tel))}${c.correo ? ' · ' + esc(c.correo) : ''}</div></div></div>
+  <div style="display:flex;gap:8px;margin:14px 0"><div class="stat"><div class="n num">${c.compradas}</div><div class="l">COMPRADAS</div></div><div class="stat"><div class="n num">${c.usadas}</div><div class="l">USADAS</div></div><div class="stat" style="background:#eaf6f3"><div class="n num" style="color:#0b5149">${c.restantes}</div><div class="l">RESTANTES</div></div></div>
+  ${c.lotes.length ? '<div class="lbl">PAQUETES</div>' + c.lotes.map(l => `<div style="border:1px solid #dfe4ea;border-radius:10px;padding:10px 12px;margin-bottom:8px"><b>${esc(l.paquete)} · ${l.total} h</b> <span class="muted">· $${l.valorHora}/h · ${money(l.pagado)}</span><div class="muted num" style="font-size:12px">Usadas ${l.usadas} · restan ${l.restantes} · vence ${fmtF(l.vence)}</div></div>`).join('') : ''}
+  <div class="lbl" style="margin-top:12px">RESERVAS RECIENTES</div>${rs.map(r => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px solid #eef1f4"><span class="num">${fmtF(r.fecha)} ${r.hora}–${r.fin} · Of. ${r.oficina}</span><span class="chip ${r.estado === 'activa' ? 'c-teal' : 'c-grey'}">${esc(r.estado)}</span></div>`).join('') || '<div class="muted" style="font-size:13px">Sin reservas</div>'}
+  <div style="border-top:1px solid #e9edf1;margin-top:14px;padding-top:14px"><div class="lbl">CÓMO LLEGÓ</div>
+  <select id="fOrigen" class="fld"><option value="">— Elegir —</option>${ORIGENES.map(o => `<option ${c.origen === o ? 'selected' : ''}>${o}</option>`).join('')}</select>
+  <div id="boxAg" style="margin-top:8px;${c.origen === 'Agente inmobiliario' ? '' : 'display:none'}"><label class="lbl">Nombre del agente</label><input id="fAgente" class="fld" list="dlAg" value="${esc(c.agente)}"><datalist id="dlAg">${[...new Set(D.clientes.map(x => x.agente).filter(Boolean))].map(a => `<option value="${esc(a)}">`).join('')}</datalist></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:10px"><button class="btn btn-main btn-sm" id="btnGuardar" type="button">Guardar</button><span id="msgG" class="muted" style="font-size:12px"></span></div></div>`;
+  $('#fOrigen').onchange = () => { $('#boxAg').style.display = $('#fOrigen').value === 'Agente inmobiliario' ? '' : 'none'; };
+  $('#btnGuardar').onclick = async () => {
+    const o = $('#fOrigen').value, a = o === 'Agente inmobiliario' ? $('#fAgente').value : ''; $('#msgG').textContent = 'Guardando…';
+    try { await api('guardarOrigen', { clienteId: c.id, origen: o, agente: a }); c.origen = o; c.agente = a; $('#msgG').textContent = 'Guardado ✓'; pintarClientes(); } catch (e) { $('#msgG').textContent = e.message; }
+  };
+}
+
+function estadoCodigo(r) {
+  const ini = r.fecha + ' ' + r.hora, fin = r.fecha + ' ' + r.fin;
+  if (D.ahora >= fin) return ['Terminó', 'c-grey']; if (D.ahora >= ini) return ['Vigente ahora', 'c-dark']; return ['Próximo', 'c-teal'];
+}
+function pintarHoy() {
+  const l = D.reservas.filter(r => r.fecha === D.hoy && r.estado === 'activa').sort((a,b) => a.hora.localeCompare(b.hora) || a.oficina - b.oficina);
+  $('#tbHoy').innerHTML = l.map(r => { const e = estadoCodigo(r); return `<tr><td><b>Oficina ${r.oficina}</b></td><td class="num">${r.hora}–${r.fin}</td><td>${esc(r.nombre)}<div class="muted" style="font-size:12px">${r.tipo === 'individual' ? 'Hora suelta' : 'Paquete'}</div></td><td>${r.codigo ? `<span class="num" style="font-size:17px;font-weight:600;letter-spacing:.12em">${esc(r.codigo)}</span> <button class="btn btn-sm" data-cp="${esc(r.codigo)}" type="button">Copiar</button>` : '<span class="chip c-red">Sin código</span>'}</td><td><span class="chip ${e[1]}">${e[0]}</span></td></tr>`; }).join('') || '<tr><td colspan="5" class="muted" style="height:70px">Sin citas hoy</td></tr>';
+  ligarCopiar();
+}
+function pintarBusqueda() {
+  const q = $('#q2').value || $('#q').value, cont = $('#resBusca');
+  if (!q.trim()) { cont.innerHTML = '<div class="muted">Escribe un nombre o teléfono para ver el link y los códigos del cliente (incluye todo el historial).</div>'; return; }
+  cont.innerHTML = D.clientes.filter(c => coincide(c, q)).slice(0, 8).map(c => {
+    const rs = D.reservas.filter(r => r.clienteId === c.id && r.estado === 'activa').sort((a,b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
+    const link = c.linkCuenta || (rs.find(r => r.link) || {}).link || '';
+    return `<div class="card" style="padding:18px 20px;display:flex;flex-direction:column;gap:12px"><div class="cell-name" style="gap:14px">${av(c.nombre,1)}<div style="flex:1"><div style="font-size:18px;font-weight:600">${esc(c.nombre)}</div><div class="muted num">${esc(fmtTel(c.tel))} · ${c.estado === 'activo' ? c.paquete + ' ' + c.restantes + ' de ' + c.compradas + ' · vence ' + fmtF(c.vence) : c.estado}</div></div></div>
+    ${link ? `<div><span class="lbl">LINK DEL CLIENTE</span><div style="display:flex;gap:8px;flex-wrap:wrap"><input class="fld num" style="flex:1 1 300px;background:#f2f4f7" readonly value="${esc(link)}"><button class="btn btn-teal" data-cp="${esc(link)}" type="button">Copiar link</button><a class="btn" href="${esc(link)}" target="_blank" rel="noopener" style="text-decoration:none">Abrir</a></div></div>` : ''}
+    <div class="lbl">CÓDIGOS (RESERVAS ACTIVAS)</div>
+    ${rs.length ? `<div style="overflow-x:auto"><table class="tb" style="min-width:600px"><colgroup><col style="width:32%"><col style="width:14%"><col style="width:18%"><col style="width:16%"><col style="width:20%"></colgroup><thead><tr><th>HORARIO</th><th>OFICINA</th><th>CÓDIGO</th><th>ESTADO</th><th class="r"></th></tr></thead><tbody>${rs.map(r => { const e = estadoCodigo(r), msg = `Hola ${c.nombre.split(' ')[0]}, tu código para la Oficina ${r.oficina} el ${fmtF(r.fecha)} de ${r.hora} a ${r.fin} es ${r.codigo}.${link ? ' Tus horas y reservas: ' + link : ''}`; return `<tr style="cursor:default"><td class="num"><b>${fmtF(r.fecha)}</b> ${r.hora}–${r.fin}</td><td>Of. ${r.oficina}</td><td>${r.codigo ? `<span class="num" style="font-size:17px;font-weight:600;letter-spacing:.12em">${esc(r.codigo)}</span>` : '<span class="chip c-red">Sin código</span>'}</td><td><span class="chip ${e[1]}">${e[0]}</span></td><td class="r">${r.codigo ? `<button class="btn btn-sm" data-cp="${esc(msg)}" type="button">Copiar mensaje</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div>` : '<div class="muted" style="font-size:13px">Sin reservas activas.</div>'}</div>`;
+  }).join('') || '<div class="muted">Sin resultados</div>';
+  ligarCopiar();
+}
+function ligarCopiar() { document.querySelectorAll('[data-cp]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.cp); const t = b.textContent; b.textContent = 'Copiado ✓'; setTimeout(() => b.textContent = t, 1400); } catch (e) { prompt('Copia manualmente:', b.dataset.cp); } }); }
+
+$('#mes').onchange = () => cargarIng();
+async function cargarIng() {
+  const mes = $('#mes').value || (D ? D.hoy.slice(0,7) : ''); $('#mes').value = mes;
+  $('#ofi').innerHTML = '<div class="muted">Calculando…</div>';
+  try { ING = await api('ingresos', { mes, incluirPruebas: $('#chkPrueba').checked }); pintarIng(); } catch (e) { $('#ofi').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
+}
+function tarjetaOf(t, nombre, sub) {
+  return `<div class="card" style="padding:18px 20px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b style="font-size:16px">${nombre}</b><div class="muted" style="font-size:12px">${sub}</div></div><div style="text-align:right"><div class="num" style="font-size:26px;font-weight:600">${money(t.total)}</div><div class="muted" style="font-size:12px">ingreso devengado</div></div></div>
+  <div style="margin:12px 0 4px;display:flex;justify-content:space-between;font-size:13px"><span>Ocupación del mes</span><b class="num">${t.ocupacion}% · ${t.horas} de ${t.disponibles} h</b></div><div class="bar" style="height:10px"><span style="width:${Math.min(100, t.ocupacion)}%"></span></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><div class="stat"><div class="n num" style="font-size:20px">${money(t.devengado)}</div><div class="l">USADAS (${t.horasHechas} h)</div></div><div class="stat"><div class="n num" style="font-size:20px">${money(t.programado)}</div><div class="l">PROGRAMADO</div></div><div class="stat"><div class="n num" style="font-size:20px">${money(t.vencido)}</div><div class="l">HORAS VENCIDAS</div></div></div></div>`;
+}
+function pintarIng() {
+  $('#ofi').innerHTML = tarjetaOf(ING.total, 'Total · 3 oficinas', 'Mes ' + ING.mes) + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">' + ING.oficinas.map(o => tarjetaOf(o, 'Oficina ' + o.oficina, o.m2 + ' m² · ' + o.paquete + ' h paquete · ' + o.suelta + ' h suelta' + (o.estimado ? ' · valor estimado' : ''))).join('') + '</div>';
+}
+
+(async () => { const p = sessionStorage.getItem('pin'); if (p) { $('#pin').value = p; entrar(); } })();
+</script></body></html>
