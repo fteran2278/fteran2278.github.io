@@ -72,6 +72,30 @@ input,select{font-family:inherit;font-size:14px}
 .sel{outline:2px solid #0f6b62}
 .tb tbody tr{cursor:pointer}
 @media(max-width:900px){.two{flex-direction:column}}
+
+.grid>*,.two>*{min-width:0}
+@media(max-width:760px){
+  main{padding:12px 12px 32px!important}
+  header>div:first-child{padding:10px 12px 0!important}
+  header nav{padding:6px 4px 0!important;overflow-x:auto;flex-wrap:nowrap!important}
+  header nav .tab{padding:11px 12px;font-size:13px}
+  .two{flex-direction:column!important}
+  .two>*{flex:none!important;width:100%!important}
+  .kpi{flex:1 1 140px!important;padding:12px 14px!important}.kpi .v{font-size:24px!important}
+  .card{border-radius:12px}
+  .tb{min-width:0!important;display:block}
+  .tb colgroup,.tb thead{display:none}
+  .tb tbody{display:block}
+  .tb tr{display:grid!important;grid-template-columns:1fr 1fr;gap:8px 12px;padding:12px 8px;border-bottom:1px solid #eef1f4}
+  .tb td{display:block;padding:0!important;height:auto!important;border:0!important;min-width:0}
+  .tb td:first-child{grid-column:1/-1}
+  .tb td[data-l]::before{content:attr(data-l);display:block;font-size:10px;font-weight:600;color:#5b6876;letter-spacing:.04em;margin-bottom:2px}
+  .tb td:first-child::before{display:none!important}
+  .tb td[colspan]{grid-column:1/-1}
+  .tb .r{text-align:left}
+  #cal{margin:0 -6px}
+  .seg button{padding:7px 10px}
+}
 </style></head><body>
 
 <div id="login" class="login"><div class="card" style="padding:28px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px">
@@ -261,7 +285,7 @@ function pintarClientes() {
   <td class="num">${c.valor ? money(c.valor) : '—'}</td>
   <td>${c.origen ? `<span class="chip c-grey">${esc(c.origen)}</span>` : '<span class="muted">sin dato</span>'}${c.agente ? `<div class="muted" style="font-size:12px">${esc(c.agente)}</div>` : ''}</td>
   <td class="num">${c.sueltas || '—'}</td></tr>`).join('') || '<tr><td colspan="7" class="muted" style="height:80px">Sin resultados</td></tr>';
-  document.querySelectorAll('#tbCli tr[data-id]').forEach(tr => tr.onclick = () => { selCli = tr.dataset.id; pintarClientes(); pintarPanel(); });
+  document.querySelectorAll('#tbCli tr[data-id]').forEach(tr => tr.onclick = () => { selCli = tr.dataset.id; pintarClientes(); pintarPanel(); if (innerWidth <= 760) $('#panelCli').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
 }
 
 const ORIGENES = ['Instagram','Facebook','Google','WhatsApp','Referido','Otro'];
@@ -351,5 +375,13 @@ function pintarIng() {
   $('#ofi').innerHTML = tarjetaOf(ING.total, 'Total · 3 oficinas', 'Mes ' + ING.mes) + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">' + ING.oficinas.map(o => tarjetaOf(o, 'Oficina ' + o.oficina, o.m2 + ' m² · ' + o.paquete + ' h paquete · ' + o.suelta + ' h suelta' + (o.estimado ? ' · valor estimado' : ''))).join('') + '</div>';
 }
 
+
+function etiquetar() {
+  document.querySelectorAll('table.tb').forEach(t => {
+    const h = [...t.querySelectorAll('thead th')].map(x => x.textContent.trim());
+    t.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => { if (h[i] && !td.hasAttribute('colspan') && td.dataset.l !== h[i]) td.dataset.l = h[i]; }));
+  });
+}
+new MutationObserver(etiquetar).observe(document.body, { childList: true, subtree: true });
 (async () => { const p = sessionStorage.getItem('pin'); if (p) { $('#pin').value = p; entrar(); } })();
 </script></body></html>
