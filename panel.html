@@ -94,19 +94,23 @@ input,select{font-family:inherit;font-size:14px}
 <button class="tab tab-on" data-t="t1" type="button">Citas y clientes</button>
 <button class="tab" data-t="t2" type="button">Links y códigos</button>
 <button class="tab" data-t="t3" type="button">Oficinas</button>
+<button class="tab" data-t="t4" type="button">Alertas y comisiones</button>
 </nav></header>
 <main style="width:100%;max-width:1400px;margin:0 auto;padding:20px 24px 40px;display:flex;flex-direction:column;gap:16px">
 <div id="estado" class="muted" style="font-size:13px"></div>
 
 <section id="t1" class="grid">
 <div style="display:flex;flex-wrap:wrap;gap:16px" id="kpis"></div>
+<div class="card" style="padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="h2" style="flex:1">Pagos por registrar</h2><button class="btn btn-teal btn-sm" type="button" disabled style="opacity:.55;cursor:not-allowed">+ Registrar pago directo</button></div>
+<div class="muted" style="font-size:13px;margin:8px 0">Clientes que eligen pago directo con transferencia: el horario queda apartado 24 horas y, al registrar el pago, el cliente recibe su link y su código. Cómo se enlaza: teléfono del cliente + monto (con folio como respaldo).</div>
+<div style="background:#fdeef4;color:#9d174d;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:500">Esta sección se activa con la fase de pagos (requiere cambios en despacios_2, Código.gs y server.js). Mientras tanto, los pagos se siguen llevando como hasta ahora.</div></div>
 <div class="card" style="padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><h2 class="h2" style="flex:1">Calendario de citas · <span id="calFecha"></span></h2>
-<button class="btn btn-sm" id="dPrev" type="button">‹</button><button class="btn btn-sm" id="dHoy" type="button">Hoy</button><button class="btn btn-sm" id="dNext" type="button">›</button></div>
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><span class="chip c-teal">Paquete</span><span class="chip c-blue">Hora suelta</span><span class="chip c-dark">En curso</span></div>
-<div id="cal" style="overflow-x:auto"></div></div>
+<div class="seg" id="vista"><button class="on" data-v="dia">Día</button><button data-v="semana">Semana</button></div><button class="btn btn-sm" id="dPrev" type="button">‹</button><button class="btn btn-sm" id="dHoy" type="button">Hoy</button><button class="btn btn-sm" id="dNext" type="button">›</button></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><span class="chip c-teal">Paquete</span><span class="chip c-blue">Hora suelta</span><span class="chip c-dark">En curso</span><span class="chip c-amber" style="opacity:.6">Sin acceso registrado (próximamente)</span><span class="chip c-pink" style="opacity:.6">Por registrar · apartado 24 h (próximamente)</span></div>
+<div id="selOf" class="seg" style="display:none;width:max-content;margin-bottom:10px"></div><div id="cal" style="overflow-x:auto"></div></div>
 <div class="two" style="display:flex;gap:16px;align-items:flex-start">
 <div class="card" style="flex:1 1 640px;min-width:0;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><h2 class="h2" style="flex:1">Clientes</h2><div class="seg" id="filtro"><button class="on" data-f="todos">Todos</button><button data-f="activo">Con horas</button><button data-f="porvencer">Por vencer</button></div></div>
-<div style="overflow-x:auto"><table class="tb"><colgroup><col style="width:25%"><col style="width:14%"><col style="width:14%"><col style="width:13%"><col style="width:12%"><col style="width:12%"><col style="width:10%"></colgroup><thead><tr><th>CLIENTE</th><th>PAQUETE</th><th>HORAS</th><th>VENCE</th><th>VALOR</th><th>ORIGEN</th><th>SUELTAS</th></tr></thead><tbody id="tbCli"></tbody></table></div></div>
+<div style="overflow-x:auto"><table class="tb"><colgroup><col style="width:25%"><col style="width:14%"><col style="width:14%"><col style="width:13%"><col style="width:12%"><col style="width:12%"><col style="width:10%"></colgroup><thead><tr><th>CLIENTE</th><th>PAQUETE</th><th>HORAS</th><th>VENCE</th><th>PAGADO</th><th>ORIGEN</th><th>SUELTAS</th></tr></thead><tbody id="tbCli"></tbody></table></div></div>
 <aside class="card" id="panelCli" style="flex:0 0 380px;padding:20px"></aside>
 </div></section>
 
@@ -121,6 +125,7 @@ input,select{font-family:inherit;font-size:14px}
 <div id="ofi" class="grid"></div>
 <div class="muted" style="font-size:12px">Ingreso devengado = horas ya usadas × valor por hora del paquete (o tarifa de hora suelta). Programado = citas futuras del mes. Horas vencidas = horas de paquete que caducaron sin usar. Ocupación = horas reservadas ÷ 240 h al mes por oficina.</div>
 </section>
+<section id="t4" class="grid hide"><div id="alertas" class="grid"></div></section>
 </main></div>
 
 <script>
@@ -150,7 +155,7 @@ $('#btnLogin').onclick = entrar; $('#pin').addEventListener('keydown', e => { if
 $('#salir').onclick = e => { e.preventDefault(); sessionStorage.removeItem('pin'); location.reload(); };
 $('#btnRef').onclick = () => cargar();
 $('#chkPrueba').onchange = () => cargar();
-document.querySelectorAll('.tab').forEach(b => b.onclick = () => { document.querySelectorAll('.tab').forEach(x => x.classList.toggle('tab-on', x === b)); ['t1','t2','t3'].forEach(t => $('#'+t).classList.toggle('hide', t !== b.dataset.t)); if (b.dataset.t === 't3') cargarIng(); });
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => { document.querySelectorAll('.tab').forEach(x => x.classList.toggle('tab-on', x === b)); ['t1','t2','t3','t4'].forEach(t => $('#'+t).classList.toggle('hide', t !== b.dataset.t)); if (b.dataset.t === 't3') cargarIng(); });
 
 async function cargar(silencio) {
   if (!silencio) $('#estado').textContent = 'Cargando…';
@@ -165,7 +170,7 @@ function coincide(c, q) { q = q.trim().toLowerCase(); if (!q) return true; const
 $('#q').oninput = () => { pintarClientes(); pintarBusqueda(); };
 $('#q2').oninput = () => { $('#q').value = $('#q2').value; pintarClientes(); pintarBusqueda(); };
 
-function pintar() { pintarKpis(); pintarCal(); pintarClientes(); pintarPanel(); pintarHoy(); pintarBusqueda(); }
+function pintar() { pintarAlertas(); pintarKpis(); pintarCal(); pintarClientes(); pintarPanel(); pintarHoy(); pintarBusqueda(); }
 
 function pintarKpis() {
   const k = D.kpis;
@@ -173,14 +178,43 @@ function pintarKpis() {
     ['CITAS HOY', k.citasHoy, 'reservas activas de hoy', '#16212c'],
     ['CLIENTES CON HORAS', k.clientesActivos, 'paquetes vigentes', '#0b5149'],
     ['VENCEN EN 7 DÍAS', k.vencen7, k.horasEnRiesgo + ' horas sin usar en riesgo', '#9c1f12'],
+    ['POR REGISTRAR', '—', 'se activa con la fase de pagos', '#9aa5b1'],
+    ['SIN ACCESO REGISTRADO', '—', 'se activa con el registro de TTLock', '#9aa5b1'],
   ].map(x => `<div class="card kpi"><div class="t">${x[0]}</div><div class="v num" style="color:${x[3]}">${x[1]}</div><div class="muted" style="font-size:12px">${x[2]}</div></div>`).join('');
 }
 
 function sumD(f, n) { const d = new Date(f + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0,10); }
-$('#dPrev').onclick = () => { fecha = sumD(fecha, -1); pintarCal(); };
-$('#dNext').onclick = () => { fecha = sumD(fecha, 1); pintarCal(); };
+let vista = 'dia', semOf = 11;
+const paso = () => vista === 'semana' ? 7 : 1;
+$('#dPrev').onclick = () => { fecha = sumD(fecha, -paso()); pintarCal(); };
+$('#dNext').onclick = () => { fecha = sumD(fecha, paso()); pintarCal(); };
 $('#dHoy').onclick = () => { fecha = D.hoy; pintarCal(); };
+document.querySelectorAll('#vista button').forEach(b => b.onclick = () => { vista = b.dataset.v; document.querySelectorAll('#vista button').forEach(x => x.classList.toggle('on', x === b)); pintarCal(); });
+function lunesDe(f) { const d = new Date(f + 'T00:00:00Z'), w = (d.getUTCDay() + 6) % 7; return sumD(f, -w); }
+function pintarSemana() {
+  const lun = lunesDe(fecha), dias = [0,1,2,3,4,5,6].map(i => sumD(lun, i)), H0 = 8, H1 = 22, PX = 40;
+  const a = new Date(lun + 'T00:00:00Z'), z = new Date(dias[6] + 'T00:00:00Z');
+  $('#calFecha').textContent = 'semana del ' + a.getUTCDate() + ' ' + MES[a.getUTCMonth()] + ' al ' + z.getUTCDate() + ' ' + MES[z.getUTCMonth()];
+  const so = $('#selOf'); so.style.display = 'flex'; so.innerHTML = [11,12,13].map(o => `<button class="${o === semOf ? 'on' : ''}" data-o="${o}">Oficina ${o}</button>`).join('');
+  so.querySelectorAll('button').forEach(b => b.onclick = () => { semOf = +b.dataset.o; pintarCal(); });
+  let h = '<div style="display:flex;min-width:760px"><div style="width:46px;padding-top:44px">';
+  for (let i = H0; i < H1; i++) h += `<div class="hr">${i}:00</div>`; h += '</div>';
+  dias.forEach(f => {
+    const d = new Date(f + 'T00:00:00Z'), hoy = f === D.hoy;
+    h += `<div style="flex:1;min-width:100px"><div style="height:44px;text-align:center;font-weight:600;line-height:1.2;${hoy ? 'color:#0f6b62' : ''}">${DIA[d.getUTCDay()].slice(0,3)}<div style="font-weight:500;font-size:12px" class="muted">${d.getUTCDate()} ${MES[d.getUTCMonth()]}</div></div><div class="col" style="height:${(H1-H0)*PX}px;${hoy ? 'background-color:#f4faf9' : ''}">`;
+    D.reservas.filter(r => r.fecha === f && r.estado === 'activa' && r.oficina === semOf).forEach(r => {
+      const [x,y] = r.hora.split(':').map(Number), top = ((x - H0) + y/60) * PX + 1, hh = r.horas * PX - 2;
+      const est = r.tipo === 'individual' ? 'background:#e3eaf7;color:#22407a;border:1px dashed #6f89bd' : 'background:#d9f0ec;color:#0b5149';
+      h += `<div class="blk" style="left:2px;right:2px;top:${top}px;height:${hh}px;${est};padding:4px 6px"><b style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.nombre)}</b>${r.hora}–${r.fin}</div>`;
+    });
+    if (hoy) { const [x,y] = D.ahora.slice(11).split(':').map(Number), t = ((x - H0) + y/60) * PX; if (t >= 0 && t <= (H1-H0)*PX) h += `<div style="position:absolute;left:0;right:0;top:${t}px;border-top:2px solid #b42318"></div>`; }
+    h += '</div></div>';
+  });
+  $('#cal').innerHTML = h + '</div>';
+}
 function pintarCal() {
+  if (vista === 'semana') return pintarSemana();
+  $('#selOf').style.display = 'none';
   const d = new Date(fecha + 'T00:00:00Z');
   $('#calFecha').textContent = DIA[d.getUTCDay()] + ' ' + d.getUTCDate() + ' de ' + MES[d.getUTCMonth()] + (fecha === D.hoy ? ' (hoy)' : '');
   const H0 = 8, H1 = 22, PX = 40, res = D.reservas.filter(r => r.fecha === fecha && r.estado === 'activa');
@@ -220,24 +254,52 @@ function pintarClientes() {
   document.querySelectorAll('#tbCli tr[data-id]').forEach(tr => tr.onclick = () => { selCli = tr.dataset.id; pintarClientes(); pintarPanel(); });
 }
 
-const ORIGENES = ['Agente inmobiliario','Instagram','Facebook','Google','WhatsApp','Referido','Otro'];
+const ORIGENES = ['Instagram','Facebook','Google','WhatsApp','Referido','Otro'];
+let tabCli = 'compras';
 function pintarPanel() {
   const c = D.clientes.find(x => x.id === selCli);
   if (!c) { $('#panelCli').innerHTML = '<div class="muted">Selecciona un cliente para ver su detalle.</div>'; return; }
-  const rs = D.reservas.filter(r => r.clienteId === c.id).sort((a,b) => (b.fecha + b.hora).localeCompare(a.fecha + a.hora)).slice(0, 12);
-  $('#panelCli').innerHTML = `<div class="cell-name" style="gap:14px">${av(c.nombre,1)}<div><div style="font-size:18px;font-weight:600">${esc(c.nombre)}</div><div class="muted num">${esc(fmtTel(c.tel))}${c.correo ? ' · ' + esc(c.correo) : ''}</div></div></div>
-  <div style="display:flex;gap:8px;margin:14px 0"><div class="stat"><div class="n num">${c.compradas}</div><div class="l">COMPRADAS</div></div><div class="stat"><div class="n num">${c.usadas}</div><div class="l">USADAS</div></div><div class="stat" style="background:#eaf6f3"><div class="n num" style="color:#0b5149">${c.restantes}</div><div class="l">RESTANTES</div></div></div>
-  ${c.lotes.length ? '<div class="lbl">PAQUETES</div>' + c.lotes.map(l => `<div style="border:1px solid #dfe4ea;border-radius:10px;padding:10px 12px;margin-bottom:8px"><b>${esc(l.paquete)} · ${l.total} h</b> <span class="muted">· $${l.valorHora}/h · ${money(l.pagado)}</span><div class="muted num" style="font-size:12px">Usadas ${l.usadas} · restan ${l.restantes} · vence ${fmtF(l.vence)}</div></div>`).join('') : ''}
-  <div class="lbl" style="margin-top:12px">RESERVAS RECIENTES</div>${rs.map(r => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:5px 0;border-bottom:1px solid #eef1f4"><span class="num">${fmtF(r.fecha)} ${r.hora}–${r.fin} · Of. ${r.oficina}</span><span class="chip ${r.estado === 'activa' ? 'c-teal' : 'c-grey'}">${esc(r.estado)}</span></div>`).join('') || '<div class="muted" style="font-size:13px">Sin reservas</div>'}
-  <div style="border-top:1px solid #e9edf1;margin-top:14px;padding-top:14px"><div class="lbl">CÓMO LLEGÓ</div>
-  <select id="fOrigen" class="fld"><option value="">— Elegir —</option>${ORIGENES.map(o => `<option ${c.origen === o ? 'selected' : ''}>${o}</option>`).join('')}</select>
-  <div id="boxAg" style="margin-top:8px;${c.origen === 'Agente inmobiliario' ? '' : 'display:none'}"><label class="lbl">Nombre del agente</label><input id="fAgente" class="fld" list="dlAg" value="${esc(c.agente)}"><datalist id="dlAg">${[...new Set(D.clientes.map(x => x.agente).filter(Boolean))].map(a => `<option value="${esc(a)}">`).join('')}</datalist></div>
+  const rs = D.reservas.filter(r => r.clienteId === c.id).sort((a,b) => (b.fecha + b.hora).localeCompare(a.fecha + a.hora));
+  const vig = c.lotes.filter(l => l.restantes > 0 && l.vence > D.ahora).sort((a,b) => a.vence.localeCompare(b.vence)), primero = vig[0];
+  const chipEst = l => l.restantes <= 0 ? '<span class="chip c-grey">Agotado</span>' : l.vence <= D.ahora ? '<span class="chip c-red">Vencido</span>' : '<span class="chip c-green">Activo</span>';
+  const compras = c.lotes.length ? c.lotes.slice().sort((a,b) => b.compra.localeCompare(a.compra)).map(l => { const dev = l.usadas * l.valorHora, por = l.restantes * l.valorHora, dias = Math.ceil((new Date(l.vence.replace(' ','T') + ':00Z') - new Date(D.ahora.replace(' ','T') + ':00Z')) / 86400000);
+    return `<div style="border:1px solid #dfe4ea;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b style="font-size:15px">${esc(l.paquete)} · ${l.total} h</b>${chipEst(l)}${primero && l.vence === primero.vence && l.paquete === primero.paquete ? '<span class="chip c-teal">Se consume primero</span>' : ''}</div>
+    <div class="muted" style="font-size:13px">Comprado ${fmtF(l.compra)} · vence ${fmtF(l.vence)}${l.vence > D.ahora ? ' (' + dias + ' días)' : ''}</div>
+    <div style="display:flex;justify-content:space-between;font-size:13px"><span><b>${l.usadas}</b> usadas</span><span><b>${l.restantes}</b> restantes</span></div><div class="bar"><span style="width:${l.total ? l.usadas / l.total * 100 : 0}%"></span></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap"><div class="mini"><div class="k">Pagado</div><div class="x num">${money(l.pagado)}</div></div><div class="mini"><div class="k">Valor por hora</div><div class="x num">$${l.valorHora}</div></div><div class="mini"><div class="k">Devengado</div><div class="x num">${money(dev)}</div></div><div class="mini"><div class="k">Por devengar</div><div class="x num">${money(por)}</div></div></div></div>`; }).join('') : '<div class="muted" style="font-size:13px">Sin paquetes. Solo horas sueltas.</div>';
+  const reservas = rs.slice(0, 30).map(r => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:7px 0;border-bottom:1px solid #eef1f4"><span class="num">${fmtF(r.fecha)} ${r.hora}–${r.fin} · Of. ${r.oficina} · ${r.tipo === 'individual' ? 'suelta' : 'paquete'}</span><span class="chip ${r.estado === 'activa' ? 'c-teal' : 'c-grey'}">${esc(r.estado)}</span></div>`).join('') || '<div class="muted" style="font-size:13px">Sin reservas</div>';
+  const datos = `<div class="muted" style="font-size:13px;margin-bottom:12px">Tel. ${esc(fmtTel(c.tel))}${c.correo ? '<br>' + esc(c.correo) : ''}<br>ID ${esc(c.id)}</div>
+  <div style="border-top:1px solid #e9edf1;padding-top:14px"><div class="lbl">CÓMO LLEGÓ</div>
+  <label class="lbl">Canal</label><select id="fOrigen" class="fld"><option value="">— Elegir —</option>${ORIGENES.map(o => `<option ${c.origen === o ? 'selected' : ''}>${o}</option>`).join('')}</select>
+  <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:600;cursor:pointer"><input id="chkAg" type="checkbox" ${c.agente ? 'checked' : ''} style="accent-color:#0f6b62;width:18px;height:18px"> Llegó por agente</label>
+  <div style="margin-top:8px"><label class="lbl">Nombre del agente</label><input id="fAgente" class="fld" list="dlAg" value="${esc(c.agente)}" placeholder="Escribe o elige el agente" ${c.agente ? '' : 'disabled'}><datalist id="dlAg">${[...new Set(D.clientes.map(x => x.agente).filter(Boolean))].map(a => `<option value="${esc(a)}">`).join('')}</datalist></div>
   <div style="display:flex;align-items:center;gap:10px;margin-top:10px"><button class="btn btn-main btn-sm" id="btnGuardar" type="button">Guardar</button><span id="msgG" class="muted" style="font-size:12px"></span></div></div>`;
-  $('#fOrigen').onchange = () => { $('#boxAg').style.display = $('#fOrigen').value === 'Agente inmobiliario' ? '' : 'none'; };
-  $('#btnGuardar').onclick = async () => {
-    const o = $('#fOrigen').value, a = o === 'Agente inmobiliario' ? $('#fAgente').value : ''; $('#msgG').textContent = 'Guardando…';
-    try { await api('guardarOrigen', { clienteId: c.id, origen: o, agente: a }); c.origen = o; c.agente = a; $('#msgG').textContent = 'Guardado ✓'; pintarClientes(); } catch (e) { $('#msgG').textContent = e.message; }
-  };
+  $('#panelCli').innerHTML = `<div class="cell-name" style="gap:14px">${av(c.nombre,1)}<div><div style="font-size:18px;font-weight:600">${esc(c.nombre)}</div><div class="muted num">${esc(fmtTel(c.tel))}</div></div></div>
+  <div style="display:flex;gap:8px;margin:14px 0"><div class="stat"><div class="n num">${c.compradas}</div><div class="l">COMPRADAS</div></div><div class="stat"><div class="n num">${c.usadas}</div><div class="l">USADAS</div></div><div class="stat" style="background:#eaf6f3"><div class="n num" style="color:#0b5149">${c.restantes}</div><div class="l">RESTANTES</div></div></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${c.origen ? `<span class="chip c-grey">${esc(c.origen)}</span>` : ''}${c.agente ? `<span class="chip c-blue">Agente: ${esc(c.agente)}</span>` : ''}${c.sueltas ? `<span class="chip c-blue">${c.sueltas} hora(s) suelta(s)</span>` : ''}</div>
+  <div style="border-bottom:1px solid #e9edf1;display:flex;margin-bottom:12px">${[['compras','Compras'],['reservas','Reservas'],['datos','Datos']].map(t => `<button class="tabu ${tabCli === t[0] ? 'tabu-on' : ''}" data-tc="${t[0]}" type="button">${t[1]}</button>`).join('')}</div>
+  <div>${tabCli === 'compras' ? compras : tabCli === 'reservas' ? reservas : datos}</div>`;
+  document.querySelectorAll('[data-tc]').forEach(b => b.onclick = () => { tabCli = b.dataset.tc; pintarPanel(); });
+  if (tabCli === 'datos') {
+    $('#chkAg').onchange = () => { const on = $('#chkAg').checked; $('#fAgente').disabled = !on; if (on) $('#fAgente').focus(); };
+    $('#btnGuardar').onclick = async () => {
+      const o = $('#fOrigen').value, a = $('#chkAg').checked ? $('#fAgente').value.trim() : '';
+      if ($('#chkAg').checked && !a) { $('#msgG').textContent = 'Escribe el nombre del agente'; return; }
+      $('#msgG').textContent = 'Guardando…';
+      try { await api('guardarOrigen', { clienteId: c.id, origen: o, agente: a }); c.origen = o; c.agente = a; $('#msgG').textContent = 'Guardado ✓'; pintarClientes(); } catch (e) { $('#msgG').textContent = e.message; }
+    };
+  }
+}
+
+function pintarAlertas() {
+  const cl = D.clientes, venc = cl.filter(c => c.estado === 'activo' && c.dias !== null && c.dias <= 7).sort((a,b) => a.dias - b.dias);
+  const sinCodigo = D.reservas.filter(r => r.estado === 'activa' && !r.codigo && (r.fecha + ' ' + r.fin) > D.ahora);
+  const ag = {}; cl.forEach(c => { if (!c.agente) return; const a = ag[c.agente] || (ag[c.agente] = { n: 0, bruto: 0 }); a.n++; a.bruto += c.lotes.reduce((s, l) => s + l.pagado, 0); });
+  const fila = (t, sub, chip) => `<div class="row" style="justify-content:space-between"><div><b>${t}</b><div class="muted" style="font-size:12px">${sub}</div></div>${chip}</div>`;
+  $('#alertas').innerHTML = `<div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Paquetes por vencer (7 días)</h2>${venc.map(c => fila(esc(c.nombre), esc(fmtTel(c.tel)) + ' · ' + c.restantes + ' h sin usar · vence ' + fmtF(c.vence), `<span class="chip c-red">${c.dias} días</span>`)).join('') || '<div class="muted" style="font-size:13px">Ninguno</div>'}</div>
+  <div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Reservas futuras sin código de acceso</h2>${sinCodigo.map(r => fila(esc(r.nombre), 'Of. ' + r.oficina + ' · ' + fmtF(r.fecha) + ' ' + r.hora + '–' + r.fin, '<span class="chip c-red">Sin código</span>')).join('') || '<div class="muted" style="font-size:13px">Todas tienen código</div>'}</div>
+  <div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Comisiones de agentes (estimado)</h2><div class="muted" style="font-size:12px;margin-bottom:8px">Neto = vendido ÷ 1.16 (IVA) − 4.3% Mercado Pago · comisión 20% sobre el neto. Es una estimación: ajusta si el pago fue por transferencia.</div>
+  <div style="overflow-x:auto"><table class="tb" style="min-width:560px"><colgroup><col style="width:30%"><col style="width:14%"><col style="width:20%"><col style="width:18%"><col style="width:18%"></colgroup><thead><tr><th>AGENTE</th><th>CLIENTES</th><th>VENDIDO</th><th>NETO</th><th>COMISIÓN 20%</th></tr></thead><tbody>${Object.keys(ag).map(k => { const a = ag[k], neto = a.bruto / 1.16 - a.bruto * 0.043; return `<tr style="cursor:default"><td><b>${esc(k)}</b></td><td class="num">${a.n}</td><td class="num">${money(a.bruto)}</td><td class="num">${money(neto)}</td><td class="num"><b>${money(neto * 0.2)}</b></td></tr>`; }).join('') || '<tr style="cursor:default"><td colspan="5" class="muted" style="height:60px">Aún no hay clientes con agente asignado.</td></tr>'}</tbody></table></div></div>`;
 }
 
 function estadoCodigo(r) {
