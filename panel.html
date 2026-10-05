@@ -331,9 +331,10 @@ function pintarAlertas() {
   const ag = {}; cl.forEach(c => { if (!c.agente) return; const a = ag[c.agente] || (ag[c.agente] = { n: 0, bruto: 0 }); a.n++; a.bruto += c.lotes.reduce((s, l) => s + l.pagado, 0); });
   const fila = (t, sub, chip) => `<div class="row" style="justify-content:space-between"><div><b>${t}</b><div class="muted" style="font-size:12px">${sub}</div></div>${chip}</div>`;
   $('#alertas').innerHTML = `<div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Paquetes por vencer (7 días)</h2>${venc.map(c => fila(esc(c.nombre), esc(fmtTel(c.tel)) + ' · ' + c.restantes + ' h sin usar · vence ' + fmtF(c.vence), `<span class="chip c-red">${c.dias} días</span>`)).join('') || '<div class="muted" style="font-size:13px">Ninguno</div>'}</div>
-  <div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Reservas futuras sin código de acceso</h2>${sinCodigo.map(r => fila(esc(r.nombre), 'Of. ' + r.oficina + ' · ' + fmtF(r.fecha) + ' ' + r.hora + '–' + r.fin, '<span class="chip c-red">Sin código</span>')).join('') || '<div class="muted" style="font-size:13px">Todas tienen código</div>'}</div>
+  <div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Reservas futuras sin código de acceso</h2>${sinCodigo.map(r => fila(esc(r.nombre), 'Of. ' + r.oficina + ' · ' + fmtF(r.fecha) + ' ' + r.hora + '–' + r.fin, '<span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip c-red">Sin código</span>' + btnGen(r) + '</span>')).join('') || '<div class="muted" style="font-size:13px">Todas tienen código</div>'}</div>
   <div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Comisiones de agentes (estimado)</h2><div class="muted" style="font-size:12px;margin-bottom:8px">Neto = vendido ÷ 1.16 (IVA) − 4.3% Mercado Pago · comisión 20% sobre el neto. Es una estimación: ajusta si el pago fue por transferencia.</div>
   <div style="overflow-x:auto"><table class="tb" style="min-width:560px"><colgroup><col style="width:30%"><col style="width:14%"><col style="width:20%"><col style="width:18%"><col style="width:18%"></colgroup><thead><tr><th>AGENTE</th><th>CLIENTES</th><th>VENDIDO</th><th>NETO</th><th>COMISIÓN 20%</th></tr></thead><tbody>${Object.keys(ag).map(k => { const a = ag[k], neto = a.bruto / 1.16 - a.bruto * 0.043; return `<tr style="cursor:default"><td><b>${esc(k)}</b></td><td class="num">${a.n}</td><td class="num">${money(a.bruto)}</td><td class="num">${money(neto)}</td><td class="num"><b>${money(neto * 0.2)}</b></td></tr>`; }).join('') || '<tr style="cursor:default"><td colspan="5" class="muted" style="height:60px">Aún no hay clientes con agente asignado.</td></tr>'}</tbody></table></div></div>`;
+  ligarGen();
 }
 
 function estadoCodigo(r) {
@@ -342,7 +343,7 @@ function estadoCodigo(r) {
 }
 function pintarHoy() {
   const l = D.reservas.filter(r => r.fecha === D.hoy && r.estado === 'activa').sort((a,b) => a.hora.localeCompare(b.hora) || a.oficina - b.oficina);
-  $('#tbHoy').innerHTML = l.map(r => { const e = estadoCodigo(r); return `<tr><td><b>Oficina ${r.oficina}</b></td><td class="num">${r.hora}–${r.fin}</td><td>${esc(r.nombre)}<div class="muted" style="font-size:12px">${r.tipo === 'individual' ? 'Hora suelta' : 'Paquete'}</div></td><td>${r.codigo ? `<span class="num" style="font-size:17px;font-weight:600;letter-spacing:.12em">${esc(r.codigo)}</span> <button class="btn btn-sm" data-cp="${esc(r.codigo)}" type="button">Copiar</button>` : '<span class="chip c-red">Sin código</span>'}</td><td><span class="chip ${e[1]}">${e[0]}</span></td></tr>`; }).join('') || '<tr><td colspan="5" class="muted" style="height:70px">Sin citas hoy</td></tr>';
+  $('#tbHoy').innerHTML = l.map(r => { const e = estadoCodigo(r); return `<tr><td><b>Oficina ${r.oficina}</b></td><td class="num">${r.hora}–${r.fin}</td><td>${esc(r.nombre)}<div class="muted" style="font-size:12px">${r.tipo === 'individual' ? 'Hora suelta' : 'Paquete'}</div></td><td>${r.codigo ? `<span class="num" style="font-size:17px;font-weight:600;letter-spacing:.12em">${esc(r.codigo)}</span> <button class="btn btn-sm" data-cp="${esc(r.codigo)}" type="button">Copiar</button> <button class="btn btn-sm btn-teal" data-cp="${esc(mensajeWA(r))}" type="button">Copiar mensaje</button>` : `<span class="chip c-red">Sin código</span> ${btnGen(r)}`}</td><td><span class="chip ${e[1]}">${e[0]}</span></td></tr>`; }).join('') || '<tr><td colspan="5" class="muted" style="height:70px">Sin citas hoy</td></tr>';
   ligarCopiar();
 }
 function pintarBusqueda() {
@@ -354,11 +355,34 @@ function pintarBusqueda() {
     return `<div class="card" style="padding:18px 20px;display:flex;flex-direction:column;gap:12px"><div class="cell-name" style="gap:14px">${av(c.nombre,1)}<div style="flex:1"><div style="font-size:18px;font-weight:600">${esc(c.nombre)}</div><div class="muted num">${esc(fmtTel(c.tel))} · ${c.estado === 'activo' ? c.paquete + ' ' + c.restantes + ' de ' + c.compradas + ' · vence ' + fmtF(c.vence) : c.estado}</div></div></div>
     ${link ? `<div><span class="lbl">LINK DEL CLIENTE</span><div style="display:flex;gap:8px;flex-wrap:wrap"><input class="fld num" style="flex:1 1 300px;background:#f2f4f7" readonly value="${esc(link)}"><button class="btn btn-teal" data-cp="${esc(link)}" type="button">Copiar link</button><a class="btn" href="${esc(link)}" target="_blank" rel="noopener" style="text-decoration:none">Abrir</a></div></div>` : ''}
     <div class="lbl">CÓDIGOS (RESERVAS ACTIVAS)</div>
-    ${rs.length ? `<div style="overflow-x:auto"><table class="tb" style="min-width:600px"><colgroup><col style="width:32%"><col style="width:14%"><col style="width:18%"><col style="width:16%"><col style="width:20%"></colgroup><thead><tr><th>HORARIO</th><th>OFICINA</th><th>CÓDIGO</th><th>ESTADO</th><th class="r"></th></tr></thead><tbody>${rs.map(r => { const e = estadoCodigo(r), msg = `Hola ${c.nombre.split(' ')[0]}, tu código para la Oficina ${r.oficina} el ${fmtF(r.fecha)} de ${r.hora} a ${r.fin} es ${r.codigo}.${link ? ' Tus horas y reservas: ' + link : ''}`; return `<tr style="cursor:default"><td class="num"><b>${fmtF(r.fecha)}</b> ${r.hora}–${r.fin}</td><td>Of. ${r.oficina}</td><td>${r.codigo ? `<span class="num" style="font-size:17px;font-weight:600;letter-spacing:.12em">${esc(r.codigo)}</span>` : '<span class="chip c-red">Sin código</span>'}</td><td><span class="chip ${e[1]}">${e[0]}</span></td><td class="r">${r.codigo ? `<button class="btn btn-sm" data-cp="${esc(msg)}" type="button">Copiar mensaje</button>` : ''}</td></tr>`; }).join('')}</tbody></table></div>` : '<div class="muted" style="font-size:13px">Sin reservas activas.</div>'}</div>`;
+    ${rs.length ? `<div style="overflow-x:auto"><table class="tb" style="min-width:600px"><colgroup><col style="width:32%"><col style="width:14%"><col style="width:18%"><col style="width:16%"><col style="width:20%"></colgroup><thead><tr><th>HORARIO</th><th>OFICINA</th><th>CÓDIGO</th><th>ESTADO</th><th class="r"></th></tr></thead><tbody>${rs.map(r => { const e = estadoCodigo(r), msg = `Hola ${c.nombre.split(' ')[0]}, tu código para la Oficina ${r.oficina} el ${fmtF(r.fecha)} de ${r.hora} a ${r.fin} es ${r.codigo}.${link ? ' Tus horas y reservas: ' + link : ''}`; return `<tr style="cursor:default"><td class="num"><b>${fmtF(r.fecha)}</b> ${r.hora}–${r.fin}</td><td>Of. ${r.oficina}</td><td>${r.codigo ? `<span class="num" style="font-size:17px;font-weight:600;letter-spacing:.12em">${esc(r.codigo)}</span>` : '<span class="chip c-red">Sin código</span>'}</td><td><span class="chip ${e[1]}">${e[0]}</span></td><td class="r">${r.codigo ? `<button class="btn btn-sm" data-cp="${esc(msg)}" type="button">Copiar mensaje</button>` : btnGen(r)}</td></tr>`; }).join('')}</tbody></table></div>` : '<div class="muted" style="font-size:13px">Sin reservas activas.</div>'}</div>`;
   }).join('') || '<div class="muted">Sin resultados</div>';
   ligarCopiar();
 }
-function ligarCopiar() { document.querySelectorAll('[data-cp]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.cp); const t = b.textContent; b.textContent = 'Copiado ✓'; setTimeout(() => b.textContent = t, 1400); } catch (e) { prompt('Copia manualmente:', b.dataset.cp); } }); }
+function mensajeWA(r) {
+  const c = D.clientes.find(x => x.id === r.clienteId) || {}, link = r.link || c.linkCuenta || '';
+  return `Hola ${String(r.nombre || '').split(' ')[0]}, tu reserva en D Espacios: Oficina ${r.oficina}, ${fmtF(r.fecha)} de ${r.hora} a ${r.fin}. Tu código de acceso es ${r.codigo}. Abre la puerta principal y la de tu oficina, y solo es válido en tu horario.${link ? ' Administra tu reserva aquí: ' + link : ''}`;
+}
+function btnGen(r) { return `<button class="btn btn-sm btn-main" data-gen="${esc(r.id)}" type="button">Generar código</button>`; }
+function aviso(txt, ok) {
+  let d = $('#avisoGen'); if (!d) { d = document.createElement('div'); d.id = 'avisoGen'; d.style.cssText = 'position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:92vw;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:99;box-shadow:0 6px 24px rgba(0,0,0,.18)'; document.body.appendChild(d); }
+  d.style.background = ok ? '#0f6b62' : '#9b1c1c'; d.style.color = '#fff'; d.textContent = txt; d.style.display = 'block';
+  clearTimeout(d._t); d._t = setTimeout(() => d.style.display = 'none', ok ? 5000 : 9000);
+}
+function ligarGen() {
+  document.querySelectorAll('[data-gen]').forEach(b => b.onclick = async () => {
+    if (b.disabled) return; b.disabled = true; b.textContent = 'Generando…';
+    try {
+      const x = await api('generarCodigo', { reservaId: b.dataset.gen });
+      const r = D.reservas.find(z => z.id === b.dataset.gen); if (r) r.codigo = x.codigo;
+      pintarHoy(); pintarBusqueda(); pintarAlertas();
+      aviso(x.aviso ? ('Código ' + x.codigo + ' creado. ' + x.aviso) : ('Código ' + x.codigo + ' creado y guardado en el Sheet. Copia el mensaje para WhatsApp.'), !x.aviso);
+    } catch (e) {
+      b.disabled = false; b.textContent = 'Reintentar'; aviso('No se pudo generar: ' + e.message, false);
+    }
+  });
+}
+function ligarCopiar() { ligarGen(); document.querySelectorAll('[data-cp]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.cp); const t = b.textContent; b.textContent = 'Copiado ✓'; setTimeout(() => b.textContent = t, 1400); } catch (e) { prompt('Copia manualmente:', b.dataset.cp); } }); }
 
 $('#mes').onchange = () => cargarIng();
 async function cargarIng() {
