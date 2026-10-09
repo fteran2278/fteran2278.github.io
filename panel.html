@@ -96,6 +96,7 @@ input,select{font-family:inherit;font-size:14px}
   #cal{margin:0 -6px}
   .seg button{padding:7px 10px}
 }
+.c-violet{background:#e8e3f4;color:#40286b}
 .btn-gen{background:#fff;border:1.5px solid #c9a227;color:#5c4500;font-weight:600}.btn-gen:hover{background:#fffaf0}.btn-gen:disabled{opacity:.6}.btn:disabled{opacity:.45;cursor:not-allowed}td.r{white-space:nowrap}</style></head><body>
 
 <div id="login" class="login"><div class="card" style="padding:28px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px">
@@ -127,7 +128,7 @@ input,select{font-family:inherit;font-size:14px}
 <div id="nuevos" class="hide"></div>
 <div class="card" style="padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><h2 class="h2" style="flex:1">Calendario de citas · <span id="calFecha"></span></h2>
 <div class="seg" id="vista"><button class="on" data-v="dia">Día</button><button data-v="semana">Semana</button></div><button class="btn btn-sm" id="dPrev" type="button">‹</button><button class="btn btn-sm" id="dHoy" type="button">Hoy</button><button class="btn btn-sm" id="dNext" type="button">›</button></div>
-<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><span class="chip c-teal">Paquete</span><span class="chip c-blue">Hora suelta</span><span class="chip c-dark">En curso</span><span class="chip c-amber" style="opacity:.6">Sin acceso registrado (próximamente)</span></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><span class="chip c-teal">Oficina 11</span><span class="chip c-violet">Oficina 12</span><span class="chip c-grey">Paquete = relleno</span><span class="chip c-grey" style="border:1px dashed #8793a0;background:#fff">Hora suelta = borde punteado</span><span class="chip c-grey">En curso = color fuerte</span><span class="chip c-amber" style="opacity:.6">Sin acceso registrado (próximamente)</span></div>
 <div id="selOf" class="seg" style="display:none;width:max-content;margin-bottom:10px"></div><div id="cal" style="overflow-x:auto"></div></div>
 <div class="two" style="display:flex;gap:16px;align-items:flex-start">
 <div class="card" style="flex:1 1 640px;min-width:0;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><h2 class="h2" style="flex:1">Clientes</h2><div class="seg" id="filtro"><button class="on" data-f="todos">Todos</button><button data-f="activo">Con horas</button><button data-f="porvencer">Por vencer</button></div></div>
@@ -142,9 +143,11 @@ input,select{font-family:inherit;font-size:14px}
 </section>
 
 <section id="t3" class="grid hide">
-<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="h2" style="flex:1;font-size:20px">Ingresos y ocupación</h2><input id="mes" type="month" class="fld" style="width:auto"></div>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="h2" style="flex:1;font-size:20px">Oficinas · ocupación e ingresos</h2>
+<div class="seg" id="vistaOfi"><button class="on" data-m="mes">Mes</button><button data-m="anio">Año</button></div>
+<input id="mes" type="month" class="fld" style="width:auto"><select id="anio" class="fld hide" style="width:auto"></select></div>
 <div id="ofi" class="grid"></div>
-<div class="muted" style="font-size:12px">Ingreso devengado = horas ya usadas × valor por hora del paquete (o tarifa de hora suelta). Programado = citas futuras del mes. Horas vencidas = horas de paquete que caducaron sin usar. Ocupación = horas reservadas ÷ 240 h al mes por oficina.</div>
+<div class="muted" style="font-size:12px;line-height:1.6"><b>Cómo se calcula.</b> Ingreso bruto (con IVA, antes de comisión de cobro). <b>Devengado</b> = horas ya usadas × su valor por hora (tarifa de hora suelta o valor del paquete). <b>Programado</b> = citas futuras del mes. <b>Horas vencidas</b> = horas de paquete que caducaron sin usar y se reconocen en el mes de vencimiento. Ingreso del mes = devengado + vencidas. Ocupación = horas reservadas ÷ 280 h por oficina al mes (14 h × 20 días). Equilibrio = renta fija alternativa de $7,600 ÷ precio promedio por hora usada del periodo (110 si aún no hay horas usadas).</div>
 </section>
 <section id="t4" class="grid hide"><div id="alertas" class="grid"></div></section>
 </main></div>
@@ -237,6 +240,12 @@ function pintarKpis() {
 
 function sumD(f, n) { const d = new Date(f + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0,10); }
 let vista = 'dia', semOf = 11;
+// Colores por oficina: 11 = verde azulado (marca), 12 = violeta. Paquete = relleno; hora suelta = borde punteado; en curso = color fuerte.
+const OFI = {
+  11: { chip: 'c-teal', tinte: '#f6fbfa', borde: '#4aa396', paq: 'background:#d9f0ec;color:#0b5149', sue: 'background:#f0f9f7;color:#0b5149;border:1px dashed #4aa396', cur: 'background:#0f6b62;color:#fff' },
+  12: { chip: 'c-violet', tinte: '#faf8fd', borde: '#8c76c4', paq: 'background:#e8e3f4;color:#40286b', sue: 'background:#f6f3fb;color:#40286b;border:1px dashed #8c76c4', cur: 'background:#5b3fa0;color:#fff' },
+};
+const estBloque = (r, en) => { const o = OFI[r.oficina] || OFI[11]; return en ? o.cur : r.tipo === 'individual' ? o.sue : o.paq; };
 const paso = () => vista === 'semana' ? 7 : 1;
 $('#dPrev').onclick = () => { fecha = sumD(fecha, -paso()); pintarCal(); };
 $('#dNext').onclick = () => { fecha = sumD(fecha, paso()); pintarCal(); };
@@ -247,7 +256,7 @@ function pintarSemana() {
   const lun = lunesDe(fecha), dias = [0,1,2,3,4,5,6].map(i => sumD(lun, i)), H0 = 8, H1 = 22, PX = 40;
   const a = new Date(lun + 'T00:00:00Z'), z = new Date(dias[6] + 'T00:00:00Z');
   $('#calFecha').textContent = 'semana del ' + a.getUTCDate() + ' ' + MES[a.getUTCMonth()] + ' al ' + z.getUTCDate() + ' ' + MES[z.getUTCMonth()];
-  const so = $('#selOf'); so.style.display = 'flex'; so.innerHTML = [11,12,13].map(o => `<button class="${o === semOf ? 'on' : ''}" data-o="${o}">Oficina ${o}</button>`).join('');
+  const so = $('#selOf'); so.style.display = 'flex'; so.innerHTML = [11,12].map(o => `<button class="${o === semOf ? 'on' : ''}" data-o="${o}"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${OFI[o].borde};margin-right:7px"></span>Oficina ${o}</button>`).join('');
   so.querySelectorAll('button').forEach(b => b.onclick = () => { semOf = +b.dataset.o; pintarCal(); });
   let h = '<div style="display:flex;min-width:760px"><div style="width:46px;padding-top:44px">';
   for (let i = H0; i < H1; i++) h += `<div class="hr">${i}:00</div>`; h += '</div>';
@@ -256,7 +265,7 @@ function pintarSemana() {
     h += `<div style="flex:1;min-width:100px"><div style="height:44px;text-align:center;font-weight:600;line-height:1.2;${hoy ? 'color:#0f6b62' : ''}">${DIA[d.getUTCDay()].slice(0,3)}<div style="font-weight:500;font-size:12px" class="muted">${d.getUTCDate()} ${MES[d.getUTCMonth()]}</div></div><div class="col" style="height:${(H1-H0)*PX}px;${hoy ? 'background-color:#f4faf9' : ''}">`;
     D.reservas.filter(r => r.fecha === f && r.estado === 'activa' && r.oficina === semOf).forEach(r => {
       const [x,y] = r.hora.split(':').map(Number), top = ((x - H0) + y/60) * PX + 1, hh = r.horas * PX - 2;
-      const est = r.tipo === 'individual' ? 'background:#e3eaf7;color:#22407a;border:1px dashed #6f89bd' : 'background:#d9f0ec;color:#0b5149';
+      const est = estBloque(r, false);
       h += `<div class="blk" style="left:2px;right:2px;top:${top}px;height:${hh}px;${est};padding:4px 6px"><b style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.nombre)}</b>${r.hora}–${r.fin}</div>`;
     });
     if (hoy) { const [x,y] = D.ahora.slice(11).split(':').map(Number), t = ((x - H0) + y/60) * PX; if (t >= 0 && t <= (H1-H0)*PX) h += `<div style="position:absolute;left:0;right:0;top:${t}px;border-top:2px solid #b42318"></div>`; }
@@ -272,16 +281,15 @@ function pintarCal() {
   const H0 = 8, H1 = 22, PX = 40, res = D.reservas.filter(r => r.fecha === fecha && r.estado === 'activa');
   let h = '<div style="display:flex;min-width:560px"><div style="width:46px;padding-top:30px">';
   for (let i = H0; i < H1; i++) h += `<div class="hr">${i}:00</div>`; h += '</div>';
-  [11,12,13].forEach(of => {
-    h += `<div style="flex:1;min-width:150px"><div style="height:30px;text-align:center;font-weight:600">Oficina ${of}</div><div class="col" style="height:${(H1-H0)*PX}px">`;
-    if (of === 13) h += '<div class="muted" style="padding:10px;font-size:12px">Sin chapa ni paquetes todavía</div>';
+  [11, 12].forEach(of => {
+    h += `<div style="flex:1;min-width:150px"><div style="height:30px;text-align:center"><span class="chip ${OFI[of].chip}" style="font-size:13px;padding:3px 14px">Oficina ${of}</span></div><div class="col" style="height:${(H1-H0)*PX}px;background-color:${OFI[of].tinte}">`;
     res.filter(r => r.oficina === of).forEach(r => {
       const [a,b] = r.hora.split(':').map(Number), top = ((a - H0) + b/60) * PX + 1, hh = r.horas * PX - 2;
       const en = fecha === D.hoy && (D.hoy + ' ' + r.hora) <= D.ahora && D.ahora < (D.hoy + ' ' + r.fin);
-      const est = en ? 'background:#0f6b62;color:#fff' : r.tipo === 'individual' ? 'background:#e3eaf7;color:#22407a;border:1px dashed #6f89bd' : 'background:#d9f0ec;color:#0b5149';
+      const est = estBloque(r, en);
       h += `<div class="blk" style="top:${top}px;height:${hh}px;${est}"><b>${esc(r.nombre)}</b>${r.hora}–${r.fin} · ${r.tipo === 'individual' ? 'hora suelta' : 'paquete'}</div>`;
     });
-    if (of !== 13 && fecha === D.hoy) { const [a,b] = D.ahora.slice(11).split(':').map(Number), t = ((a - H0) + b/60) * PX; if (t >= 0 && t <= (H1-H0)*PX) h += `<div style="position:absolute;left:0;right:0;top:${t}px;border-top:2px solid #b42318"></div>`; }
+    if (fecha === D.hoy) { const [a,b] = D.ahora.slice(11).split(':').map(Number), t = ((a - H0) + b/60) * PX; if (t >= 0 && t <= (H1-H0)*PX) h += `<div style="position:absolute;left:0;right:0;top:${t}px;border-top:2px solid #b42318"></div>`; }
     h += '</div></div>';
   });
   $('#cal').innerHTML = h + '</div>';
@@ -402,19 +410,74 @@ function ligarGen() {
 }
 function ligarCopiar() { ligarGen(); document.querySelectorAll('[data-cp]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.cp); const t = b.textContent; b.textContent = 'Copiado ✓'; setTimeout(() => b.textContent = t, 1400); } catch (e) { prompt('Copia manualmente:', b.dataset.cp); } }); }
 
-$('#mes').onchange = () => cargarIng();
+// ── Pestaña Oficinas: mes / año ──
+const DISP = 280, RENTA_ALT = 7600, META_OCU = 35;   // h por oficina al mes · renta fija alternativa de 11+12 · meta de ocupación (%)
+const OFS = [11, 12];
+let modoOfi = 'mes', INGA = null;
+const MESES_L = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+document.querySelectorAll('#vistaOfi button').forEach(bt => bt.onclick = () => {
+  modoOfi = bt.dataset.m; document.querySelectorAll('#vistaOfi button').forEach(x => x.classList.toggle('on', x === bt));
+  $('#mes').classList.toggle('hide', modoOfi !== 'mes'); $('#anio').classList.toggle('hide', modoOfi !== 'anio'); cargarIng();
+});
+$('#mes').onchange = () => cargarIng(); $('#anio').onchange = () => cargarIng();
 async function cargarIng() {
-  const mes = $('#mes').value || (D ? D.hoy.slice(0,7) : ''); $('#mes').value = mes;
+  const hoyA = D ? +D.hoy.slice(0, 4) : new Date().getFullYear();
+  if (!$('#anio').options.length) { for (let y = 2026; y <= Math.max(2026, hoyA) + 1; y++) $('#anio').add(new Option(y, y)); $('#anio').value = String(Math.max(2026, hoyA)); }
   $('#ofi').innerHTML = '<div class="muted">Calculando…</div>';
-  try { ING = await api('ingresos', { mes, incluirPruebas: false }); pintarIng(); } catch (e) { $('#ofi').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
+  try {
+    if (modoOfi === 'mes') { const mes = $('#mes').value || (D ? D.hoy.slice(0, 7) : ''); $('#mes').value = mes; ING = await api('ingresos', { mes, incluirPruebas: false }); pintarIngMes(); }
+    else { INGA = await api('ingresosAnio', { anio: $('#anio').value, incluirPruebas: false }); pintarIngAnio(); }
+  } catch (e) { $('#ofi').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
 }
-function tarjetaOf(t, nombre, sub) {
-  return `<div class="card" style="padding:18px 20px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><b style="font-size:16px">${nombre}</b><div class="muted" style="font-size:12px">${sub}</div></div><div style="text-align:right"><div class="num" style="font-size:26px;font-weight:600">${money(t.total)}</div><div class="muted" style="font-size:12px">ingreso devengado</div></div></div>
-  <div style="margin:12px 0 4px;display:flex;justify-content:space-between;font-size:13px"><span>Ocupación del mes</span><b class="num">${t.ocupacion}% · ${t.horas} de ${t.disponibles} h</b></div><div class="bar" style="height:10px"><span style="width:${Math.min(100, t.ocupacion)}%"></span></div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><div class="stat"><div class="n num" style="font-size:20px">${money(t.devengado)}</div><div class="l">USADAS (${t.horasHechas} h)</div></div><div class="stat"><div class="n num" style="font-size:20px">${money(t.programado)}</div><div class="l">PROGRAMADO</div></div><div class="stat"><div class="n num" style="font-size:20px">${money(t.vencido)}</div><div class="l">HORAS VENCIDAS</div></div></div></div>`;
+// Totales de las oficinas por hora (11 y 12), ignorando cualquier otra que traiga el API
+function sumOfi(lista) {
+  const t = { horas: 0, horasHechas: 0, devengado: 0, programado: 0, vencido: 0, suelta: 0, paquete: 0 };
+  lista.filter(o => OFS.includes(o.oficina)).forEach(o => ['horas','horasHechas','devengado','programado','vencido','suelta','paquete'].forEach(k => t[k] += o[k] || 0));
+  t.ingreso = t.devengado + t.vencido; return t;
 }
-function pintarIng() {
-  $('#ofi').innerHTML = tarjetaOf(ING.total, 'Total · 3 oficinas', 'Mes ' + ING.mes) + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">' + ING.oficinas.map(o => tarjetaOf(o, 'Oficina ' + o.oficina, o.m2 + ' m² · ' + o.paquete + ' h paquete · ' + o.suelta + ' h suelta' + (o.estimado ? ' · valor estimado' : ''))).join('') + '</div>';
+const pctO = (h, d) => d ? Math.round(h / d * 1000) / 10 : 0;
+function pxHora(t) { return t.horasHechas > 0 && t.devengado > 0 ? t.devengado / t.horasHechas : 110; }
+function kpiOfi(t, disp, meses) {
+  const px = pxHora(t), hEq = Math.ceil(RENTA_ALT * meses / px), hMeta = Math.round(disp * META_OCU / 100);
+  const av = Math.min(100, t.horas / hEq * 100), falta = hEq - t.horas;
+  return `<div style="display:flex;flex-wrap:wrap;gap:16px">
+  <div class="card kpi"><div class="t">${meses > 1 ? 'INGRESO DEL AÑO' : 'INGRESO DEL MES'} (BRUTO)</div><div class="v num">${money(t.ingreso)}</div><div class="muted" style="font-size:12px">${money(t.devengado)} usadas${t.vencido ? ' + ' + money(t.vencido) + ' vencidas' : ''} · ${money(t.programado)} programado</div></div>
+  <div class="card kpi"><div class="t">OCUPACIÓN</div><div class="v num" style="color:#0b5149">${pctO(t.horas, disp)}%</div><div class="muted" style="font-size:12px">${t.horas} de ${disp} h (11 + 12)</div></div>
+  <div class="card kpi"><div class="t">PARA EQUILIBRIO (${money(RENTA_ALT * meses)})</div><div class="v num">${hEq} h</div><div class="muted" style="font-size:12px">${falta > 0 ? 'faltan ' + falta + ' h' : 'cubierto ✓'} · a ${money(px)} por hora</div><div class="bar" style="margin-top:8px"><span style="width:${av}%"></span></div></div>
+  <div class="card kpi"><div class="t">META ${META_OCU}%</div><div class="v num" style="color:#5b6876">${hMeta} h</div><div class="muted" style="font-size:12px">llevas ${Math.min(999, Math.round(t.horas / hMeta * 100))}% de la meta</div></div></div>`;
+}
+function tarjetaOfi(o) {
+  const c = OFI[o.oficina], t = o.horas + 0, ocu = pctO(o.horas, DISP);
+  return `<div class="card" style="padding:18px 20px;border-top:4px solid ${c.borde}"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="chip ${c.chip}" style="font-size:13px;padding:3px 14px">Oficina ${o.oficina}</span><div style="text-align:right"><div class="num" style="font-size:26px;font-weight:600">${money(o.devengado + o.vencido)}</div><div class="muted" style="font-size:12px">ingreso devengado${o.vencido ? ' (incl. vencidas)' : ''}</div></div></div>
+  <div style="margin:12px 0 4px;display:flex;justify-content:space-between;font-size:13px"><span>Ocupación</span><b class="num">${ocu}% · ${o.horas} de ${DISP} h</b></div><div class="bar" style="height:10px"><span style="width:${Math.min(100, ocu)}%;background:${c.borde}"></span></div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><div class="stat"><div class="n num" style="font-size:20px">${o.paquete} h</div><div class="l">PAQUETE</div></div><div class="stat"><div class="n num" style="font-size:20px">${o.suelta} h</div><div class="l">HORA SUELTA</div></div><div class="stat"><div class="n num" style="font-size:20px">${money(o.programado)}</div><div class="l">PROGRAMADO</div></div><div class="stat"><div class="n num" style="font-size:20px">${money(o.vencido)}</div><div class="l">VENCIDAS</div></div></div></div>`;
+}
+function pintarIngMes() {
+  const of = ING.oficinas.filter(o => OFS.includes(o.oficina)), t = sumOfi(of);
+  $('#ofi').innerHTML = kpiOfi(t, DISP * OFS.length, 1) + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">' + of.map(tarjetaOfi).join('') + '</div>';
+}
+function pintarIngAnio() {
+  const meses = INGA.meses.map((m, i) => ({ i, of: m.oficinas.filter(o => OFS.includes(o.oficina)) })).map(x => ({ i: x.i, of: x.of, t: sumOfi(x.of) }));
+  const act = meses.filter(x => x.t.horas > 0 || x.t.vencido > 0), tot = sumOfi(meses.flatMap(x => x.of)), nAct = act.length || 1;
+  const px = pxHora(tot), eqPct = Math.round(RENTA_ALT / px / (DISP * OFS.length) * 1000) / 10;
+  const occ = meses.map(x => pctO(x.t.horas, DISP * OFS.length)), maxV = Math.max(30, eqPct * 1.4, ...occ) * 1.1;
+  const barras = meses.map((x, k) => { const v = occ[k], hh = v / maxV * 150, col = x.t.horas ? (v >= eqPct ? '#0f6b62' : '#9fd2cb') : '#e3e8ee'; return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:190px"><div class="num" style="font-size:12px;font-weight:600;margin-bottom:4px;color:#3c4856">${x.t.horas ? Math.round(v) + '%' : ''}</div><div style="width:70%;height:${Math.max(hh, x.t.horas ? 3 : 0)}px;background:${col};border-radius:6px 6px 0 0"></div><div style="font-size:12px;margin-top:6px;color:#5b6876">${MESES_L[k]}</div></div>`; }).join('');
+  const bar = f => `<td class="num">${f}</td>`;
+  const fila = x => { const o11 = x.of.find(o => o.oficina === 11) || {}, o12 = x.of.find(o => o.oficina === 12) || {};
+    return `<tr style="cursor:default"><td><b>${MESES_L[x.i]}</b></td>${bar((o11.horas || 0) + ' h · ' + Math.round(pctO(o11.horas || 0, DISP)) + '%')}${bar((o12.horas || 0) + ' h · ' + Math.round(pctO(o12.horas || 0, DISP)) + '%')}${bar('<b>' + Math.round(pctO(x.t.horas, DISP * 2)) + '%</b>')}${bar(money((o11.devengado || 0) + (o11.vencido || 0)))}${bar(money((o12.devengado || 0) + (o12.vencido || 0)))}${bar('<b>' + money(x.t.ingreso) + '</b>')}</tr>`; };
+  const sin = (txt) => `<tr style="cursor:default"><td colspan="7" class="muted" style="height:40px">${txt}</td></tr>`;
+  const primero = act.length ? act[0].i : 12, ultimo = act.length ? act[act.length - 1].i : -1;
+  let filas = ''; if (primero > 0) filas += sin(MESES_L[0] + (primero > 1 ? ' – ' + MESES_L[primero - 1] : '') + ': sin operación');
+  act.forEach(x => filas += fila(x)); if (ultimo < 11 && act.length) filas += sin(MESES_L[ultimo + 1] + (ultimo < 10 ? ' – ' + MESES_L[11] : '') + ': aún no ocurren');
+  const s11 = sumOfi(meses.flatMap(x => x.of.filter(o => o.oficina === 11))), s12 = sumOfi(meses.flatMap(x => x.of.filter(o => o.oficina === 12)));
+  const totFila = `<tr style="cursor:default;background:#f7f9fb"><td><b>Año</b></td>${bar('<b>' + s11.horas + ' h</b>')}${bar('<b>' + s12.horas + ' h</b>')}${bar('<b>' + Math.round(pctO(tot.horas, DISP * 2 * nAct)) + '%</b> (prom. de meses con actividad)')}${bar('<b>' + money(s11.ingreso) + '</b>')}${bar('<b>' + money(s12.ingreso) + '</b>')}${bar('<b>' + money(tot.ingreso) + '</b>')}</tr>`;
+  const kp = `<div style="display:flex;flex-wrap:wrap;gap:16px">
+    <div class="card kpi"><div class="t">INGRESO DEL AÑO (BRUTO)</div><div class="v num">${money(tot.ingreso)}</div><div class="muted" style="font-size:12px">${money(tot.devengado)} usadas${tot.vencido ? ' + ' + money(tot.vencido) + ' vencidas' : ''} · ${money(tot.programado)} programado</div></div>
+    <div class="card kpi"><div class="t">HORAS VENDIDAS</div><div class="v num">${tot.horas} h</div><div class="muted" style="font-size:12px">${s11.horas} h Of. 11 · ${s12.horas} h Of. 12</div></div>
+    <div class="card kpi"><div class="t">OCUPACIÓN PROMEDIO</div><div class="v num" style="color:#0b5149">${Math.round(pctO(tot.horas, DISP * 2 * nAct))}%</div><div class="muted" style="font-size:12px">${act.length} mes(es) con actividad · equilibrio ${eqPct}%</div></div>
+    <div class="card kpi"><div class="t">MESES SOBRE EL EQUILIBRIO</div><div class="v num">${act.filter(x => pctO(x.t.horas, DISP * 2) >= eqPct).length} de ${act.length}</div><div class="muted" style="font-size:12px">renta fija alternativa ${money(RENTA_ALT)}/mes</div></div></div>`;
+  $('#ofi').innerHTML = kp + `<div class="card" style="padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><h2 class="h2" style="flex:1">Ocupación por mes · ${esc(INGA.anio)}</h2><span class="chip c-grey">Línea = equilibrio ${eqPct}%</span></div><div style="position:relative;display:flex;gap:6px;align-items:flex-end"><div style="position:absolute;left:0;right:0;bottom:${eqPct / maxV * 150 + 24}px;border-top:2px dashed #b42318"></div>${barras}</div></div>
+    <div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:8px">Resumen del año</h2><div style="overflow-x:auto"><table class="tb" style="min-width:720px"><thead><tr><th>MES</th><th>OF. 11 · HORAS</th><th>OF. 12 · HORAS</th><th>OCUPACIÓN</th><th>INGRESO OF. 11</th><th>INGRESO OF. 12</th><th>TOTAL</th></tr></thead><tbody>${filas}${totFila}</tbody></table></div></div>`;
 }
 
 
