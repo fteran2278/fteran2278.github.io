@@ -38,6 +38,10 @@ input,select{font-family:inherit;font-size:14px}
 .bar{height:6px;border-radius:3px;background:#e3e8ee;overflow:hidden}
 .bar>span{display:block;height:100%;background:#0f6b62;border-radius:3px}
 .kpi{flex:1 1 190px;padding:16px 18px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.row3{display:grid;grid-template-columns:1.3fr 1fr 1.4fr;gap:16px}.split{display:flex;height:12px;border-radius:99px;overflow:hidden;margin:12px 0 8px;background:#eceff3}.th{position:relative;height:70px;width:26px;border:2px solid #cfd6de;border-radius:14px;background:#fff;overflow:hidden;flex:none}.th i{position:absolute;left:0;right:0;bottom:0;background:#0f6b62}.sec{font-size:12px;color:#5b6876;font-weight:600;letter-spacing:.05em;margin:6px 4px -4px}.yr{position:relative;display:grid;grid-template-columns:repeat(12,1fr);gap:8px;height:190px;margin-top:6px}.yr>div:not(.eq){display:flex;flex-direction:column;justify-content:flex-end;align-items:center;font-size:11px;color:#5b6876;position:relative;z-index:1}.st{width:56%;display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden}.eq{position:absolute;left:0;right:0;border-top:2px dashed #d0503f;z-index:0}.eqt{position:absolute;right:0;top:-20px;font-size:11px;color:#b42318;background:#fff;padding:0 4px}.tb2{width:100%;min-width:640px;border-collapse:collapse;font-size:13px}.tb2 th{font-size:11px;color:#5b6876;text-align:left;font-weight:600;letter-spacing:.04em;padding:8px 6px;border-bottom:1px solid #e6eaef}.tb2 td{padding:11px 6px;border-bottom:1px solid #e6eaef}.tb2 tr.tt td{background:#f7f9fb;font-weight:700}
+@media(max-width:760px){.row3{grid-template-columns:1fr}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.kk{padding:20px 24px}.kk .lb{font-size:14px;color:#5b6876}.kk .bg{font-size:44px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:4px}.kk .de{font-size:18px;font-weight:500;color:#5b6876}.kk .nt{font-size:13px;color:#5b6876;margin-top:8px}.tk{position:absolute;top:-4px;width:2px;height:18px;background:#9aa5b1}.tl{position:absolute;top:20px;font-size:11px;color:#5b6876;transform:translateX(-50%);white-space:nowrap}
+@media(max-width:760px){.g3{grid-template-columns:1fr}}@media(max-width:640px){.g2{grid-template-columns:1fr}.kk .bg{font-size:38px}}
 .kpi .t{font-size:12px;font-weight:600;letter-spacing:.04em;color:#5b6876}
 .kpi .v{font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1.15;margin-top:4px}
 .blk{position:absolute;left:5px;right:5px;border-radius:9px;padding:6px 9px;overflow:hidden;font-size:12px;line-height:1.3}
@@ -143,11 +147,11 @@ input,select{font-family:inherit;font-size:14px}
 </section>
 
 <section id="t3" class="grid hide">
-<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h2 class="h2" style="flex:1;font-size:20px">Oficinas · ocupación e ingresos</h2>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1"><h2 class="h2" style="font-size:20px">Oficinas</h2><div class="muted" style="font-size:12px" id="ofiAct">&nbsp;</div></div>
 <div class="seg" id="vistaOfi"><button class="on" data-m="mes">Mes</button><button data-m="anio">Año</button></div>
-<input id="mes" type="month" class="fld" style="width:auto"><select id="anio" class="fld hide" style="width:auto"></select></div>
+<div id="navMes" style="display:flex;align-items:center;gap:4px"><button type="button" id="mPrev" class="btn btn-sm" aria-label="Mes anterior">‹</button><input id="mes" type="month" class="fld" style="width:auto"><button type="button" id="mNext" class="btn btn-sm" aria-label="Mes siguiente">›</button></div><select id="anio" class="fld hide" style="width:auto"></select></div>
 <div id="ofi" class="grid"></div>
-<div class="muted" style="font-size:12px;line-height:1.6"><b>Cómo se calcula.</b> Ingreso bruto (con IVA, antes de comisión de cobro). <b>Devengado</b> = horas ya usadas × su valor por hora (tarifa de hora suelta o valor del paquete). <b>Programado</b> = citas futuras del mes. <b>Horas vencidas</b> = horas de paquete que caducaron sin usar y se reconocen en el mes de vencimiento. Ingreso del mes = devengado + vencidas. Ocupación = horas reservadas ÷ 280 h por oficina al mes (14 h × 20 días). Equilibrio = renta fija alternativa de $7,600 ÷ precio promedio por hora usada del periodo (110 si aún no hay horas usadas).</div>
+<div class="muted" style="font-size:12px;line-height:1.6"><b>Cómo se calcula.</b> <b>Dinero vendido</b> = paquetes en el mes en que se compran (a su precio completo) + horas sueltas en el mes en que se reservan; es bruto, con IVA y antes de la comisión de cobro. <b>Horas reservadas</b> = horas agendadas en el mes, ya usadas o por usar. <b>Ocupación</b> = horas reservadas ÷ 280 h por oficina (14 h × 20 días). <b>Por usar</b> = horas agendadas que todavía no pasan. <b>Vencidas</b> = horas de paquete que caducaron sin usarse. <b>Renta</b> = renta fija alternativa de $7,600 ÷ precio promedio por hora usada (110 si aún no hay horas usadas).</div>
 </section>
 <section id="t4" class="grid hide"><div id="alertas" class="grid"></div></section>
 </main></div>
@@ -172,7 +176,7 @@ async function api(accion, extra) {
 async function entrar() {
   $('#loginErr').textContent = ''; PIN = $('#pin').value;
   if (API_URL.startsWith('PEGAR')) { $('#loginErr').textContent = 'Falta configurar la URL del API en panel.html'; return; }
-  try { const r = await api('login'); sessionStorage.setItem('pin', PIN); $('#usr').textContent = r.usuario; $('#login').classList.add('hide'); $('#app').classList.remove('hide'); await cargar(); setInterval(() => { if (!document.hidden) cargar(true); }, 90000); }
+  try { const r = await api('login'); sessionStorage.setItem('pin', PIN); $('#usr').textContent = r.usuario; $('#login').classList.add('hide'); $('#app').classList.remove('hide'); await cargar(); setInterval(() => { if (!document.hidden && $('#t3').classList.contains('hide')) cargar(true); }, 90000); }
   catch (e) { $('#loginErr').textContent = e.message; }
 }
 $('#btnLogin').onclick = entrar; $('#pin').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
@@ -196,7 +200,7 @@ async function cargar(silencio) {
     D.clientes.forEach(fixCli);
     if (!fecha) fecha = D.hoy;
     $('#estado').textContent = 'Actualizado ' + D.ahora.slice(11) + ' (hora de México)';
-    pintar(); if (!$('#t3').classList.contains('hide')) cargarIng();
+    pintar(); if (!silencio && !$('#t3').classList.contains('hide')) cargarIng();
   } catch (e) { $('#estado').textContent = 'Error: ' + e.message; if (/PIN|intentos/.test(e.message)) { sessionStorage.removeItem('pin'); location.reload(); } }
 }
 function coincide(c, q) { q = q.trim().toLowerCase(); if (!q) return true; const d = q.replace(/\D/g,''); return c.nombre.toLowerCase().includes(q) || (d.length >= 3 && c.tel.includes(d)); }
@@ -417,67 +421,70 @@ let modoOfi = 'mes', INGA = null;
 const MESES_L = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 document.querySelectorAll('#vistaOfi button').forEach(bt => bt.onclick = () => {
   modoOfi = bt.dataset.m; document.querySelectorAll('#vistaOfi button').forEach(x => x.classList.toggle('on', x === bt));
-  $('#mes').classList.toggle('hide', modoOfi !== 'mes'); $('#anio').classList.toggle('hide', modoOfi !== 'anio'); cargarIng();
+  $('#navMes').classList.toggle('hide', modoOfi !== 'mes'); $('#anio').classList.toggle('hide', modoOfi !== 'anio'); cargarIng();
 });
-$('#mes').onchange = () => cargarIng(); $('#anio').onchange = () => cargarIng();
+$('#mes').onchange = () => cargarIng();
+const movMes = n => { const v = $('#mes').value || (D ? D.hoy.slice(0, 7) : ''); if (!v) return; let [y, m] = v.split('-').map(Number); m += n; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } $('#mes').value = y + '-' + String(m).padStart(2, '0'); cargarIng(); };
+$('#mPrev').onclick = () => movMes(-1); $('#mNext').onclick = () => movMes(1); $('#anio').onchange = () => cargarIng();
 async function cargarIng() {
   const hoyA = D ? +D.hoy.slice(0, 4) : new Date().getFullYear();
   if (!$('#anio').options.length) { for (let y = 2026; y <= Math.max(2026, hoyA) + 1; y++) $('#anio').add(new Option(y, y)); $('#anio').value = String(Math.max(2026, hoyA)); }
-  $('#ofi').innerHTML = '<div class="muted">Calculando…</div>';
+  const prev = $('#ofi').children.length; if (prev) $('#ofi').style.opacity = '.45'; else $('#ofi').innerHTML = '<div class="muted">Cargando…</div>';
   try {
-    if (modoOfi === 'mes') { const mes = $('#mes').value || (D ? D.hoy.slice(0, 7) : ''); $('#mes').value = mes; ING = await api('ingresos', { mes, incluirPruebas: false }); pintarIngMes(); }
-    else { INGA = await api('ingresosAnio', { anio: $('#anio').value, incluirPruebas: false }); pintarIngAnio(); }
-  } catch (e) { $('#ofi').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
+    if (modoOfi === 'mes') { const mes = $('#mes').value || (D ? D.hoy.slice(0, 7) : ''); $('#mes').value = mes; ING = await api('ingresos', { mes, incluirPruebas: false }); pintarIngMes(); $('#ofiAct').textContent = 'Actualizado ' + ING.ahora.slice(11); }
+    else { INGA = await api('ingresosAnio', { anio: $('#anio').value, incluirPruebas: false }); pintarIngAnio(); $('#ofiAct').textContent = 'Actualizado ' + INGA.ahora.slice(11); }
+    $('#ofi').style.opacity = '';
+  } catch (e) { $('#ofi').style.opacity = ''; if (!$('#ofi').children.length) $('#ofi').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; else $('#ofiAct').textContent = 'No se pudo actualizar: ' + e.message; }
 }
 // Totales de las oficinas por hora (11 y 12), ignorando cualquier otra que traiga el API
 function sumOfi(lista) {
-  const t = { horas: 0, horasHechas: 0, devengado: 0, programado: 0, vencido: 0, suelta: 0, paquete: 0 };
-  lista.filter(o => OFS.includes(o.oficina)).forEach(o => ['horas','horasHechas','devengado','programado','vencido','suelta','paquete'].forEach(k => t[k] += o[k] || 0));
-  t.ingreso = t.devengado + t.vencido; return t;
+  const t = { horas: 0, horasHechas: 0, devengado: 0, programado: 0, vencido: 0, suelta: 0, paquete: 0, ventas: 0, ventasPaquete: 0, ventasSuelta: 0, porUsar: 0, horasVencidas: 0 };
+  lista.filter(o => OFS.includes(o.oficina)).forEach(o => ['horas','horasHechas','devengado','programado','vencido','suelta','paquete','ventas','ventasPaquete','ventasSuelta','porUsar','horasVencidas'].forEach(k => t[k] += o[k] || 0));
+  t.ingreso = t.ventas; return t;
 }
 const pctO = (h, d) => d ? Math.round(h / d * 1000) / 10 : 0;
 function pxHora(t) { return t.horasHechas > 0 && t.devengado > 0 ? t.devengado / t.horasHechas : 110; }
 function kpiOfi(t, disp, meses) {
-  const px = pxHora(t), hEq = Math.ceil(RENTA_ALT * meses / px), hMeta = Math.round(disp * META_OCU / 100);
-  const av = Math.min(100, t.horas / hEq * 100), falta = hEq - t.horas;
-  return `<div style="display:flex;flex-wrap:wrap;gap:16px">
-  <div class="card kpi"><div class="t">${meses > 1 ? 'INGRESO DEL AÑO' : 'INGRESO DEL MES'} (BRUTO)</div><div class="v num">${money(t.ingreso)}</div><div class="muted" style="font-size:12px">${money(t.devengado)} usadas${t.vencido ? ' + ' + money(t.vencido) + ' vencidas' : ''} · ${money(t.programado)} programado</div></div>
-  <div class="card kpi"><div class="t">OCUPACIÓN</div><div class="v num" style="color:#0b5149">${pctO(t.horas, disp)}%</div><div class="muted" style="font-size:12px">${t.horas} de ${disp} h (11 + 12)</div></div>
-  <div class="card kpi"><div class="t">PARA EQUILIBRIO (${money(RENTA_ALT * meses)})</div><div class="v num">${hEq} h</div><div class="muted" style="font-size:12px">${falta > 0 ? 'faltan ' + falta + ' h' : 'cubierto ✓'} · a ${money(px)} por hora</div><div class="bar" style="margin-top:8px"><span style="width:${av}%"></span></div></div>
-  <div class="card kpi"><div class="t">META ${META_OCU}%</div><div class="v num" style="color:#5b6876">${hMeta} h</div><div class="muted" style="font-size:12px">llevas ${Math.min(999, Math.round(t.horas / hMeta * 100))}% de la meta</div></div></div>`;
+  const px = pxHora(t), hEq = Math.ceil(RENTA_ALT * meses / px), hMeta = Math.round(disp * META_OCU / 100), falta = hEq - t.horas;
+  const tot = t.ventas || 0, p11 = tot ? (t.v11 || 0) / tot * 100 : 50;
+  return `<div class="row3">
+  <div class="card kk"><div class="lb">Dinero vendido</div><div class="bg num">${money(t.ventas)}</div><div class="split"><span style="width:${p11}%;background:#4aa396"></span><span style="width:${100 - p11}%;background:#8c76c4"></span></div><div class="nt"><b style="color:#0f6b62">■</b> Oficina 11 ${money(t.v11 || 0)} &nbsp; <b style="color:#5b3fa0">■</b> Oficina 12 ${money(t.v12 || 0)}</div></div>
+  <div class="card kk"><div class="lb">Horas reservadas</div><div class="bg num">${t.horas} <span class="de">de ${disp}</span></div><div class="nt">${pctO(t.horas, disp)}% del mes ocupado</div></div>
+  <div class="card kk" style="display:flex;gap:16px;align-items:center"><div class="th"><i style="height:${Math.min(100, t.horas / hEq * 100)}%"></i></div><div><div class="lb">Para cubrir la renta (${money(RENTA_ALT * meses)})</div><div style="font-size:19px;font-weight:600">${t.horas} de ${hEq} horas</div><div class="nt">${falta > 0 ? 'faltan ' + falta + ' horas' : 'renta cubierta ✓'} · meta del mes: ${hMeta} h</div></div></div></div>`;
 }
 function tarjetaOfi(o) {
-  const c = OFI[o.oficina], t = o.horas + 0, ocu = pctO(o.horas, DISP);
-  return `<div class="card" style="padding:18px 20px;border-top:4px solid ${c.borde}"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span class="chip ${c.chip}" style="font-size:13px;padding:3px 14px">Oficina ${o.oficina}</span><div style="text-align:right"><div class="num" style="font-size:26px;font-weight:600">${money(o.devengado + o.vencido)}</div><div class="muted" style="font-size:12px">ingreso devengado${o.vencido ? ' (incl. vencidas)' : ''}</div></div></div>
-  <div style="margin:12px 0 4px;display:flex;justify-content:space-between;font-size:13px"><span>Ocupación</span><b class="num">${ocu}% · ${o.horas} de ${DISP} h</b></div><div class="bar" style="height:10px"><span style="width:${Math.min(100, ocu)}%;background:${c.borde}"></span></div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><div class="stat"><div class="n num" style="font-size:20px">${o.paquete} h</div><div class="l">PAQUETE</div></div><div class="stat"><div class="n num" style="font-size:20px">${o.suelta} h</div><div class="l">HORA SUELTA</div></div><div class="stat"><div class="n num" style="font-size:20px">${money(o.programado)}</div><div class="l">PROGRAMADO</div></div><div class="stat"><div class="n num" style="font-size:20px">${money(o.vencido)}</div><div class="l">VENCIDAS</div></div></div></div>`;
+  const c = OFI[o.oficina], ocu = pctO(o.horas, DISP);
+  return `<div class="card" style="padding:20px 22px;border-top:4px solid ${c.borde}"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><span class="chip ${c.chip}" style="font-size:13px;padding:3px 14px">Oficina ${o.oficina}</span><div style="text-align:right"><div class="num" style="font-size:28px;font-weight:700;line-height:1.1">${money(o.ventas)}</div><div class="muted" style="font-size:12px">dinero vendido</div></div></div>
+  <div style="margin:16px 0 6px;display:flex;justify-content:space-between;font-size:14px"><span>Horas reservadas</span><b class="num">${o.horas} de ${DISP}</b></div><div class="bar" style="height:10px"><span style="width:${Math.max(Math.min(100, ocu), o.horas ? 1 : 0)}%;background:${c.borde}"></span></div>
+  <div style="display:flex;gap:8px;margin-top:16px"><div class="stat"><div class="n num" style="font-size:20px">${o.paquete} h</div><div class="l">PAQUETE</div></div><div class="stat"><div class="n num" style="font-size:20px">${o.suelta} h</div><div class="l">HORA SUELTA</div></div><div class="stat"><div class="n num" style="font-size:20px">${o.porUsar || 0} h</div><div class="l">POR USAR</div></div><div class="stat"><div class="n num" style="font-size:20px">${o.horasVencidas || 0} h</div><div class="l">VENCIDAS</div></div></div></div>`;
 }
 function pintarIngMes() {
   const of = ING.oficinas.filter(o => OFS.includes(o.oficina)), t = sumOfi(of);
-  $('#ofi').innerHTML = kpiOfi(t, DISP * OFS.length, 1) + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">' + of.map(tarjetaOfi).join('') + '</div>';
+  t.v11 = (of.find(o => o.oficina === 11) || {}).ventas || 0; t.v12 = (of.find(o => o.oficina === 12) || {}).ventas || 0;
+  $('#ofi').innerHTML = kpiOfi(t, DISP * OFS.length, 1) + '<div class="sec">POR OFICINA</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">' + of.map(tarjetaOfi).join('') + '</div>';
 }
 function pintarIngAnio() {
   const meses = INGA.meses.map((m, i) => ({ i, of: m.oficinas.filter(o => OFS.includes(o.oficina)) })).map(x => ({ i: x.i, of: x.of, t: sumOfi(x.of) }));
-  const act = meses.filter(x => x.t.horas > 0 || x.t.vencido > 0), tot = sumOfi(meses.flatMap(x => x.of)), nAct = act.length || 1;
-  const px = pxHora(tot), eqPct = Math.round(RENTA_ALT / px / (DISP * OFS.length) * 1000) / 10;
-  const occ = meses.map(x => pctO(x.t.horas, DISP * OFS.length)), maxV = Math.max(30, eqPct * 1.4, ...occ) * 1.1;
-  const barras = meses.map((x, k) => { const v = occ[k], hh = v / maxV * 150, col = x.t.horas ? (v >= eqPct ? '#0f6b62' : '#9fd2cb') : '#e3e8ee'; return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:190px"><div class="num" style="font-size:12px;font-weight:600;margin-bottom:4px;color:#3c4856">${x.t.horas ? Math.round(v) + '%' : ''}</div><div style="width:70%;height:${Math.max(hh, x.t.horas ? 3 : 0)}px;background:${col};border-radius:6px 6px 0 0"></div><div style="font-size:12px;margin-top:6px;color:#5b6876">${MESES_L[k]}</div></div>`; }).join('');
-  const bar = f => `<td class="num">${f}</td>`;
-  const fila = x => { const o11 = x.of.find(o => o.oficina === 11) || {}, o12 = x.of.find(o => o.oficina === 12) || {};
-    return `<tr style="cursor:default"><td><b>${MESES_L[x.i]}</b></td>${bar((o11.horas || 0) + ' h · ' + Math.round(pctO(o11.horas || 0, DISP)) + '%')}${bar((o12.horas || 0) + ' h · ' + Math.round(pctO(o12.horas || 0, DISP)) + '%')}${bar('<b>' + Math.round(pctO(x.t.horas, DISP * 2)) + '%</b>')}${bar(money((o11.devengado || 0) + (o11.vencido || 0)))}${bar(money((o12.devengado || 0) + (o12.vencido || 0)))}${bar('<b>' + money(x.t.ingreso) + '</b>')}</tr>`; };
-  const sin = (txt) => `<tr style="cursor:default"><td colspan="7" class="muted" style="height:40px">${txt}</td></tr>`;
+  const act = meses.filter(x => x.t.horas > 0 || x.t.ventas > 0 || x.t.horasVencidas > 0), tot = sumOfi(meses.flatMap(x => x.of));
+  const nAct = meses.filter(x => x.t.horas > 0).length || 1, hEq = Math.ceil(RENTA_ALT / pxHora(tot));
+  const s11 = sumOfi(meses.flatMap(x => x.of.filter(o => o.oficina === 11))), s12 = sumOfi(meses.flatMap(x => x.of.filter(o => o.oficina === 12)));
+  const hOf = (x, n) => ((x.of.find(o => o.oficina === n) || {}).horas || 0);
+  const maxH = Math.max(hEq * 1.2, ...meses.map(x => x.t.horas)), AH = 156, sc = AH / maxH;
+  const cols = meses.map((x, k) => { const a = hOf(x, 11), b = hOf(x, 12); return `<div><div class="st" style="height:${(a + b) * sc}px"><span style="background:#4aa396;height:${a * sc}px"></span><span style="background:#8c76c4;height:${b * sc}px"></span></div><span style="margin-top:4px;font-weight:600;color:#16212c">${a + b ? (a + b) + ' h' : '&nbsp;'}</span><span>${MESES_L[k]}</span></div>`; }).join('');
+  const fila = x => `<tr><td><b>${MESES_L[x.i]}</b></td><td>${hOf(x, 11)} h${hOf(x, 11) ? ' · ' + Math.round(pctO(hOf(x, 11), DISP)) + '%' : ''}</td><td>${hOf(x, 12)} h${hOf(x, 12) ? ' · ' + Math.round(pctO(hOf(x, 12), DISP)) + '%' : ''}</td><td><b>${pctO(x.t.horas, DISP * 2)}%</b></td><td>${money((x.of.find(o => o.oficina === 11) || {}).ventas || 0)}</td><td>${money((x.of.find(o => o.oficina === 12) || {}).ventas || 0)}</td><td><b>${money(x.t.ventas)}</b></td></tr>`;
+  const sin = txt => `<tr><td colspan="7" class="muted" style="height:38px">${txt}</td></tr>`;
   const primero = act.length ? act[0].i : 12, ultimo = act.length ? act[act.length - 1].i : -1;
   let filas = ''; if (primero > 0) filas += sin(MESES_L[0] + (primero > 1 ? ' – ' + MESES_L[primero - 1] : '') + ': sin operación');
   act.forEach(x => filas += fila(x)); if (ultimo < 11 && act.length) filas += sin(MESES_L[ultimo + 1] + (ultimo < 10 ? ' – ' + MESES_L[11] : '') + ': aún no ocurren');
-  const s11 = sumOfi(meses.flatMap(x => x.of.filter(o => o.oficina === 11))), s12 = sumOfi(meses.flatMap(x => x.of.filter(o => o.oficina === 12)));
-  const totFila = `<tr style="cursor:default;background:#f7f9fb"><td><b>Año</b></td>${bar('<b>' + s11.horas + ' h</b>')}${bar('<b>' + s12.horas + ' h</b>')}${bar('<b>' + Math.round(pctO(tot.horas, DISP * 2 * nAct)) + '%</b> (prom. de meses con actividad)')}${bar('<b>' + money(s11.ingreso) + '</b>')}${bar('<b>' + money(s12.ingreso) + '</b>')}${bar('<b>' + money(tot.ingreso) + '</b>')}</tr>`;
-  const kp = `<div style="display:flex;flex-wrap:wrap;gap:16px">
-    <div class="card kpi"><div class="t">INGRESO DEL AÑO (BRUTO)</div><div class="v num">${money(tot.ingreso)}</div><div class="muted" style="font-size:12px">${money(tot.devengado)} usadas${tot.vencido ? ' + ' + money(tot.vencido) + ' vencidas' : ''} · ${money(tot.programado)} programado</div></div>
-    <div class="card kpi"><div class="t">HORAS VENDIDAS</div><div class="v num">${tot.horas} h</div><div class="muted" style="font-size:12px">${s11.horas} h Of. 11 · ${s12.horas} h Of. 12</div></div>
-    <div class="card kpi"><div class="t">OCUPACIÓN PROMEDIO</div><div class="v num" style="color:#0b5149">${Math.round(pctO(tot.horas, DISP * 2 * nAct))}%</div><div class="muted" style="font-size:12px">${act.length} mes(es) con actividad · equilibrio ${eqPct}%</div></div>
-    <div class="card kpi"><div class="t">MESES SOBRE EL EQUILIBRIO</div><div class="v num">${act.filter(x => pctO(x.t.horas, DISP * 2) >= eqPct).length} de ${act.length}</div><div class="muted" style="font-size:12px">renta fija alternativa ${money(RENTA_ALT)}/mes</div></div></div>`;
-  $('#ofi').innerHTML = kp + `<div class="card" style="padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap"><h2 class="h2" style="flex:1">Ocupación por mes · ${esc(INGA.anio)}</h2><span class="chip c-grey">Línea = equilibrio ${eqPct}%</span></div><div style="position:relative;display:flex;gap:6px;align-items:flex-end"><div style="position:absolute;left:0;right:0;bottom:${eqPct / maxV * 150 + 24}px;border-top:2px dashed #b42318"></div>${barras}</div></div>
-    <div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:8px">Resumen del año</h2><div style="overflow-x:auto"><table class="tb" style="min-width:720px"><thead><tr><th>MES</th><th>OF. 11 · HORAS</th><th>OF. 12 · HORAS</th><th>OCUPACIÓN</th><th>INGRESO OF. 11</th><th>INGRESO OF. 12</th><th>TOTAL</th></tr></thead><tbody>${filas}${totFila}</tbody></table></div></div>`;
+  const totFila = `<tr class="tt"><td>Año</td><td>${s11.horas} h</td><td>${s12.horas} h</td><td>${pctO(tot.horas, DISP * 2 * nAct)}%</td><td>${money(s11.ventas)}</td><td>${money(s12.ventas)}</td><td>${money(tot.ventas)}</td></tr>`;
+  $('#ofi').innerHTML = `<div class="row3">
+    <div class="card kk"><div class="lb">Dinero vendido en el año</div><div class="bg num">${money(tot.ventas)}</div><div class="nt">Paquetes ${money(tot.ventasPaquete)} · Horas sueltas ${money(tot.ventasSuelta)}</div></div>
+    <div class="card kk"><div class="lb">Horas reservadas en el año</div><div class="bg num">${tot.horas} h</div><div class="nt">${s11.horas} h Oficina 11 · ${s12.horas} h Oficina 12</div></div>
+    <div class="card kk"><div class="lb">Ocupación promedio</div><div class="bg num" style="color:#0b5149">${pctO(tot.horas, DISP * 2 * nAct)}%</div><div class="nt">promedio de ${nAct} mes${nAct > 1 ? 'es' : ''} con horas reservadas</div></div></div>
+  <div class="card kk"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;font-weight:600;font-size:15px">Horas reservadas por mes · ${esc(INGA.anio)}</div><span class="nt"><b style="color:#4aa396">■</b> Oficina 11 &nbsp; <b style="color:#8c76c4">■</b> Oficina 12</span></div>
+    <div class="yr"><div class="eq" style="bottom:${hEq * sc + 34}px"><span class="eqt">Renta cubierta · ${hEq} h</span></div>${cols}</div></div>
+  <div class="card kk"><div style="font-weight:600;font-size:15px;margin-bottom:6px">Resumen del año</div><div style="overflow-x:auto"><table class="tb2"><thead><tr><th>MES</th><th>OF. 11 · HORAS</th><th>OF. 12 · HORAS</th><th>OCUPACIÓN</th><th>DINERO OF. 11</th><th>DINERO OF. 12</th><th>DINERO TOTAL</th></tr></thead><tbody>${filas}${totFila}</tbody></table></div></div>
+  <div class="muted" style="font-size:12px">La ocupación promedio solo cuenta los meses con horas reservadas.</div>`;
 }
 
 
