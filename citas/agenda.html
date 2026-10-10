@@ -57,6 +57,7 @@
   /* ---------- acceso ---------- */
   function login(aviso) {
     if (!proId) return marco(cuerpo(h('h1', { style: 'font-size:30px' }, 'Link incompleto'), err('Abre el link de tu agenda que te llegó por correo.')), false);
+    api('ping').catch(function () { /* solo despierta el servidor */ });
     const msg = h('div', { role: 'alert' }, aviso ? err(aviso) : null);
     const pin = h('input', { id: 'pin', type: 'password', inputmode: 'numeric', autocomplete: 'current-password', maxlength: '6' });
     const btn = h('button', { type: 'submit', class: 'btn' }, 'Entrar');
@@ -101,7 +102,12 @@
   window.addEventListener('resize', function () { if (S.tab === 'semana' && S.reajusta) S.reajusta(); });
   async function iniciar() {
     marco(cuerpo(h('p', { class: 'spin', role: 'status' }, 'Cargando…')), true);
-    try { S.perfil = await llamar('agendaPerfil'); } catch (e) { if (S.sesion) marco(cuerpo(err(e.message)), true); return; }
+    try {
+      try {
+        const ini = await llamar('agendaInicio');
+        S.perfil = ini.perfil; S.vent = { desde: ini.ventana.desde, hasta: ini.ventana.hasta, citas: ini.ventana.citas, bloqueos: ini.ventana.bloqueos, t: Date.now() };
+      } catch (e0) { if (e0.codigo === 'sesion_expirada') throw e0; S.vent = null; S.perfil = await llamar('agendaPerfil'); }
+    } catch (e) { if (S.sesion) marco(cuerpo(err(e.message)), true); return; }
     S.semana = lunesDe(S.perfil.hoy); S.dia = S.perfil.hoy;
     armar();
   }
