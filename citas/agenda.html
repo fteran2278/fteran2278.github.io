@@ -24,7 +24,7 @@
   const app = document.getElementById('app');
   const q = new URLSearchParams(location.search);
   const proId = (q.get('p') || '').trim(), resetTok = (q.get('reset') || '').trim();
-  const S = { sesion: '', perfil: null, tab: 'hoy', semana: null, dia: null };
+  const S = { sesion: '', perfil: null, tab: 'hoy', semana: null, dia: null, vent: null, tabScroll: 0 };
   const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
   const DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   try { S.sesion = sessionStorage.getItem('ses_' + proId) || ''; } catch (e) { S.sesion = ''; }
@@ -107,14 +107,17 @@
   function armar() {
     contenido = h('div', { class: 'body', style: 'gap:18px' });
     const tabs = h('div', { class: 'tabs', role: 'tablist' }, TABS.map(function (t) {
-      return h('button', { type: 'button', class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; armar(); } }, t[1]);
+      return h('button', { type: 'button', class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function (ev) { S.tabScroll = ev.currentTarget.parentNode.scrollLeft; S.tab = t[0]; armar(); } }, t[1]);
     }));
     marco(h('div', { style: 'display:contents' }, tabs, contenido), true, S.perfil.nombre);
+    tabs.scrollLeft = S.tabScroll;
+    const sel = tabs.querySelector('[aria-selected=true]');
+    if (sel) { const a = sel.offsetLeft, b = a + sel.offsetWidth; if (a < tabs.scrollLeft || b > tabs.scrollLeft + tabs.clientWidth) tabs.scrollLeft = Math.max(0, a - 24); }
     window.scrollTo(0, 0);
     ({ hoy: tabHoy, semana: tabSemana, citas: tabCitas, bloqueos: tabBloqueos, horario: tabHorario, clientes: tabClientes, cuenta: tabCuenta })[S.tab]();
   }
   const cargando = function () { contenido.replaceChildren(h('p', { class: 'spin', role: 'status' }, 'Cargando…')); };
-  const recargar = function () { armar(); };
+  const recargar = function () { S.vent = null; armar(); };
 
   /* ---------- tarjeta de cita ---------- */
   function tarjeta(c) {
@@ -146,6 +149,24 @@
       c.motivo ? h('span', { class: 'meta' }, 'Motivo: ' + c.motivo) : null, act, msg);
   }
   const chipBloqueo = function (b) { return h('div', { class: 'item', style: 'background:#F3F1EB' }, h('span', { class: 'chip bq' }, 'Bloqueado'), h('span', { class: 'meta' }, (b.diaCompleto ? 'Todo el día' : b.horaIni + ' – ' + b.horaFin) + (b.motivo ? ' · ' + b.motivo : ''))); };
+
+  /* Ventana de citas en memoria (±31 días): navegar días/semanas no vuelve a pedir datos al servidor. */
+  const ventanaActual = function () { return S.vent && S.vent.t > Date.now() - 90000 ? S.vent : null; };
+  async function datos(desde, hasta) {
+    const P = S.perfil;
+    let v = ventanaActual();
+    if (!v) {
+      const d0 = sumar(P.hoy, -31), d1 = sumar(P.hoy, 31);
+      try { const r = await llamar('agendaCitas', { desde: d0, hasta: d1 }); v = S.vent = { desde: d0, hasta: d1, citas: r.citas, bloqueos: r.bloqueos, t: Date.now() }; }
+      catch (e) { v = null; }
+    }
+    if (v && desde >= v.desde && hasta <= v.hasta) {
+      return { citas: v.citas.filter(function (c) { return c.fecha >= desde && c.fecha <= hasta; }),
+        bloqueos: v.bloqueos.filter(function (b) { return b.fechaIni <= hasta && (b.fechaFin > desde || (b.fechaFin === desde && b.horaFin !== '00:00')); }) };
+    }
+    return llamar('agendaCitas', { desde: desde, hasta: hasta });
+  }
+  const enCache = function () { return !!ventanaActual(); };
 
   /* ---------- utilidades de agenda ---------- */
   const DK = ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'];
@@ -195,14 +216,14 @@
 
   /* ---------- Hoy: línea de tiempo del día ---------- */
   async function tabHoy() {
-    cargando();
+    if (!enCache()) cargando();
     const P = S.perfil, f = S.dia;
     let r, pas = { citas: [] }, mes = { citas: [] };
     try {
       const res = await Promise.all([
-        llamar('agendaCitas', { desde: f, hasta: f }),
-        llamar('agendaCitas', { desde: sumar(P.hoy, -14), hasta: sumar(P.hoy, -1) }).catch(function () { return { citas: [] }; }),
-        llamar('agendaCitas', { desde: mesAbre(P.hoy), hasta: finMes(P.hoy) }).catch(function () { return { citas: [] }; })]);
+        datos(f, f),
+        datos(sumar(P.hoy, -14), sumar(P.hoy, -1)).catch(function () { return { citas: [] }; }),
+        datos(mesAbre(P.hoy), finMes(P.hoy)).catch(function () { return { citas: [] }; })]);
       r = res[0]; pas = res[1]; mes = res[2];
     } catch (e) { contenido.replaceChildren(err(e.message)); return; }
     const citas = r.citas.filter(function (c) { return c.estado !== 'cancelada'; });
@@ -253,8 +274,9 @@
     const nav = function (d) { return function () { S.dia = sumar(S.dia, d); tabHoy(); }; };
     const principal = h('div', { class: 'col-p' },
       h('div', { class: 'dia-cab-r' },
-        h('div', { class: 'dia-nav' }, flecha('Día anterior', -1, nav(-1)), h('h2', { class: 'dia-tit' }, tituloDia(f)), flecha('Día siguiente', 1, nav(1)), hoyBtn),
-        h('button', { type: 'button', class: 'btn-oro', onclick: function () { nuevaCita(f, ''); } }, 'Nueva cita')),
+        h('div', { class: 'dia-nav' }, flecha('Día anterior', -1, nav(-1)), h('h2', { class: 'dia-tit' }, tituloDia(f)), flecha('Día siguiente', 1, nav(1))),
+        h('div', { class: 'dia-acc' }, hoyBtn,
+        h('button', { type: 'button', class: 'btn-oro', onclick: function () { nuevaCita(f, ''); } }, 'Nueva cita'))),
       buscar, lista);
 
     const pm = porMarcar.length ? h('div', { class: 'panel crema' },
@@ -297,7 +319,7 @@
       msg.replaceChildren();
       if (!av.checked) { msg.appendChild(err('Confirma que el cliente aceptó el aviso de privacidad.')); return; }
       ok.disabled = true; ok.textContent = 'Agendando…';
-      try { await api('crearCita', { profesionistaId: P.id, fecha: fi.value, hora: sel.value, nombre: n.value, telefono: t.value, correo: c.value, motivo: m.value, aviso: true, canal: 'correo' }); cerrar(); S.dia = fi.value; S.tab = 'hoy'; armar(); }
+      try { await api('crearCita', { profesionistaId: P.id, fecha: fi.value, hora: sel.value, nombre: n.value, telefono: t.value, correo: c.value, motivo: m.value, aviso: true, canal: 'correo' }); cerrar(); S.vent = null; S.dia = fi.value; S.tab = 'hoy'; armar(); }
       catch (e) { ok.disabled = false; ok.textContent = 'Agendar cita'; msg.replaceChildren(err(e.message)); }
     } }, 'Agendar cita');
     const cap = h('div', { class: 'overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Nueva cita' },
@@ -316,9 +338,9 @@
 
   /* ---------- Semana: cuadrícula por horas ---------- */
   async function tabSemana() {
-    cargando();
+    if (!enCache()) cargando();
     const P = S.perfil, ini = S.semana, fin = sumar(ini, 6);
-    let r; try { r = await llamar('agendaCitas', { desde: ini, hasta: fin }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    let r; try { r = await datos(ini, fin); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
     const dias = []; for (let i = 0; i < 7; i++) dias.push(sumar(ini, i));
     const citas = r.citas.filter(function (c) { return c.estado !== 'cancelada'; });
     const hs = {};
@@ -339,9 +361,9 @@
     });
     const nav = function (d) { return function () { S.semana = sumar(S.semana, d * 7); tabSemana(); }; };
     contenido.replaceChildren(
-      h('div', { class: 'dia-cab-r' }, h('div', { class: 'dia-nav' }, flecha('Semana anterior', -1, nav(-1)), h('h2', { class: 'dia-tit' }, corta(ini) + ' – ' + corta(fin)), flecha('Semana siguiente', 1, nav(1)),
-        S.semana !== lunesDe(P.hoy) ? h('button', { type: 'button', class: 'hoy-btn', onclick: function () { S.semana = lunesDe(P.hoy); tabSemana(); } }, 'Esta semana') : null),
-        h('button', { type: 'button', class: 'btn-oro', onclick: function () { nuevaCita(P.hoy, ''); } }, 'Nueva cita')),
+      h('div', { class: 'dia-cab-r' }, h('div', { class: 'dia-nav' }, flecha('Semana anterior', -1, nav(-1)), h('h2', { class: 'dia-tit' }, corta(ini) + ' – ' + corta(fin)), flecha('Semana siguiente', 1, nav(1))),
+        h('div', { class: 'dia-acc' }, S.semana !== lunesDe(P.hoy) ? h('button', { type: 'button', class: 'hoy-btn', onclick: function () { S.semana = lunesDe(P.hoy); tabSemana(); } }, 'Esta semana') : null,
+        h('button', { type: 'button', class: 'btn-oro', onclick: function () { nuevaCita(P.hoy, ''); } }, 'Nueva cita'))),
       h('p', { class: 'note' }, 'Toca un día o una cita para ver ese día. Fondo claro = tu horario de atención; rayado = bloqueado.'),
       horas.length ? h('div', { class: 'sg-wrap' }, g) : h('p', { class: 'vacio' }, 'No hay horario de atención esta semana. Defínelo en Mi horario.'));
   }
