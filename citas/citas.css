@@ -218,7 +218,9 @@ textarea{width:100%;border-radius:4px;border:1px solid #9C9A92;background:#fff;p
 .cb-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .cb{height:44px;border-radius:4px;border:1px solid #8A8A82;background:transparent;color:#fff;font-size:13px;font-weight:500;padding:0 14px;display:inline-flex;align-items:center;text-decoration:none}
 .cb-row.una{flex-wrap:nowrap;flex-basis:100%}
-.cb-row.una .cb{flex:1 1 auto;justify-content:center;white-space:nowrap;padding:0 8px;font-size:12px;height:40px}
+.cb-row.una{gap:4px}
+.cb-row.una .cb{flex:1 1 0;min-width:0;justify-content:center;white-space:nowrap;padding:0 4px;font-size:12px;height:40px}
+.cb-row.una .cb.gold{flex:1.35 1 0}
 .cb-row.una .cb-row{flex-wrap:wrap}
 .cb-row.una .cb-row .cb{flex:0 0 auto;white-space:normal}
 .cb:hover{background:#2A2A27;color:#fff}
@@ -331,3 +333,14 @@ textarea{width:100%;border-radius:4px;border:1px solid #9C9A92;background:#fff;p
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--gold-l);padding:12px 20px;border-radius:4px;font-size:14px;font-weight:600;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.25);transition:opacity .5s}
 .toast.off{opacity:0}
+
+.seg{display:flex;gap:0;border:1px solid var(--ink);border-radius:4px;overflow:hidden;align-self:flex-start}
+.seg-b{border:0;background:#fff;color:var(--ink);padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+.seg-b+.seg-b{border-left:1px solid var(--ink)}
+.seg-b.on{background:var(--ink);color:var(--gold-l)}
+.dlg-bg{position:fixed;inset:0;z-index:60;background:rgba(14,14,13,.6);display:flex;align-items:center;justify-content:center;padding:20px}
+.dlg{background:#fff;border-top:4px solid var(--danger);border-radius:4px;max-width:440px;width:100%;max-height:90vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:10px}
+.dlg h3{margin:0;font-family:var(--serif);font-size:24px;color:var(--danger)}
+.dlg p{margin:0;font-size:15px}
+.dlg ul{margin:0;padding-left:18px;font-size:15px}
+.dlg .acciones{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}

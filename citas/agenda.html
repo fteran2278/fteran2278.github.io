@@ -11,12 +11,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="citas.css">
+<link rel="stylesheet" href="citas.css?v=5">
 </head>
 <body>
 <div id="app" class="app wide"><noscript><p class="noscript">Necesitas activar JavaScript.</p></noscript></div>
 <script src="config.js"></script>
-<script src="citas.js"></script>
+<script src="citas.js?v=5"></script>
 <script>
 (function () {
   'use strict';
@@ -383,11 +383,11 @@
     const grupo = function (lista, titulo, vacio) {
       const por = {}; lista.forEach(function (c) { (por[c.fecha] = por[c.fecha] || []).push(c); });
       const fechas = Object.keys(por).sort();
-      return [h('h2', { class: 'sec-t' }, titulo)].concat(fechas.length ? fechas.map(function (f) { return h('div', { class: 'dia-sem' }, h('h3', null, larga(f)), por[f].map(function (c) { return filaCita(c); })); }) : [h('p', { class: 'vacio' }, vacio)]);
+      return (titulo ? [h('h2', { class: 'sec-t' }, titulo)] : []).concat(fechas.length ? fechas.map(function (f) { return h('div', { class: 'dia-sem' }, h('h3', null, larga(f)), por[f].map(function (c) { return filaCita(c); })); }) : [h('p', { class: 'vacio' }, vacio)]);
     };
     const fut = todas.filter(function (c) { return c.fecha >= P.hoy; }), pas = todas.filter(function (c) { return c.fecha < P.hoy; }).reverse();
-    const mas = dias < 45 ? h('button', { type: 'button', class: 'btn-borde', style: 'align-self:flex-start', onclick: function () { S.diasCitas = Math.min(45, dias + 15); tabCitas(); } }, 'Ver 15 días más') : null;
-    contenido.replaceChildren.apply(contenido, grupo(fut, 'Próximas citas · ' + dias + ' días', 'No tienes citas en los próximos ' + dias + ' días.').concat([mas]).filter(Boolean).concat(grupo(pas.reverse(), 'Últimos 14 días', 'Sin citas recientes.')));
+    const rango = h('div', { class: 'seg' }, [15, 30, 45].map(function (d) { return h('button', { type: 'button', class: 'seg-b' + (d === dias ? ' on' : ''), 'aria-pressed': d === dias ? 'true' : 'false', onclick: function () { if (d !== dias) { S.diasCitas = d; tabCitas(); } } }, d + ' días'); }));
+    contenido.replaceChildren.apply(contenido, [h('h2', { class: 'sec-t' }, 'Próximas citas'), rango].concat(grupo(fut, null, 'No tienes citas en los próximos ' + dias + ' días.')).filter(Boolean).concat(grupo(pas.reverse(), 'Últimos 14 días', 'Sin citas recientes.')));
   }
 
   /* ---------- Bloquear fechas (con calendario) ---------- */
@@ -481,10 +481,20 @@
       try {
         const r = await llamar('agendaGuardarHorario', { horario: hor });
         P.horario = hor;
-        S.vent = null; sucio = false; S.sucio = false; barra.classList.remove('sucio'); estado.textContent = 'Guardado ✓';
+        S.vent = null; sucio = false; S.sucio = false; barra.classList.remove('sucio'); estado.textContent = 'Sin cambios';
         toast('Horario guardado ✓');
-        if (r.citasFueraDeHorario && r.citasFueraDeHorario.length) msg.replaceChildren(h('div', { class: 'err', style: 'margin-top:8px' }, h('b', null, 'Estas citas quedaron fuera de tu nuevo horario (no se cancelaron):'),
-          h('ul', { style: 'margin:6px 0 0;padding-left:18px' }, r.citasFueraDeHorario.map(function (c) { return h('li', null, corta(c.fecha) + ' ' + c.hora + ' · ' + c.cliente); }))));
+        if (r.citasFueraDeHorario && r.citasFueraDeHorario.length) {
+          const fondo = h('div', { class: 'dlg-bg', role: 'alertdialog', 'aria-modal': 'true' },
+            h('div', { class: 'dlg' },
+              h('h3', null, 'Atención: citas fuera de tu horario'),
+              h('p', null, 'Guardaste el horario, pero estas citas ya agendadas quedan fuera. Siguen confirmadas, no se cancelaron:'),
+              h('ul', null, r.citasFueraDeHorario.map(function (c) { return h('li', null, h('b', null, corta(c.fecha) + ' ' + c.hora), ' · ' + c.cliente); })),
+              h('p', null, 'Revísalas y cancélalas o avisa al cliente.'),
+              h('div', { class: 'acciones' },
+                h('button', { type: 'button', class: 'btn solid-ink', style: 'flex:1 1 150px', onclick: function () { fondo.remove(); S.tab = 'citas'; armar(); } }, 'Ver las citas'),
+                h('button', { type: 'button', class: 'btn-borde', style: 'flex:1 1 120px', onclick: function () { fondo.remove(); } }, 'Entendido'))));
+          document.body.appendChild(fondo);
+        }
       } catch (e) { msg.replaceChildren(err(e.message)); btn.disabled = false; }
       btn.textContent = 'Guardar cambios';
     });
