@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0E0E0D">
+<title>Mi cita · D Espacios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="citas.css">
+</head>
+<body>
+<div id="app" class="app"><noscript><p class="noscript">Necesitas activar JavaScript para ver tu cita.</p></noscript></div>
+<script src="config.js"></script>
+<script src="citas.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { h, svg, api, calendario, slots, fechaCorta, fechaTitulo, mapsLink, mesKey } = Citas;
+  const app = document.getElementById('app');
+  const q = new URLSearchParams(location.search);
+  let id = (q.get('id') || '').trim(), tok = (q.get('t') || '').trim();
+  let cita = null, perfil = null;
+  const cache = {};
+
+  function pantalla(titulo, nodos) {
+    app.replaceChildren(h('div', { class: 'top' }, h('div', { class: 'top-bar' }, h('span', { class: 'brand' }, 'D ESPACIOS'), h('span', { style: 'color:#A8A69E;font-size:14px;padding-right:12px' }, titulo))));
+    nodos.forEach(function (n) { app.appendChild(n); });
+    window.scrollTo(0, 0);
+  }
+  function cuerpo() { const b = h('div', { class: 'body', style: 'gap:18px' }); for (let i = 0; i < arguments.length; i++) if (arguments[i]) b.appendChild(arguments[i]); return b; }
+  function falla(msg) {
+    pantalla('Mi cita', [cuerpo(h('h1', { style: 'font-size:30px' }, 'No encontramos tu cita'), h('div', { class: 'err', role: 'alert' }, msg))]);
+  }
+
+  async function cargar() {
+    if (!id || !tok) return falla('Este link está incompleto. Abre el link que te llegó por correo.');
+    pantalla('Mi cita', [cuerpo(h('p', { class: 'spin', role: 'status' }, 'Cargando tu cita…'))]);
+    try {
+      let r = await api('verCita', { citaId: id, token: tok });
+      if (r.redirigir) { id = r.redirigir.id; tok = r.redirigir.token; history.replaceState(null, '', 'mi-cita.html?id=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(tok)); r = await api('verCita', { citaId: id, token: tok }); }
+      cita = r;
+    } catch (e) { return falla(e.message); }
+    vistaCita();
+  }
+
+  function fila(et, ...hijos) { return h('div', { class: 'row' }, h('span', { class: 'eyebrow dk' }, et), ...hijos); }
+
+  function vistaCita(aviso) {
+    const c = cita, cons = c.consultorio;
+    const activa = c.estado === 'confirmada';
+    const nombreCorto = c.profesionista.nombre;
+    const etiqueta = { confirmada: 'Confirmada', cancelada: 'Cancelada', asistio: 'Asististe', no_asistio: 'No asististe', reprogramada: 'Reprogramada' }[c.estado] || c.estado;
+    const wa = c.whatsapp ? 'https://wa.me/52' + encodeURIComponent(c.whatsapp) : '';
+    pantalla('Mi cita', [cuerpo(
+      aviso ? h('div', { class: 'ok', role: 'status' }, aviso) : null,
+      h('div', { style: 'display:flex;align-items:center;justify-content:space-between;gap:12px' },
+        h('h1', { style: 'font-size:32px;line-height:34px' }, activa ? 'Tu cita' : 'Tu cita ' + etiqueta.toLowerCase()),
+        h('span', { class: 'badge' + (c.estado === 'cancelada' ? ' off' : '') }, etiqueta)),
+      h('div', { class: 'card' },
+        fila('Con', h('span', { class: 'val' }, nombreCorto + ' · ' + c.profesionista.especialidad)),
+        fila('Cuándo', h('span', { class: 'val' }, Citas.cap(c.fechaTexto)), h('span', { class: 'val', style: 'color:var(--gold-d)' }, c.horaTexto)),
+        cons ? fila('Dónde',
+          h('span', { class: 'val' }, [cons.nombre, cons.sede].filter(Boolean).join(' · ')),
+          cons.direccion ? h('span', { class: 'note', style: 'font-size:14px' }, cons.direccion) : null,
+          cons.instruccionesLlegada ? h('span', { class: 'note', style: 'font-size:14px' }, cons.instruccionesLlegada) : null,
+          mapsLink(cons)) : null,
+        fila('Folio', h('span', { class: 'val', style: 'letter-spacing:.06em' }, c.id))),
+      activa ? h('div', { style: 'display:flex;flex-direction:column;gap:10px' },
+        c.puedeCambiar ? h('button', { type: 'button', class: 'btn solid-ink', onclick: vistaCambiar }, 'Cambiar día u hora') : null,
+        c.puedeCambiar ? h('button', { type: 'button', class: 'btn danger', onclick: vistaCancelar }, 'Cancelar cita') : null,
+        h('button', { type: 'button', class: 'btn light', onclick: function () { Citas.descargarIcs(c); } }, 'Agregar a mi calendario'),
+        h('a', { class: 'linkbtn', href: Citas.linkGoogleCal(c), target: '_blank', rel: 'noopener noreferrer' }, 'Agregar a Google Calendar')) : null,
+      activa && !c.puedeCambiar ? h('div', { class: 'note', style: 'font-size:14px' },
+        'Ya no puedes cambiar ni cancelar en línea (el plazo es de ' + c.horasCambio + ' horas antes). Escríbele directo a tu profesionista.') : null,
+      activa && c.puedeCambiar ? h('p', { class: 'note' }, 'Puedes cambiar o cancelar en línea hasta ' + c.horasCambio + ' horas antes. Después, escribe directo a tu profesionista.') : null,
+      wa && activa ? h('a', { class: 'linkbtn', style: 'justify-content:flex-start', href: wa, target: '_blank', rel: 'noopener noreferrer' }, 'Escribir por WhatsApp') : null,
+      !activa && c.profesionistaId ? h('a', { class: 'btn solid-ink', href: 'reservar.html?p=' + encodeURIComponent(c.profesionistaId) }, 'Reservar una nueva cita') : null
+    )]);
+  }
+
+  /* ---------- Cancelar ---------- */
+  function vistaCancelar() {
+    const msg = h('div', { role: 'alert' });
+    const si = h('button', { type: 'button', class: 'btn danger', onclick: async function () {
+      si.disabled = true; si.textContent = 'Cancelando…'; msg.replaceChildren();
+      try { cita = await api('cancelarCita', { citaId: id, token: tok }); vistaCita('Tu cita fue cancelada. Te enviamos la confirmación por correo.'); }
+      catch (e) { si.disabled = false; si.textContent = 'Sí, cancelar cita'; msg.replaceChildren(h('div', { class: 'err' }, e.message)); }
+    } }, 'Sí, cancelar cita');
+    pantalla('Cancelar', [cuerpo(
+      h('h2', { class: 'sec', style: 'font-size:28px;line-height:32px' }, '¿Cancelar esta cita?'),
+      h('div', { class: 'card' }, fila('Cita', h('span', { class: 'val' }, cita.fechaTexto + ' · ' + cita.horaTexto), h('span', { class: 'note', style: 'font-size:14px' }, cita.profesionista.nombre))),
+      h('p', { class: 'note' }, 'El horario quedará libre para otras personas. Si prefieres otro día, usa “Cambiar día u hora”.'),
+      msg, si, h('button', { type: 'button', class: 'btn light', onclick: function () { vistaCita(); } }, 'No, conservar mi cita'))]);
+  }
+
+  /* ---------- Cambiar ---------- */
+  async function vistaCambiar() {
+    pantalla('Cambiar cita', [cuerpo(h('p', { class: 'spin', role: 'status' }, 'Buscando horarios…'))]);
+    try {
+      if (!perfil) perfil = await api('perfilProfesionista', { profesionistaId: cita.profesionistaId });
+    } catch (e) { return vistaCita(); }
+    const S = { mes: perfil.mesActual, fecha: null, hora: null, aviso: '' };
+    async function cargarMes(mes) {
+      if (cache[mes]) return;
+      try { const r = await api('disponibilidad', { profesionistaId: cita.profesionistaId, mes: mes, excluirCitaId: id, token: tok }); cache[mes] = r.dias || {}; }
+      catch (e) { cache[mes] = {}; S.aviso = e.message; }
+    }
+    await cargarMes(S.mes);
+
+    const cal = h('div'), horasHost = h('div', { class: 'slots', role: 'group', 'aria-label': 'Horarios disponibles' });
+    const tituloH = h('h2', { class: 'sec' }), bloque = h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, tituloH, horasHost);
+    const msg = h('div', { role: 'alert' });
+    const dockVal = h('span', { class: 'dock-val' });
+    const conf = h('button', { type: 'button', class: 'btn', onclick: async function () {
+      conf.disabled = true; conf.textContent = 'Cambiando…'; msg.replaceChildren();
+      try {
+        const nueva = await api('reprogramarCita', { citaId: id, token: tok, fecha: S.fecha, hora: S.hora });
+        id = nueva.id; tok = nueva.token; cita = nueva;
+        Object.keys(cache).forEach(function (k) { delete cache[k]; });
+        history.replaceState(null, '', 'mi-cita.html?id=' + encodeURIComponent(id) + '&t=' + encodeURIComponent(tok));
+        vistaCita('Listo, cambiamos tu cita. Te enviamos el nuevo resumen por correo.');
+      } catch (e) {
+        conf.textContent = 'Confirmar cambio';
+        msg.replaceChildren(h('div', { class: 'err' }, e.message));
+        if (e.codigo === 'horario_ocupado' || e.codigo === 'muy_pronto') { delete cache[S.mes]; S.hora = null; await cargarMes(S.mes); pintar(); }
+        else conf.disabled = false;
+      }
+    } }, 'Confirmar cambio');
+
+    function pintar() {
+      calendario(cal, {
+        mes: S.mes, dias: cache[S.mes], sel: S.fecha, mesMin: perfil.mesActual, mesMax: perfil.mesMax,
+        onMes: async function (d) {
+          const p = S.mes.split('-'); let y = +p[0], m = +p[1] + d;
+          if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; }
+          S.mes = mesKey(y, m); cal.style.opacity = '.5'; await cargarMes(S.mes); cal.style.opacity = ''; S.fecha = null; S.hora = null; pintar();
+        },
+        onDia: function (f) { S.fecha = f; S.hora = null; pintar(); }
+      });
+      const horas = S.fecha && cache[S.mes] ? cache[S.mes][S.fecha] : null;
+      bloque.style.display = horas ? '' : 'none';
+      if (horas) { tituloH.textContent = fechaTitulo(S.fecha) + ' · horarios'; slots(horasHost, horas, S.hora, function (hr) { S.hora = hr; pintar(); }); }
+      dockVal.textContent = S.hora ? fechaCorta(S.fecha, S.hora) : 'Elige día y hora';
+      conf.disabled = !S.hora;
+    }
+    pantalla('Cambiar cita', [
+      cuerpo(
+        h('div', { style: 'display:flex;align-items:center;gap:4px' }, h('button', { type: 'button', class: 'arrow', 'aria-label': 'Volver', onclick: function () { vistaCita(); } }, svg('M15 5l-7 7 7 7', 20, 'currentColor')),
+          h('p', { class: 'note', style: 'font-size:14px' }, 'Ahora: ' + cita.fechaTexto + ' · ' + cita.horaTexto)),
+        S.aviso ? h('div', { class: 'err' }, S.aviso) : null, cal, bloque, msg),
+      h('div', { class: 'dock' }, h('div', { class: 'dock-row' }, h('span', { class: 'eyebrow' }, 'Nuevo horario'), dockVal), conf)
+    ]);
+    pintar();
+  }
+
+  cargar();
+})();
+</script>
+</body>
+</html>

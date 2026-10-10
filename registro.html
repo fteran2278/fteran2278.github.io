@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0E0E0D">
+<title>Activa tu agenda · D Espacios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="citas.css">
+
+</head>
+<body>
+<div id="app" class="app"><noscript><p class="noscript">Necesitas activar JavaScript para registrarte.</p></noscript></div>
+<script src="config.js"></script>
+<script src="citas.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { h, api, top, copiar } = Citas;
+  const app = document.getElementById('app');
+  const q = new URLSearchParams(location.search);
+  const invId = (q.get('i') || '').trim(), tok = (q.get('t') || '').trim();
+
+  function pantalla(nodos) { app.replaceChildren.apply(app, nodos); window.scrollTo(0, 0); }
+  function falla(msg) { pantalla([top(), h('div', { class: 'body' }, h('h1', { style: 'font-size:30px' }, 'No pudimos abrir tu registro'), h('div', { class: 'err', role: 'alert' }, msg))]); }
+
+  async function iniciar() {
+    if (!invId || !tok) return falla('Este link está incompleto. Pide a D Espacios que te lo envíe de nuevo.');
+    pantalla([top(), h('div', { class: 'body' }, h('p', { class: 'spin', role: 'status' }, 'Cargando…'))]);
+    let info;
+    try { info = await api('invitacionInfo', { invitacionId: invId, token: tok }); } catch (e) { return falla(e.message); }
+    formulario(info);
+  }
+
+  function formulario(info) {
+    const c = info.consultorio;
+    const campo = function (id, et, attrs, ayuda) { return h('div', { class: 'field' }, h('label', { for: id }, et), h('input', Object.assign({ id: id }, attrs)), ayuda ? h('span', { class: 'hint' }, ayuda) : null); };
+    const nombre = campo('nombre', 'Nombre como lo verán tus clientes', { type: 'text', maxlength: '80', autocomplete: 'name', placeholder: 'Dra. Ana Pérez' });
+    const esp = campo('esp', 'Especialidad', { type: 'text', maxlength: '60', placeholder: 'Psicología clínica' });
+    const correo = campo('correo', 'Correo', { type: 'email', autocomplete: 'email', placeholder: 'tu@correo.com' }, 'Aquí te llega cada cita nueva. Si tienes cuenta de Google, usa el correo de esa cuenta.');
+    const wa = campo('wa', 'WhatsApp (10 dígitos)', { type: 'tel', inputmode: 'numeric', placeholder: '444 000 0000' }, 'Tus clientes lo verán si necesitan cambiar una cita fuera de plazo.');
+
+    const gSi = h('input', { type: 'radio', name: 'g', value: 'si', id: 'gsi' });
+    const gNo = h('input', { type: 'radio', name: 'g', value: 'no', id: 'gno' });
+    const google = h('div', { class: 'field' }, h('label', null, '¿Tu correo es una cuenta de Google? (Gmail o correo de empresa con Google)'),
+      h('label', { class: 'radio', for: 'gsi' }, gSi, h('span', null, 'Sí. Compartiremos tu agenda a tu Google Calendar.')),
+      h('label', { class: 'radio', for: 'gno' }, gNo, h('span', null, 'No o no sé. Recibirás cada cita por correo (y puedes crear una cuenta gratuita de Google después).')));
+
+    const ed = Citas.editorHorario(null);
+    const pin = campo('pin', 'Elige tu PIN de 6 dígitos', { type: 'password', inputmode: 'numeric', maxlength: '6', autocomplete: 'new-password' }, 'Con él entrarás a tu agenda. Solo tú lo conoces; si lo olvidas, lo restableces por correo.');
+    const pin2 = campo('pin2', 'Repite tu PIN', { type: 'password', inputmode: 'numeric', maxlength: '6', autocomplete: 'new-password' });
+    const instr = h('textarea', { id: 'instr', maxlength: '200', placeholder: 'Ej. Llega 5 minutos antes, toca el timbre del 2º piso.' });
+    const aviso = h('input', { type: 'checkbox', id: 'aviso' });
+    const msg = h('div', { role: 'alert' });
+    const enviar = h('button', { type: 'submit', class: 'btn' }, 'Activar mi agenda');
+
+    const form = h('form', { novalidate: true, style: 'display:contents', onsubmit: async function (ev) {
+      ev.preventDefault(); msg.replaceChildren();
+      const v = { n: nombre.querySelector('input').value.trim(), e: esp.querySelector('input').value.trim(), c: correo.querySelector('input').value.trim(), w: wa.querySelector('input').value };
+      let err = '', horario = null;
+      if (v.n.length < 3) err = 'Escribe tu nombre completo.';
+      else if (v.e.length < 3) err = 'Escribe tu especialidad.';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.c)) err = 'Escribe un correo válido.';
+      else if (v.w.replace(/\D/g, '').length < 10) err = 'Escribe tu WhatsApp a 10 dígitos.';
+      else if (!gSi.checked && !gNo.checked) err = 'Indica si tu correo es una cuenta de Google.';
+      else if (!/^\d{6}$/.test(pin.querySelector('input').value)) err = 'Tu PIN debe tener 6 dígitos.';
+      else if (pin.querySelector('input').value !== pin2.querySelector('input').value) err = 'Los dos PIN no coinciden.';
+      else { try { horario = ed.leer(); } catch (x) { err = x.message; } }
+      if (!err && !aviso.checked) err = 'Debes aceptar el aviso de privacidad.';
+      if (err) { msg.appendChild(h('div', { class: 'err' }, err)); return; }
+      enviar.disabled = true; enviar.textContent = 'Activando…';
+      try {
+        const r = await api('registrarProfesionista', { invitacionId: invId, token: tok, nombre: v.n, especialidad: v.e, correo: v.c, whatsapp: v.w,
+          tieneGoogle: gSi.checked, horario: horario, pin: pin.querySelector('input').value, instrucciones: instr.value.trim(), aviso: true });
+        listo(r, v.n);
+      } catch (e) { enviar.disabled = false; enviar.textContent = 'Activar mi agenda'; msg.replaceChildren(h('div', { class: 'err' }, e.message)); }
+    } },
+      h('div', { class: 'body', style: 'gap:16px' },
+        h('p', { class: 'note', style: 'font-size:15px' }, 'Activa tu agenda de citas en un par de minutos. Tus clientes reservarán solos, sin cuenta.'),
+        nombre, esp, correo, wa, google,
+        h('div', { class: 'field' }, h('label', null, 'Días y horarios de atención (citas de 1 hora)'), ed.nodo),
+        pin, pin2,
+        h('div', { class: 'field' }, h('label', { for: 'instr' }, 'Mensaje para tus clientes (opcional)'), instr),
+        h('label', { class: 'check', for: 'aviso' }, aviso, h('span', null, 'Acepto el ', h('a', { href: 'aviso-privacidad.html', target: '_blank', rel: 'noopener' }, 'aviso de privacidad'), ' (obligatorio)')),
+        msg),
+      h('div', { class: 'dock' }, enviar));
+
+    pantalla([
+      h('div', { class: 'top' }, h('div', { class: 'top-bar' }, h('span', { class: 'brand' }, 'D ESPACIOS')),
+        h('div', { class: 'plaque' },
+          c.numero ? h('div', { class: 'num', 'aria-hidden': 'true' }, String(c.numero).padStart(2, '0')) : null,
+          h('div', { class: 'plaque-txt' }, h('span', { class: 'eyebrow' }, [c.nombre, c.sede].filter(Boolean).join(' · ')), h('h1', null, 'Activa tu agenda'), info.nota ? h('span', { class: 'sub' }, info.nota) : null))),
+      form]);
+  }
+
+  function listo(r, nombre) {
+    const texto = 'Hola, ya puedes reservar tu cita conmigo aquí: ' + r.linkReservas;
+    const cb = h('button', { type: 'button', class: 'btn', onclick: async function () { const ok = await copiar(r.linkReservas); cb.textContent = ok ? 'Link copiado' : 'Copia el link de arriba'; } }, 'Copiar mi link de reservas');
+    const root = h('div', { class: 'app dark' });
+    root.appendChild(h('div', { class: 'top-bar', style: 'justify-content:center;padding:0' }, h('span', { class: 'brand' }, 'D ESPACIOS')));
+    root.appendChild(h('div', { class: 'body', style: 'gap:18px;padding-top:22px' },
+      h('div', { class: 'status' }, h('div', { class: 'tick' }, Citas.svg('M5 12.5l4.5 4.5L19 7.5', 22, '#0E0E0D', 3)), h('h1', null, 'Tu agenda está activa'), h('span', { class: 'sub' }, 'Te enviamos el link y los siguientes pasos a tu correo.')),
+      h('div', { class: 'pass-a', style: 'border-radius:4px;word-break:break-all' }, h('div', { class: 'eyebrow dk' }, 'Tu link de reservas'), h('div', { class: 'val' }, r.linkReservas)),
+      h('div', { style: 'display:flex;flex-direction:column;gap:10px' }, cb,
+        h('a', { class: 'btn ghost', href: 'https://wa.me/?text=' + encodeURIComponent(texto), target: '_blank', rel: 'noopener noreferrer' }, 'Compartir por WhatsApp')),
+      h('a', { class: 'linkbtn', style: 'justify-content:center', href: r.linkAgenda }, 'Ir a mi agenda (necesitarás tu PIN)'),
+      r.calendarioCompartido ? h('p', { class: 'note center' }, 'Te compartimos tu calendario a tu cuenta de Google. Acepta la invitación que te llegó por correo.') : null,
+      r.noSePudoCompartir ? h('p', { class: 'note center' }, 'No pudimos compartir tu calendario a ese correo. Recibirás cada cita por correo y D Espacios te ayudará a conectarlo.') : null,
+      r.sinGoogle ? h('p', { class: 'note center' }, 'Recibirás cada cita por correo. Con una cuenta gratuita de Google podrás verlas también en tu calendario.') : null));
+    app.replaceChildren(root); window.scrollTo(0, 0);
+  }
+
+  iniciar();
+})();
+</script>
+</body>
+</html>

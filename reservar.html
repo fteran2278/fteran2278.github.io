@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0E0E0D">
+<title>Reservar cita · D Espacios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="citas.css">
+</head>
+<body>
+<div id="app" class="app"><noscript><p class="noscript">Necesitas activar JavaScript para reservar tu cita.</p></noscript></div>
+<script src="config.js"></script>
+<script src="citas.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { h, svg, api, calendario, slots, fechaCorta, fechaTitulo, top, plaque, mapsLink, mesKey } = Citas;
+  const app = document.getElementById('app');
+  const proId = (new URLSearchParams(location.search).get('p') || '').trim();
+
+  const S = { perfil: null, mes: null, cache: {}, fecha: null, hora: null, paso: 'elegir', enviando: false, cita: null, aviso: '' };
+
+  function pantalla(nodos) { app.replaceChildren.apply(app, nodos); window.scrollTo(0, 0); }
+  function cargando() { pantalla([top(), h('div', { class: 'body' }, h('p', { class: 'spin', role: 'status' }, 'Cargando…'))]); }
+  function falla(msg, reintento) {
+    pantalla([top(), h('div', { class: 'body' }, h('h1', { style: 'font-size:30px' }, 'No pudimos abrir la agenda'), h('div', { class: 'err', role: 'alert' }, msg),
+      reintento ? h('button', { type: 'button', class: 'btn solid-ink', onclick: reintento }, 'Reintentar') : null)]);
+  }
+
+  async function iniciar() {
+    if (!proId) return falla('Este link no es válido. Pide a tu profesionista que te comparta su link de reservas.');
+    cargando();
+    try {
+      S.perfil = await api('perfilProfesionista', { profesionistaId: proId });
+    } catch (e) { return falla(e.message, iniciar); }
+    S.mes = S.perfil.mesActual;
+    await cargarMes(S.mes);
+    vistaElegir();
+  }
+
+  async function cargarMes(mes) {
+    if (S.cache[mes]) return;
+    try {
+      const r = await api('disponibilidad', { profesionistaId: proId, mes: mes });
+      S.cache[mes] = r.dias || {};
+    } catch (e) { S.cache[mes] = {}; S.aviso = e.message; }
+  }
+
+  /* ---------- Paso 1: elegir día y hora ---------- */
+  function vistaElegir() {
+    const P = S.perfil;
+    const dias = S.cache[S.mes];
+    const cal = h('div', { class: 'cal' });
+    const horasHost = h('div', { class: 'slots', role: 'group', 'aria-label': 'Horarios disponibles' });
+    const tituloHoras = h('h2', { class: 'sec' });
+    const bloqueHoras = h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, tituloHoras, horasHost);
+    const dockVal = h('span', { class: 'dock-val' });
+    const continuar = h('button', { type: 'button', class: 'btn', onclick: function () { S.paso = 'datos'; vistaDatos(); } }, 'Continuar');
+
+    function pintar() {
+      calendario(cal, {
+        mes: S.mes, dias: S.cache[S.mes], sel: S.fecha, mesMin: P.mesActual, mesMax: P.mesMax,
+        onMes: async function (d) {
+          const p = S.mes.split('-'); let y = +p[0], m = +p[1] + d;
+          if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; }
+          S.mes = mesKey(y, m);
+          cal.style.opacity = '.5';
+          await cargarMes(S.mes);
+          cal.style.opacity = '';
+          S.fecha = null; S.hora = null; pintar();
+        },
+        onDia: function (f) { S.fecha = f; S.hora = null; pintar(); }
+      });
+      const horas = S.fecha && S.cache[S.mes] ? S.cache[S.mes][S.fecha] : null;
+      bloqueHoras.style.display = horas ? '' : 'none';
+      if (horas) {
+        tituloHoras.textContent = fechaTitulo(S.fecha) + ' · horarios disponibles';
+        slots(horasHost, horas, S.hora, function (hr) { S.hora = hr; pintar(); });
+      }
+      dockVal.textContent = S.hora ? fechaCorta(S.fecha, S.hora + ' a ' + finHora(S.hora, P.duracionMin)) : 'Elige día y hora';
+      continuar.disabled = !S.hora;
+    }
+
+    const sinDias = !dias || !Object.keys(dias).length;
+    pantalla([
+      h('div', { class: 'top' },
+        h('div', { class: 'top-bar' }, h('span', { class: 'brand' }, 'D ESPACIOS'),
+          h('button', { type: 'button', class: 'top-link', onclick: vistaRecuperar }, 'Recuperar mi cita')),
+        plaque(P.consultorio, P.nombre, P.especialidad + ' · ' + P.duracionMin + ' min')),
+      h('div', { class: 'body' },
+        S.aviso ? h('div', { class: 'err', role: 'alert' }, S.aviso) : null,
+        cal,
+        sinDias ? h('p', { class: 'note' }, 'No hay horarios disponibles este mes. Prueba con otro mes.') : null,
+        bloqueHoras,
+        P.precioInfo ? h('p', { class: 'note' }, P.precioInfo) : null),
+      h('div', { class: 'dock' },
+        h('div', { class: 'dock-row' }, h('span', { class: 'eyebrow' }, 'Tu cita'), dockVal), continuar)
+    ]);
+    S.aviso = '';
+    pintar();
+  }
+
+  function finHora(hr, dur) {
+    const t = (+hr.slice(0, 2)) * 60 + (+hr.slice(3)) + (+dur || 60);
+    return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+  }
+
+  /* ---------- Paso 2: datos ---------- */
+  function vistaDatos() {
+    const P = S.perfil;
+    const msg = h('div', { role: 'alert' });
+    const campo = function (id, etiqueta, attrs, ayuda) {
+      return h('div', { class: 'field' }, h('label', { for: id }, etiqueta), h('input', Object.assign({ id: id }, attrs)), ayuda ? h('span', { class: 'hint' }, ayuda) : null);
+    };
+    const nombre = campo('nombre', 'Nombre completo', { type: 'text', autocomplete: 'name', maxlength: '80', required: true });
+    const cel = campo('cel', 'Celular (10 dígitos)', { type: 'tel', inputmode: 'numeric', autocomplete: 'tel-national', placeholder: '444 000 0000', required: true });
+    const correo = campo('correo', 'Correo', { type: 'email', autocomplete: 'email', placeholder: 'tu@correo.com', required: true }, 'Aquí te llega el link para cambiar o cancelar tu cita.');
+    const motivo = campo('motivo', 'Motivo de la cita (opcional)', { type: 'text', maxlength: '140', placeholder: 'Una línea, sin datos médicos ni legales' });
+    const canal = h('select', { id: 'canal' },
+      h('option', { value: 'correo' }, 'Por correo'),
+      h('option', { value: 'sms' }, 'Por SMS (próximamente)'),
+      h('option', { value: 'whatsapp' }, 'Por WhatsApp (próximamente)'),
+      h('option', { value: 'ninguno' }, 'No quiero recordatorios'));
+    const aviso = h('input', { type: 'checkbox', id: 'aviso' });
+    const enviar = h('button', { type: 'submit', class: 'btn' }, 'Confirmar cita');
+    const get = function (c) { return c.querySelector('input'); };
+
+    const form = h('form', { novalidate: true, style: 'display:contents', onsubmit: async function (ev) {
+      ev.preventDefault();
+      if (S.enviando) return;
+      msg.replaceChildren();
+      const datos = { nombre: get(nombre).value.trim(), telefono: get(cel).value, correo: get(correo).value.trim() };
+      const dig = datos.telefono.replace(/\D/g, '');
+      let error = '';
+      if (datos.nombre.length < 2) error = 'Escribe tu nombre completo.';
+      else if (dig.length < 10) error = 'Escribe tu celular a 10 dígitos.';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(datos.correo)) error = 'Escribe un correo válido.';
+      else if (!aviso.checked) error = 'Debes aceptar el aviso de privacidad para reservar.';
+      if (error) { msg.appendChild(h('div', { class: 'err' }, error)); return; }
+      S.enviando = true; enviar.disabled = true; enviar.textContent = 'Confirmando…';
+      try {
+        S.cita = await api('crearCita', Object.assign(datos, {
+          profesionistaId: proId, fecha: S.fecha, hora: S.hora, motivo: get(motivo).value.trim(), canal: canal.value, aviso: true }));
+        S.enviando = false;
+        delete S.cache[S.mes];
+        vistaListo();
+      } catch (e) {
+        S.enviando = false;
+        if (e.codigo === 'horario_ocupado' || e.codigo === 'muy_pronto' || e.codigo === 'muy_lejos' || e.codigo === 'horario_invalido') {
+          delete S.cache[S.mes]; S.hora = null; S.aviso = e.message;
+          await cargarMes(S.mes); vistaElegir(); return;
+        }
+        enviar.disabled = false; enviar.textContent = 'Confirmar cita';
+        msg.replaceChildren(h('div', { class: 'err' }, e.message));
+      }
+    } },
+      h('div', { class: 'body', style: 'gap:16px' },
+        h('div', { class: 'summary' }, h('b', null, P.nombre), h('span', { class: 'note' }, fechaCorta(S.fecha, S.hora + ' a ' + finHora(S.hora, P.duracionMin)))),
+        nombre, cel, correo, motivo,
+        h('div', { class: 'field' }, h('label', { for: 'canal' }, '¿Cómo quieres tus recordatorios?'), canal,
+          h('span', { class: 'hint' }, 'Mientras SMS y WhatsApp no estén listos, te escribimos por correo.')),
+        h('label', { class: 'check', for: 'aviso' }, aviso,
+          h('span', null, 'Acepto el ', h('a', { href: P.avisoUrl || 'aviso-privacidad.html', target: '_blank', rel: 'noopener' }, 'aviso de privacidad'), ' (obligatorio)')),
+        msg),
+      h('div', { class: 'dock' }, enviar));
+
+    pantalla([
+      h('div', { class: 'top' }, h('div', { class: 'top-bar', style: 'padding-left:8px;justify-content:flex-start;gap:4px' },
+        h('button', { type: 'button', class: 'arrow', style: 'color:#fff', 'aria-label': 'Volver', onclick: vistaElegir }, svg('M15 5l-7 7 7 7', 20, 'currentColor')),
+        h('span', { class: 'brand' }, 'TUS DATOS'))),
+      form
+    ]);
+  }
+
+  /* ---------- Paso 3: listo ---------- */
+  function vistaListo() {
+    const c = S.cita;
+    const miLink = 'mi-cita.html?id=' + encodeURIComponent(c.id) + '&t=' + encodeURIComponent(c.token);
+    const root = h('div', { class: 'app dark', style: 'min-height:100vh' });
+    const partes = [
+      h('div', { class: 'top-bar', style: 'justify-content:center;padding:0' }, h('span', { class: 'brand' }, 'D ESPACIOS')),
+      h('div', { class: 'body', style: 'gap:18px;padding-top:22px' },
+        h('div', { class: 'status' }, h('div', { class: 'tick' }, svg('M5 12.5l4.5 4.5L19 7.5', 22, '#0E0E0D', 3)),
+          h('h1', null, 'Tu cita está confirmada'), h('span', { class: 'sub' }, 'Te enviamos el resumen a tu correo.')),
+        h('div', { class: 'pass' },
+          h('div', { class: 'pass-a' },
+            h('div', null, h('div', { class: 'eyebrow dk' }, 'Con'), h('div', { class: 'val' }, c.profesionista.nombre + ' · ' + c.profesionista.especialidad)),
+            h('div', null, h('div', { class: 'eyebrow dk' }, 'Cuándo'), h('div', { class: 'big' }, Citas.cap(c.fechaTexto)), h('div', { class: 'hora' }, c.horaTexto))),
+          h('div', { class: 'tear' }, h('i'), h('i'), h('u')),
+          h('div', { class: 'pass-b' },
+            c.consultorio ? h('div', null, h('div', { class: 'eyebrow dk' }, 'Dónde'),
+              h('div', { class: 'val' }, [c.consultorio.numero ? 'Consultorio ' + c.consultorio.numero : c.consultorio.nombre, c.consultorio.sede].filter(Boolean).join(' · ')),
+              c.consultorio.direccion ? h('div', { class: 'val2' }, c.consultorio.direccion) : null,
+              c.consultorio.instruccionesLlegada ? h('div', { class: 'val2' }, c.consultorio.instruccionesLlegada) : null,
+              mapsLink(c.consultorio)) : null,
+            h('div', { class: 'fold' }, h('span', { class: 'eyebrow dk' }, 'Folio'), h('span', { class: 'folio' }, c.id.replace(/^CIT-/, 'CIT-'))))),
+        h('div', { style: 'display:flex;flex-direction:column;gap:10px' },
+          h('button', { type: 'button', class: 'btn', onclick: function () { Citas.descargarIcs(c); } }, 'Agregar a mi calendario'),
+          h('a', { class: 'linkbtn', href: Citas.linkGoogleCal(c), target: '_blank', rel: 'noopener noreferrer' }, 'Agregar a Google Calendar'),
+          h('a', { class: 'btn ghost', href: miLink }, 'Ver, cambiar o cancelar mi cita')),
+        h('p', { class: 'note center' }, 'Guarda el correo o el link de “Ver, cambiar o cancelar”: es tu acceso a la cita. No necesitas cuenta.'))
+    ];
+    app.replaceChildren(root); root.replaceChildren.apply(root, partes); window.scrollTo(0, 0);
+    document.title = 'Cita confirmada · D Espacios';
+  }
+
+  /* ---------- Recuperar mi cita ---------- */
+  function vistaRecuperar() {
+    const msg = h('div', { role: 'status' });
+    const inp = h('input', { id: 'contacto', type: 'text', autocomplete: 'email', placeholder: 'tu@correo.com o 444 000 0000', maxlength: '120' });
+    const btn = h('button', { type: 'submit', class: 'btn' }, 'Enviarme el link');
+    pantalla([
+      h('div', { class: 'top' }, h('div', { class: 'top-bar', style: 'padding-left:8px;justify-content:flex-start;gap:4px' },
+        h('button', { type: 'button', class: 'arrow', style: 'color:#fff', 'aria-label': 'Volver', onclick: function () { vistaElegir(); } }, svg('M15 5l-7 7 7 7', 20, 'currentColor')),
+        h('span', { class: 'brand' }, 'RECUPERAR MI CITA'))),
+      h('form', { novalidate: true, style: 'display:contents', onsubmit: async function (ev) {
+        ev.preventDefault();
+        const v = inp.value.trim(); if (!v) return;
+        btn.disabled = true; msg.replaceChildren();
+        try { const r = await api('recuperarCita', { contacto: v }); msg.replaceChildren(h('div', { class: 'ok' }, r.mensaje)); }
+        catch (e) { msg.replaceChildren(h('div', { class: 'err' }, e.message)); }
+        btn.disabled = false;
+      } },
+        h('div', { class: 'body', style: 'gap:16px' },
+          h('h2', { class: 'sec' }, '¿Perdiste el link de tu cita?'),
+          h('p', { class: 'note', style: 'font-size:15px' }, 'Escribe el correo o el celular con el que reservaste. Si hay citas próximas, te enviamos el link al correo registrado.'),
+          h('div', { class: 'field' }, h('label', { for: 'contacto' }, 'Correo o celular'), inp), msg),
+        h('div', { class: 'dock' }, btn))
+    ]);
+  }
+
+  iniciar();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0E0E0D">
+<title>Administración · D Espacios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="citas.css">
+
+</head>
+<body>
+<div id="app" class="app wide"><noscript><p class="noscript">Necesitas activar JavaScript.</p></noscript></div>
+<script src="config.js"></script>
+<script src="citas.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { h, api, copiar } = Citas;
+  const app = document.getElementById('app');
+  let sesion = '';
+  try { sesion = sessionStorage.getItem('adm') || ''; } catch (e) { sesion = ''; }
+  const guardar = function (v) { sesion = v; try { v ? sessionStorage.setItem('adm', v) : sessionStorage.removeItem('adm'); } catch (e) { /* sin storage */ } };
+
+  function marco(titulo, contenido, salir) {
+    app.replaceChildren(
+      h('div', { class: 'top' }, h('div', { class: 'top-bar' }, h('span', { class: 'brand' }, 'D ESPACIOS · ' + titulo),
+        salir ? h('button', { type: 'button', class: 'top-link', onclick: function () { guardar(''); login(); } }, 'Salir') : null)),
+      contenido);
+  }
+
+  async function llamar(accion, datos) {
+    try { return await api(accion, Object.assign({ sesion: sesion }, datos || {})); }
+    catch (e) { if (e.codigo === 'sesion_expirada') { guardar(''); login('Tu sesión terminó. Entra de nuevo.'); } throw e; }
+  }
+
+  function login(aviso) {
+    const msg = h('div', { role: 'alert' }, aviso ? h('div', { class: 'err' }, aviso) : null);
+    const pin = h('input', { id: 'pin', type: 'password', inputmode: 'numeric', autocomplete: 'current-password', maxlength: '12' });
+    const btn = h('button', { type: 'submit', class: 'btn' }, 'Entrar');
+    marco('ADMINISTRADOR', h('form', { novalidate: true, style: 'display:contents', onsubmit: async function (ev) {
+      ev.preventDefault(); if (!pin.value) return;
+      btn.disabled = true; msg.replaceChildren();
+      try { const r = await api('adminEntrar', { pin: pin.value }); guardar(r.sesion); panel(); }
+      catch (e) { btn.disabled = false; pin.value = ''; msg.replaceChildren(h('div', { class: 'err' }, e.message)); }
+    } },
+      h('div', { class: 'body', style: 'gap:16px' }, h('h2', { class: 'sec-t' }, 'Acceso de administrador'),
+        h('div', { class: 'field' }, h('label', { for: 'pin' }, 'PIN'), pin), msg),
+      h('div', { class: 'dock' }, btn)), false);
+    pin.focus();
+  }
+
+  async function panel(nuevo) {
+    marco('ADMINISTRADOR', h('div', { class: 'body' }, h('p', { class: 'spin', role: 'status' }, 'Cargando…')), true);
+    let d;
+    try { d = await llamar('adminPanel'); } catch (e) { if (sesion) marco('ADMINISTRADOR', h('div', { class: 'body' }, h('div', { class: 'err' }, e.message)), true); return; }
+
+    // --- nueva invitación
+    const sedes = {}; d.consultorios.forEach(function (c) { (sedes[c.sede] = sedes[c.sede] || []).push(c); });
+    const selCons = h('select', { id: 'cons' }, h('option', { value: '' }, 'Elige una oficina…'),
+      Object.keys(sedes).map(function (s) { return h('optgroup', { label: s }, sedes[s].map(function (c) { return h('option', { value: c.id }, c.nombre + (c.profesionistas ? ' (' + c.profesionistas + ' con agenda)' : '')); })); }));
+    const nota = h('input', { id: 'nota', type: 'text', maxlength: '60', placeholder: 'Ej. Dra. Pérez, psicóloga' });
+    const msg = h('div', { role: 'alert' });
+    const resultado = h('div');
+    const crear = h('button', { type: 'button', class: 'btn solid-ink', onclick: async function () {
+      msg.replaceChildren(); resultado.replaceChildren();
+      if (!selCons.value) { msg.appendChild(h('div', { class: 'err' }, 'Elige una oficina.')); return; }
+      crear.disabled = true;
+      try {
+        const r = await llamar('adminCrearInvitacion', { consultorioId: selCons.value, nota: nota.value.trim() });
+        panel(r);
+      } catch (e) { msg.replaceChildren(h('div', { class: 'err' }, e.message)); crear.disabled = false; }
+    } }, 'Generar link de registro');
+
+    if (nuevo) {
+      const texto = 'Hola' + (nota.value ? '' : '') + ', te comparto tu link para activar tu agenda de citas en D Espacios (vence el ' + nuevo.expira + '): ' + nuevo.link;
+      const cp = h('button', { type: 'button', class: 'btn', onclick: async function () { cp.textContent = (await copiar(nuevo.link)) ? 'Link copiado' : 'Copia el link de arriba'; } }, 'Copiar link');
+      resultado.appendChild(h('div', { class: 'ok', style: 'display:flex;flex-direction:column;gap:10px' },
+        h('b', null, 'Invitación lista (vence el ' + nuevo.expira + ', un solo uso)'), h('div', { class: 'linkbox' }, nuevo.link), cp,
+        h('a', { class: 'btn light', href: 'https://wa.me/?text=' + encodeURIComponent(texto), target: '_blank', rel: 'noopener noreferrer' }, 'Enviar por WhatsApp')));
+    }
+
+    // --- listas
+    const invs = d.invitaciones.length ? d.invitaciones.map(function (i) {
+      return h('div', { class: 'item' },
+        h('div', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:flex-start' }, h('b', null, i.consultorio + (i.nota ? ' · ' + i.nota : '')),
+          h('span', { class: 'chip' + (i.estado === 'usada' ? ' ok' : i.estado === 'pendiente' ? '' : ' mal') }, i.estado)),
+        h('span', { class: 'meta' }, i.id + ' · vence ' + i.expira),
+        i.estado === 'pendiente' ? h('div', { class: 'acciones' },
+          h('button', { type: 'button', class: 'linkbtn', onclick: async function (ev) { ev.target.textContent = (await copiar(i.link)) ? 'Copiado' : 'No se pudo copiar'; } }, 'Copiar link'),
+          h('button', { type: 'button', class: 'linkbtn', style: 'color:var(--danger)', onclick: async function () { try { await llamar('adminRevocarInvitacion', { invitacionId: i.id }); panel(); } catch (e) { /* mostrado */ } } }, 'Revocar')) : null);
+    }) : [h('p', { class: 'note' }, 'Aún no hay invitaciones.')];
+
+    const pros = d.profesionistas.length ? d.profesionistas.map(function (p) {
+      const msgP = h('div', { role: 'status' });
+      const accion = function (texto, fn, estilo) {
+        const b = h('button', { type: 'button', class: 'linkbtn', style: estilo || '', onclick: async function () {
+          b.disabled = true; msgP.replaceChildren();
+          try { await fn(); } catch (e) { msgP.replaceChildren(h('div', { class: 'err' }, e.message)); b.disabled = false; }
+        } }, texto);
+        return b;
+      };
+      return h('div', { class: 'item' },
+        h('div', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:flex-start' }, h('b', null, p.nombre), h('span', { class: 'chip' + (p.activo ? ' ok' : ' mal') }, p.activo ? 'activo' : 'inactivo')),
+        h('span', { class: 'meta' }, [p.especialidad, p.espacio].filter(Boolean).join(' · ')),
+        h('span', { class: 'meta' }, p.calendario === 'compartido' ? 'Calendario compartido a su cuenta Google' : 'Solo por correo (sin calendario compartido)'),
+        h('span', { class: 'meta' }, (p.pinDefinido ? 'PIN definido' : 'SIN PIN') + (p.ultimoAcceso ? ' · último acceso ' + p.ultimoAcceso : ' · aún no ha entrado') + (p.bloqueado ? ' · BLOQUEADO' : '')),
+        h('div', { class: 'acciones' },
+          accion('Copiar su link', async function () { await copiar(p.link); }),
+          h('a', { class: 'linkbtn', href: p.link, target: '_blank', rel: 'noopener noreferrer' }, 'Abrir'),
+          accion('Restablecer PIN', async function () { const r = await llamar('adminRestablecerPin', { profesionistaId: p.id }); msgP.replaceChildren(h('div', { class: 'ok' }, 'Link de PIN nuevo enviado a ' + r.enviadoA)); }),
+          p.bloqueado ? accion('Desbloquear', async function () { await llamar('adminDesbloquear', { profesionistaId: p.id }); panel(); }) : null,
+          accion(p.activo ? 'Desactivar agenda' : 'Activar agenda', async function () { await llamar('adminActivar', { profesionistaId: p.id, activo: !p.activo }); panel(); }, p.activo ? 'color:var(--danger)' : '')),
+        msgP);
+    }) : [h('p', { class: 'note' }, 'Aún no hay profesionistas registrados.')];
+
+    const ocup = d.consultorios.length ? d.consultorios.filter(function (c) { return c.profesionistas > 0; }).length : 0;
+
+    marco('ADMINISTRADOR', h('div', { class: 'body', style: 'gap:20px' },
+      h('h2', { class: 'sec-t' }, 'Nueva invitación'),
+      h('div', { class: 'row2' },
+        h('div', { class: 'field' }, h('label', { for: 'cons' }, 'Oficina'), selCons),
+        h('div', { class: 'field' }, h('label', { for: 'nota' }, 'Para quién (opcional)'), nota)),
+      msg, crear, resultado,
+      h('h2', { class: 'sec-t' }, 'Profesionistas (' + d.profesionistas.length + ')'),
+      h('p', { class: 'note' }, ocup + ' de ' + d.consultorios.length + ' oficinas con agenda activa.'),
+      h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, pros),
+      h('h2', { class: 'sec-t' }, 'Invitaciones'),
+      h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, invs),
+      h('p', { class: 'note' }, 'Esta vista no muestra datos de clientes. Las estadísticas de la red llegan en la siguiente fase.')), true);
+  }
+
+  if (sesion) panel(); else login();
+})();
+</script>
+</body>
+</html>

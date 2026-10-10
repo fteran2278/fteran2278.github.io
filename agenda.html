@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#0E0E0D">
+<title>Mi agenda · D Espacios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="citas.css">
+</head>
+<body>
+<div id="app" class="app wide"><noscript><p class="noscript">Necesitas activar JavaScript.</p></noscript></div>
+<script src="config.js"></script>
+<script src="citas.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { h, api, copiar, editorHorario } = Citas;
+  const app = document.getElementById('app');
+  const q = new URLSearchParams(location.search);
+  const proId = (q.get('p') || '').trim(), resetTok = (q.get('reset') || '').trim();
+  const S = { sesion: '', perfil: null, tab: 'hoy', semana: null };
+  const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  try { S.sesion = sessionStorage.getItem('ses_' + proId) || ''; } catch (e) { S.sesion = ''; }
+  const guardar = function (v) { S.sesion = v; try { v ? sessionStorage.setItem('ses_' + proId, v) : sessionStorage.removeItem('ses_' + proId); } catch (e) { /* sin storage */ } };
+
+  /* ---------- fechas (string 'yyyy-mm-dd', sin zona del dispositivo) ---------- */
+  const U = function (f) { const p = f.split('-'); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); };
+  const F = function (d) { return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0'); };
+  const sumar = function (f, n) { const d = U(f); d.setUTCDate(d.getUTCDate() + n); return F(d); };
+  const lunesDe = function (f) { return sumar(f, -((U(f).getUTCDay() + 6) % 7)); };
+  const corta = function (f) { const d = U(f); return DIA[d.getUTCDay()].slice(0, 3) + ' ' + d.getUTCDate() + ' ' + MES[d.getUTCMonth()]; };
+  const larga = function (f) { const d = U(f); return DIA[d.getUTCDay()] + ' ' + d.getUTCDate() + ' de ' + MES[d.getUTCMonth()]; };
+
+  function marco(contenido, conSalir, nombre) {
+    app.replaceChildren(
+      h('div', { class: 'top' }, h('div', { class: 'top-bar' }, h('span', { class: 'brand' }, 'D ESPACIOS' + (nombre ? ' · ' + nombre.toUpperCase() : '')),
+        conSalir ? h('button', { type: 'button', class: 'top-link', onclick: function () { guardar(''); S.perfil = null; login(); } }, 'Salir') : null)),
+      contenido);
+    window.scrollTo(0, 0);
+  }
+  const cuerpo = function () { const b = h('div', { class: 'body', style: 'gap:16px' }); for (let i = 0; i < arguments.length; i++) if (arguments[i]) b.appendChild(arguments[i]); return b; };
+  const err = function (m) { return h('div', { class: 'err', role: 'alert' }, m); };
+
+  async function llamar(accion, datos) {
+    try { return await api(accion, Object.assign({ sesion: S.sesion }, datos || {})); }
+    catch (e) { if (e.codigo === 'sesion_expirada') { guardar(''); login('Tu sesión terminó. Entra de nuevo con tu PIN.'); } throw e; }
+  }
+
+  /* ---------- acceso ---------- */
+  function login(aviso) {
+    if (!proId) return marco(cuerpo(h('h1', { style: 'font-size:30px' }, 'Link incompleto'), err('Abre el link de tu agenda que te llegó por correo.')), false);
+    const msg = h('div', { role: 'alert' }, aviso ? err(aviso) : null);
+    const pin = h('input', { id: 'pin', type: 'password', inputmode: 'numeric', autocomplete: 'current-password', maxlength: '6' });
+    const btn = h('button', { type: 'submit', class: 'btn' }, 'Entrar');
+    const olv = h('button', { type: 'button', class: 'linkbtn', style: 'align-self:flex-start', onclick: async function () {
+      olv.disabled = true;
+      try { const r = await api('agendaOlvidePin', { profesionistaId: proId }); msg.replaceChildren(h('div', { class: 'ok' }, r.mensaje)); }
+      catch (e) { msg.replaceChildren(err(e.message)); }
+      olv.disabled = false;
+    } }, 'Olvidé mi PIN');
+    marco(h('form', { novalidate: true, style: 'display:contents', onsubmit: async function (ev) {
+      ev.preventDefault();
+      if (!/^\d{6}$/.test(pin.value)) { msg.replaceChildren(err('Tu PIN tiene 6 dígitos.')); return; }
+      btn.disabled = true; msg.replaceChildren();
+      try { const r = await api('agendaEntrar', { profesionistaId: proId, pin: pin.value }); guardar(r.sesion); iniciar(); }
+      catch (e) { btn.disabled = false; pin.value = ''; msg.replaceChildren(err(e.message)); }
+    } },
+      cuerpo(h('h1', { style: 'font-size:32px' }, 'Mi agenda'), h('div', { class: 'field' }, h('label', { for: 'pin' }, 'PIN de 6 dígitos'), pin), olv, msg),
+      h('div', { class: 'dock' }, btn)), false);
+    pin.focus();
+  }
+
+  function vistaReset() {
+    const n1 = h('input', { id: 'n1', type: 'password', inputmode: 'numeric', maxlength: '6', autocomplete: 'new-password' });
+    const n2 = h('input', { id: 'n2', type: 'password', inputmode: 'numeric', maxlength: '6', autocomplete: 'new-password' });
+    const msg = h('div', { role: 'alert' }); const btn = h('button', { type: 'submit', class: 'btn' }, 'Guardar PIN nuevo');
+    marco(h('form', { novalidate: true, style: 'display:contents', onsubmit: async function (ev) {
+      ev.preventDefault(); msg.replaceChildren();
+      if (!/^\d{6}$/.test(n1.value)) { msg.appendChild(err('Tu PIN debe tener 6 dígitos.')); return; }
+      if (n1.value !== n2.value) { msg.appendChild(err('Los dos PIN no coinciden.')); return; }
+      btn.disabled = true;
+      try { await api('agendaRestablecerPin', { profesionistaId: proId, token: resetTok, pinNuevo: n1.value }); history.replaceState(null, '', 'agenda.html?p=' + encodeURIComponent(proId)); login('PIN actualizado. Entra con tu PIN nuevo.'); }
+      catch (e) { btn.disabled = false; msg.replaceChildren(err(e.message)); }
+    } },
+      cuerpo(h('h1', { style: 'font-size:32px' }, 'Crea tu PIN nuevo'),
+        h('div', { class: 'field' }, h('label', { for: 'n1' }, 'PIN nuevo (6 dígitos)'), n1), h('div', { class: 'field' }, h('label', { for: 'n2' }, 'Repite el PIN'), n2), msg),
+      h('div', { class: 'dock' }, btn)), false);
+  }
+
+  /* ---------- armazón con pestañas ---------- */
+  const TABS = [['hoy', 'Hoy'], ['semana', 'Semana'], ['bloqueos', 'Bloqueos'], ['horario', 'Mi horario'], ['clientes', 'Clientes'], ['cuenta', 'Cuenta']];
+  let contenido;
+  async function iniciar() {
+    marco(cuerpo(h('p', { class: 'spin', role: 'status' }, 'Cargando…')), true);
+    try { S.perfil = await llamar('agendaPerfil'); } catch (e) { if (S.sesion) marco(cuerpo(err(e.message)), true); return; }
+    S.semana = lunesDe(S.perfil.hoy);
+    armar();
+  }
+  function armar() {
+    contenido = h('div', { class: 'body', style: 'gap:18px' });
+    const tabs = h('div', { class: 'tabs', role: 'tablist' }, TABS.map(function (t) {
+      return h('button', { type: 'button', class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; armar(); } }, t[1]);
+    }));
+    marco(h('div', { style: 'display:contents' }, tabs, contenido), true, S.perfil.nombre);
+    window.scrollTo(0, 0);
+    ({ hoy: tabHoy, semana: tabSemana, bloqueos: tabBloqueos, horario: tabHorario, clientes: tabClientes, cuenta: tabCuenta })[S.tab]();
+  }
+  const cargando = function () { contenido.replaceChildren(h('p', { class: 'spin', role: 'status' }, 'Cargando…')); };
+  const recargar = function () { armar(); };
+
+  /* ---------- tarjeta de cita ---------- */
+  function tarjeta(c) {
+    const tel = c.cliente.telefono;
+    const estados = { confirmada: ['Confirmada', ''], asistio: ['Asistió', ' asis'], no_asistio: ['No asistió', ' noas'], cancelada: ['Cancelada', ' mal'] };
+    const et = estados[c.estado] || [c.estado, ''];
+    const msg = h('div', { role: 'alert' });
+    const act = h('div', { class: 'acciones' });
+    const hacer = function (fn) { return async function (ev) { ev.target.disabled = true; msg.replaceChildren(); try { await fn(); recargar(); } catch (e) { ev.target.disabled = false; msg.replaceChildren(err(e.message)); } }; };
+    if (tel) act.appendChild(h('a', { class: 'linkbtn', href: 'https://wa.me/52' + tel, target: '_blank', rel: 'noopener noreferrer' }, 'WhatsApp'));
+    if (c.link) act.appendChild(h('button', { type: 'button', class: 'linkbtn', onclick: async function (ev) { ev.target.textContent = (await copiar(c.link)) ? 'Link copiado' : 'No se pudo copiar'; } }, 'Copiar link de la cita'));
+    if (c.estado === 'confirmada' && c.inicioPasado) {
+      act.appendChild(h('button', { type: 'button', class: 'linkbtn', onclick: hacer(function () { return llamar('agendaMarcar', { citaId: c.id, estado: 'asistio' }); }) }, 'Asistió'));
+      act.appendChild(h('button', { type: 'button', class: 'linkbtn', style: 'color:var(--danger)', onclick: hacer(function () { return llamar('agendaMarcar', { citaId: c.id, estado: 'no_asistio' }); }) }, 'No asistió'));
+    }
+    if (c.estado === 'asistio' || c.estado === 'no_asistio') act.appendChild(h('button', { type: 'button', class: 'linkbtn', onclick: hacer(function () { return llamar('agendaMarcar', { citaId: c.id, estado: 'confirmada' }); }) }, 'Deshacer marca'));
+    if (c.estado === 'confirmada' && !c.inicioPasado) {
+      const cancelar = h('button', { type: 'button', class: 'linkbtn', style: 'color:var(--danger)', onclick: function () {
+        cancelar.replaceWith(h('span', { class: 'acciones' }, h('span', { class: 'note', style: 'align-self:center' }, 'Se avisa al cliente por correo.'),
+          h('button', { type: 'button', class: 'linkbtn', style: 'color:var(--danger)', onclick: hacer(function () { return llamar('agendaCancelar', { citaId: c.id }); }) }, 'Sí, cancelar'),
+          h('button', { type: 'button', class: 'linkbtn', onclick: recargar }, 'No')));
+      } }, 'Cancelar cita');
+      act.appendChild(cancelar);
+    }
+    return h('div', { class: 'item' },
+      h('div', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:flex-start' }, h('span', { class: 'hora' }, c.hora + ' – ' + c.horaFin), h('span', { class: 'chip' + et[1] }, et[0])),
+      h('b', null, c.cliente.nombre || 'Cliente'),
+      h('span', { class: 'meta' }, [tel, c.cliente.correo].filter(Boolean).join(' · ')),
+      c.motivo ? h('span', { class: 'meta' }, 'Motivo: ' + c.motivo) : null, act, msg);
+  }
+  const chipBloqueo = function (b) { return h('div', { class: 'item', style: 'background:#F3F1EB' }, h('span', { class: 'chip bq' }, 'Bloqueado'), h('span', { class: 'meta' }, (b.diaCompleto ? 'Todo el día' : b.horaIni + ' – ' + b.horaFin) + (b.motivo ? ' · ' + b.motivo : ''))); };
+
+  /* ---------- Hoy ---------- */
+  async function tabHoy() {
+    cargando();
+    let r; try { r = await llamar('agendaCitas', { desde: S.perfil.hoy, hasta: sumar(S.perfil.hoy, 7) }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    const activas = r.citas.filter(function (c) { return c.estado !== 'cancelada'; });
+    const hoy = activas.filter(function (c) { return c.fecha === S.perfil.hoy; });
+    const prox = activas.filter(function (c) { return c.fecha > S.perfil.hoy; });
+    const porDia = {}; prox.forEach(function (c) { (porDia[c.fecha] = porDia[c.fecha] || []).push(c); });
+    contenido.replaceChildren(
+      h('h2', { class: 'sec-t' }, 'Hoy · ' + larga(S.perfil.hoy)),
+      hoy.length ? h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, hoy.map(tarjeta)) : h('p', { class: 'vacio' }, 'No tienes citas hoy.'),
+      h('h2', { class: 'sec-t' }, 'Próximos 7 días'),
+      Object.keys(porDia).length ? h('div', { style: 'display:flex;flex-direction:column;gap:14px' }, Object.keys(porDia).map(function (f) {
+        return h('div', { class: 'dia-sem' }, h('h3', null, larga(f)), porDia[f].map(tarjeta));
+      })) : h('p', { class: 'vacio' }, 'Sin citas próximas.'));
+  }
+
+  /* ---------- Semana ---------- */
+  async function tabSemana() {
+    cargando();
+    const ini = S.semana, fin = sumar(ini, 6);
+    let r; try { r = await llamar('agendaCitas', { desde: ini, hasta: fin }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    const dias = [];
+    for (let i = 0; i < 7; i++) {
+      const f = sumar(ini, i);
+      const cs = r.citas.filter(function (c) { return c.fecha === f && c.estado !== 'cancelada'; });
+      const bs = r.bloqueos.filter(function (b) { return b.fechaIni <= f && (b.fechaFin > f || (b.fechaFin === f && b.horaFin !== '00:00')); });
+      dias.push(h('div', { class: 'dia-sem' + (f === S.perfil.hoy ? ' hoy' : '') }, h('h3', null, larga(f)), bs.map(chipBloqueo), cs.map(tarjeta), !cs.length && !bs.length ? h('p', { class: 'vacio' }, 'Sin citas.') : null));
+    }
+    const nav = function (d) { return function () { S.semana = sumar(S.semana, d * 7); tabSemana(); }; };
+    contenido.replaceChildren(
+      h('div', { style: 'display:flex;align-items:center;justify-content:space-between' },
+        h('button', { type: 'button', class: 'arrow', 'aria-label': 'Semana anterior', onclick: nav(-1) }, Citas.svg('M15 5l-7 7 7 7', 20, 'currentColor')),
+        h('h2', { class: 'sec-t', style: 'font-size:22px' }, corta(ini) + ' – ' + corta(fin)),
+        h('button', { type: 'button', class: 'arrow', 'aria-label': 'Semana siguiente', onclick: nav(1) }, Citas.svg('M9 5l7 7-7 7', 20, 'currentColor'))),
+      h('div', { style: 'display:flex;flex-direction:column;gap:16px' }, dias));
+  }
+
+  /* ---------- Bloqueos ---------- */
+  async function tabBloqueos() {
+    cargando();
+    let r; try { r = await llamar('agendaCitas', { desde: S.perfil.hoy, hasta: sumar(S.perfil.hoy, 62) }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    const H = []; for (let m = 6 * 60; m <= 22 * 60; m += 30) H.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + (m % 60 ? '30' : '00'));
+    const opts = function (v) { const s = h('select', null, H.map(function (x) { return h('option', { value: x }, x); })); s.value = v; return s; };
+    const tipo = h('select', { id: 'tipo' }, h('option', { value: 'dias' }, 'Días completos'), h('option', { value: 'franja' }, 'Una franja del día'));
+    const f1 = h('input', { id: 'f1', type: 'date', min: S.perfil.hoy, value: S.perfil.hoy });
+    const f2 = h('input', { id: 'f2', type: 'date', min: S.perfil.hoy });
+    const h1 = opts('09:00'), h2 = opts('11:00');
+    const motivo = h('input', { id: 'mot', type: 'text', maxlength: '80', placeholder: 'Ej. Vacaciones, curso, cita médica' });
+    const filaF2 = h('div', { class: 'field' }, h('label', { for: 'f2' }, 'Hasta (opcional)'), f2);
+    const filaH = h('div', { class: 'row2', style: 'display:none' }, h('div', { class: 'field' }, h('label', null, 'Desde'), h1), h('div', { class: 'field' }, h('label', null, 'Hasta'), h2));
+    tipo.addEventListener('change', function () { const fr = tipo.value === 'franja'; filaH.style.display = fr ? 'grid' : 'none'; filaF2.style.display = fr ? 'none' : ''; });
+    const msg = h('div', { role: 'alert' });
+    const btn = h('button', { type: 'button', class: 'btn solid-ink', onclick: async function () {
+      msg.replaceChildren(); btn.disabled = true;
+      try {
+        const fr = tipo.value === 'franja';
+        const res = await llamar('agendaCrearBloqueo', { fechaIni: f1.value, fechaFin: fr ? '' : (f2.value || ''), horaIni: fr ? h1.value : '', horaFin: fr ? h2.value : '', motivo: motivo.value.trim() });
+        if (res.citasAfectadas.length) {
+          S.aviso = res.citasAfectadas;
+        } else S.aviso = null;
+        tabBloqueos();
+      } catch (e) { btn.disabled = false; msg.replaceChildren(err(e.message)); }
+    } }, 'Bloquear');
+    const aviso = S.aviso && S.aviso.length ? h('div', { class: 'err' }, h('b', null, 'Ojo: ya tienes citas en ese bloqueo. No se cancelaron.'),
+      h('ul', { style: 'margin:6px 0 0;padding-left:18px' }, S.aviso.map(function (c) { return h('li', null, corta(c.fecha) + ' ' + c.hora + ' · ' + c.cliente); })),
+      h('span', null, 'Cancélalas o muévelas desde Hoy o Semana.')) : null;
+    S.aviso = null;
+    const lista = r.bloqueos.length ? r.bloqueos.map(function (b) {
+      return h('div', { class: 'item' }, h('b', null, b.diaCompleto ? (b.fechaIni === sumar(b.fechaFin, -1) ? larga(b.fechaIni) : corta(b.fechaIni) + ' → ' + corta(sumar(b.fechaFin, -1))) : larga(b.fechaIni) + ' · ' + b.horaIni + ' – ' + b.horaFin),
+        b.motivo ? h('span', { class: 'meta' }, b.motivo) : null,
+        h('div', { class: 'acciones' }, h('button', { type: 'button', class: 'linkbtn', style: 'color:var(--danger)', onclick: async function (ev) { ev.target.disabled = true; try { await llamar('agendaEliminarBloqueo', { bloqueoId: b.id }); tabBloqueos(); } catch (e) { ev.target.disabled = false; } } }, 'Quitar bloqueo')));
+    }) : [h('p', { class: 'vacio' }, 'No tienes bloqueos en los próximos 60 días.')];
+    contenido.replaceChildren(
+      h('h2', { class: 'sec-t' }, 'Bloquear fechas'),
+      h('p', { class: 'note' }, 'Los clientes no podrán reservar en lo que bloquees. Las citas que ya existan no se cancelan solas.'),
+      h('div', { class: 'field' }, h('label', { for: 'tipo' }, 'Tipo'), tipo),
+      h('div', { class: 'row2' }, h('div', { class: 'field' }, h('label', { for: 'f1' }, 'Fecha'), f1), filaF2), filaH,
+      h('div', { class: 'field' }, h('label', { for: 'mot' }, 'Motivo (solo lo ves tú)'), motivo), aviso, msg, btn,
+      h('h2', { class: 'sec-t' }, 'Bloqueos próximos'), h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, lista));
+  }
+
+  /* ---------- Mi horario ---------- */
+  function tabHorario() {
+    const P = S.perfil;
+    const ed = editorHorario(P.horario);
+    const wa = h('input', { id: 'wa', type: 'tel', inputmode: 'numeric', value: P.whatsapp });
+    const ins = h('textarea', { id: 'ins', maxlength: '200' }); ins.value = P.instrucciones;
+    const msg = h('div', { role: 'alert' });
+    const btn = h('button', { type: 'button', class: 'btn solid-ink', onclick: async function () {
+      msg.replaceChildren(); let hor;
+      try { hor = ed.leer(); } catch (e) { msg.appendChild(err(e.message)); return; }
+      btn.disabled = true;
+      try {
+        const r = await llamar('agendaGuardarHorario', { horario: hor, whatsapp: wa.value, instrucciones: ins.value.trim() });
+        P.horario = hor; P.whatsapp = wa.value.replace(/\D/g, '').slice(-10); P.instrucciones = ins.value.trim();
+        msg.replaceChildren(h('div', { class: 'ok' }, 'Guardado. Los clientes ya ven tu horario nuevo.'),
+          r.citasFueraDeHorario.length ? h('div', { class: 'err', style: 'margin-top:8px' }, h('b', null, 'Estas citas quedaron fuera de tu nuevo horario (no se cancelaron):'),
+            h('ul', { style: 'margin:6px 0 0;padding-left:18px' }, r.citasFueraDeHorario.map(function (c) { return h('li', null, corta(c.fecha) + ' ' + c.hora + ' · ' + c.cliente); }))) : null);
+      } catch (e) { msg.replaceChildren(err(e.message)); }
+      btn.disabled = false;
+    } }, 'Guardar cambios');
+    contenido.replaceChildren(
+      h('h2', { class: 'sec-t' }, 'Mi horario'),
+      h('p', { class: 'note' }, 'Citas de 1 hora, entre ' + P.apertura + ' y ' + P.cierre + '. Tu espacio: ' + (P.espacio || 'por asignar') + '.'),
+      ed.nodo,
+      h('div', { class: 'field' }, h('label', { for: 'wa' }, 'Tu WhatsApp (lo ven clientes con cita fuera de plazo)'), wa),
+      h('div', { class: 'field' }, h('label', { for: 'ins' }, 'Mensaje para tus clientes'), ins), msg, btn);
+  }
+
+  /* ---------- Clientes ---------- */
+  async function tabClientes() {
+    cargando();
+    let r; try { r = await llamar('agendaClientes'); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    const lista = h('div', { style: 'display:flex;flex-direction:column;gap:8px' });
+    const buscar = h('input', { type: 'search', placeholder: 'Buscar por nombre o teléfono', 'aria-label': 'Buscar cliente' });
+    function pintar() {
+      const t = buscar.value.trim().toLowerCase();
+      const fil = r.clientes.filter(function (c) { return !t || (c.nombre + ' ' + c.telefono).toLowerCase().indexOf(t) >= 0; });
+      lista.replaceChildren.apply(lista, fil.length ? fil.map(function (c) {
+        return h('div', { class: 'item' }, h('b', null, c.nombre), h('span', { class: 'meta' }, [c.telefono, c.correo].filter(Boolean).join(' · ')),
+          h('span', { class: 'meta' }, c.citas + ' cita(s)' + (c.proxima ? ' · próxima ' + corta(c.proxima) : '') + (c.ultima ? ' · última ' + corta(c.ultima) : '')),
+          c.telefono ? h('div', { class: 'acciones' }, h('a', { class: 'linkbtn', href: 'https://wa.me/52' + c.telefono, target: '_blank', rel: 'noopener noreferrer' }, 'WhatsApp')) : null);
+      }) : [h('p', { class: 'vacio' }, 'Sin resultados.')]);
+    }
+    buscar.addEventListener('input', pintar);
+    contenido.replaceChildren(h('h2', { class: 'sec-t' }, 'Mis clientes (' + r.clientes.length + ')'),
+      h('p', { class: 'note' }, 'Solo ves a quienes han reservado contigo. Tus clientes no se comparten con otros profesionistas.'),
+      h('div', { class: 'field' }, buscar), lista);
+    pintar();
+  }
+
+  /* ---------- Cuenta ---------- */
+  function tabCuenta() {
+    const P = S.perfil;
+    const texto = 'Reserva tu cita conmigo aquí: ' + P.linkReservas;
+    const cp = h('button', { type: 'button', class: 'btn solid-ink', onclick: async function () { cp.textContent = (await copiar(P.linkReservas)) ? 'Link copiado' : 'Copia el link de arriba'; } }, 'Copiar mi link de reservas');
+    const a = h('input', { id: 'pa', type: 'password', inputmode: 'numeric', maxlength: '6', autocomplete: 'current-password' });
+    const n1 = h('input', { id: 'pn', type: 'password', inputmode: 'numeric', maxlength: '6', autocomplete: 'new-password' });
+    const n2 = h('input', { id: 'pn2', type: 'password', inputmode: 'numeric', maxlength: '6', autocomplete: 'new-password' });
+    const msg = h('div', { role: 'alert' });
+    const btn = h('button', { type: 'button', class: 'btn light', onclick: async function () {
+      msg.replaceChildren();
+      if (!/^\d{6}$/.test(n1.value)) { msg.appendChild(err('El PIN nuevo debe tener 6 dígitos.')); return; }
+      if (n1.value !== n2.value) { msg.appendChild(err('Los dos PIN nuevos no coinciden.')); return; }
+      btn.disabled = true;
+      try { await llamar('agendaCambiarPin', { pinActual: a.value, pinNuevo: n1.value }); guardar(''); login('PIN cambiado. Entra con tu PIN nuevo.'); }
+      catch (e) { btn.disabled = false; msg.replaceChildren(err(e.message)); }
+    } }, 'Cambiar PIN');
+    contenido.replaceChildren(
+      h('h2', { class: 'sec-t' }, 'Mi link para clientes'),
+      h('div', { class: 'linkbox' }, P.linkReservas), cp,
+      h('a', { class: 'btn light', href: 'https://wa.me/?text=' + encodeURIComponent(texto), target: '_blank', rel: 'noopener noreferrer' }, 'Compartir por WhatsApp'),
+      h('p', { class: 'note' }, 'Ponlo en tu WhatsApp Business, redes y tarjeta. Tus clientes reservan solos, sin cuenta.'),
+      h('h2', { class: 'sec-t' }, 'Cambiar mi PIN'),
+      h('div', { class: 'field' }, h('label', { for: 'pa' }, 'PIN actual'), a), h('div', { class: 'field' }, h('label', { for: 'pn' }, 'PIN nuevo'), n1), h('div', { class: 'field' }, h('label', { for: 'pn2' }, 'Repite el PIN nuevo'), n2), msg, btn,
+      h('p', { class: 'note' }, 'Si lo olvidas, en la pantalla de acceso usa “Olvidé mi PIN”: te llega un link al correo ' + (P.correo || '') + '.'));
+  }
+
+  if (resetTok) vistaReset(); else if (S.sesion) iniciar(); else login();
+})();
+</script>
+</body>
+</html>
