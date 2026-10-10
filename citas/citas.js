@@ -218,7 +218,7 @@
     const btn = h('button', { type: 'button', class: 'btn solid-ink', style: 'width:auto;height:44px;font-size:14px;letter-spacing:0;text-transform:none;padding:0 18px', onclick: cerrar }, '← Volver al formulario');
     const cap = h('div', { class: 'overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Aviso de privacidad' },
       h('div', { class: 'overlay-bar' }, btn),
-      h('iframe', { src: url, title: 'Aviso de privacidad', class: 'overlay-frame' }));
+      h('iframe', { src: url + '?v=3', title: 'Aviso de privacidad', class: 'overlay-frame' }));
     document.body.appendChild(cap); document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', tecla); btn.focus();
   }

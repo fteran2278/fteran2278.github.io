@@ -24,7 +24,7 @@
   const app = document.getElementById('app');
   const q = new URLSearchParams(location.search);
   const proId = (q.get('p') || '').trim(), resetTok = (q.get('reset') || '').trim();
-  const S = { sesion: '', perfil: null, tab: 'hoy', semana: null };
+  const S = { sesion: '', perfil: null, tab: 'hoy', semana: null, dia: null };
   const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
   const DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
   try { S.sesion = sessionStorage.getItem('ses_' + proId) || ''; } catch (e) { S.sesion = ''; }
@@ -39,6 +39,7 @@
   const larga = function (f) { const d = U(f); return DIA[d.getUTCDay()] + ' ' + d.getUTCDate() + ' de ' + MES[d.getUTCMonth()]; };
 
   function marco(contenido, conSalir, nombre) {
+    app.classList.toggle('con-tabs', !!conSalir);
     app.replaceChildren(
       h('div', { class: 'top' }, h('div', { class: 'top-bar' }, h('span', { class: 'brand' }, 'D ESPACIOS' + (nombre ? ' · ' + nombre.toUpperCase() : '')),
         conSalir ? h('button', { type: 'button', class: 'top-link', onclick: function () { guardar(''); S.perfil = null; login(); } }, 'Salir') : null)),
@@ -95,12 +96,12 @@
   }
 
   /* ---------- armazón con pestañas ---------- */
-  const TABS = [['hoy', 'Hoy'], ['semana', 'Semana'], ['bloqueos', 'Bloquear fechas'], ['horario', 'Mi horario'], ['clientes', 'Clientes'], ['cuenta', 'Cuenta']];
+  const TABS = [['hoy', 'Hoy'], ['semana', 'Semana'], ['citas', 'Todas las citas'], ['clientes', 'Clientes'], ['bloqueos', 'Bloquear fechas'], ['horario', 'Mi horario'], ['cuenta', 'Cuenta']];
   let contenido;
   async function iniciar() {
     marco(cuerpo(h('p', { class: 'spin', role: 'status' }, 'Cargando…')), true);
     try { S.perfil = await llamar('agendaPerfil'); } catch (e) { if (S.sesion) marco(cuerpo(err(e.message)), true); return; }
-    S.semana = lunesDe(S.perfil.hoy);
+    S.semana = lunesDe(S.perfil.hoy); S.dia = S.perfil.hoy;
     armar();
   }
   function armar() {
@@ -110,7 +111,7 @@
     }));
     marco(h('div', { style: 'display:contents' }, tabs, contenido), true, S.perfil.nombre);
     window.scrollTo(0, 0);
-    ({ hoy: tabHoy, semana: tabSemana, bloqueos: tabBloqueos, horario: tabHorario, clientes: tabClientes, cuenta: tabCuenta })[S.tab]();
+    ({ hoy: tabHoy, semana: tabSemana, citas: tabCitas, bloqueos: tabBloqueos, horario: tabHorario, clientes: tabClientes, cuenta: tabCuenta })[S.tab]();
   }
   const cargando = function () { contenido.replaceChildren(h('p', { class: 'spin', role: 'status' }, 'Cargando…')); };
   const recargar = function () { armar(); };
@@ -146,75 +147,264 @@
   }
   const chipBloqueo = function (b) { return h('div', { class: 'item', style: 'background:#F3F1EB' }, h('span', { class: 'chip bq' }, 'Bloqueado'), h('span', { class: 'meta' }, (b.diaCompleto ? 'Todo el día' : b.horaIni + ' – ' + b.horaFin) + (b.motivo ? ' · ' + b.motivo : ''))); };
 
-  /* ---------- Hoy ---------- */
+  /* ---------- utilidades de agenda ---------- */
+  const DK = ['dom', 'lun', 'mar', 'mie', 'jue', 'vie', 'sab'];
+  const aMin = function (t) { return (+t.slice(0, 2)) * 60 + (+t.slice(3, 5)); };
+  const hhmm = function (m) { return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+  const bloquesDe = function (f) { return String(S.perfil.horario[DK[U(f).getUTCDay()]] || '').split(',').map(function (x) { return x.trim().split('-'); }).filter(function (x) { return x.length === 2 && x[0]; }); };
+  const cubre = function (b, f, m) { const k = f + 'T' + hhmm(m); return b.fechaIni + 'T' + b.horaIni <= k && k < b.fechaFin + 'T' + b.horaFin; };
+  const nombreCorto = function (c) { return c.cliente.nombre || 'Cliente'; };
+  const mesAbre = function (f) { return f.slice(0, 7) + '-01'; };
+  const finMes = function (f) { const d = U(f); return F(new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0))); };
+  const MESL = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  const tituloDia = function (f) { const d = U(f); return DIA[d.getUTCDay()] + ' ' + d.getUTCDate() + ' de ' + MESL[d.getUTCMonth()]; };
+  const flecha = function (lbl, dir, fn) { return h('button', { type: 'button', class: 'arrow-b', 'aria-label': lbl, onclick: fn }, Citas.svg(dir < 0 ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7', 20, '#0E0E0D')); };
+
+  /* Tarjeta oscura de una cita (Hoy, búsqueda y Todas las citas) */
+  function filaCita(c, etiquetaFecha) {
+    const tel = c.cliente.telefono;
+    const msg = h('div', { role: 'alert' });
+    const hacer = function (fn) { return async function (ev) { ev.target.disabled = true; msg.replaceChildren(); try { await fn(); recargar(); } catch (e) { ev.target.disabled = false; msg.replaceChildren(err(e.message)); } }; };
+    const btn = function (t, cls, fn) { return h('button', { type: 'button', class: 'cb ' + (cls || ''), onclick: fn }, t); };
+    const acc = h('div', { class: 'cb-row' });
+    const futura = c.estado === 'confirmada' && !c.inicioPasado;
+    if (futura && c.link) {
+      const texto = 'Hola ' + nombreCorto(c) + ', te comparto el link de tu cita del ' + corta(c.fecha) + ' a las ' + c.hora + ': ' + c.link;
+      if (tel) acc.appendChild(h('a', { class: 'cb gold', href: 'https://wa.me/52' + tel + '?text=' + encodeURIComponent(texto), target: '_blank', rel: 'noopener noreferrer' }, 'WhatsApp con link'));
+      acc.appendChild(btn('Copiar link', '', async function (ev) { ev.target.textContent = (await copiar(c.link)) ? 'Link copiado' : 'No se pudo copiar'; }));
+      acc.appendChild(h('a', { class: 'cb', href: c.link, target: '_blank', rel: 'noopener noreferrer' }, 'Cambiar'));
+      const can = btn('Cancelar', 'danger', function () {
+        can.replaceWith(h('span', { class: 'cb-row' }, h('span', { class: 'cb-note' }, 'Se avisa al cliente por correo.'), btn('Sí, cancelar', 'danger', hacer(function () { return llamar('agendaCancelar', { citaId: c.id }); })), btn('No', '', recargar)));
+      });
+      acc.appendChild(can);
+    } else {
+      if (tel) acc.appendChild(h('a', { class: 'cb', href: 'https://wa.me/52' + tel, target: '_blank', rel: 'noopener noreferrer' }, 'WhatsApp'));
+      if (c.estado === 'confirmada' && c.inicioPasado) {
+        acc.appendChild(btn('Asistió', 'gold', hacer(function () { return llamar('agendaMarcar', { citaId: c.id, estado: 'asistio' }); })));
+        acc.appendChild(btn('No asistió', '', hacer(function () { return llamar('agendaMarcar', { citaId: c.id, estado: 'no_asistio' }); })));
+      }
+      if (c.estado === 'asistio' || c.estado === 'no_asistio') acc.appendChild(btn('Deshacer marca', '', hacer(function () { return llamar('agendaMarcar', { citaId: c.id, estado: 'confirmada' }); })));
+    }
+    const et = { asistio: 'Asistió', no_asistio: 'No asistió', cancelada: 'Cancelada' }[c.estado] || '';
+    return h('div', { class: 'cita-oscura' },
+      h('div', { class: 'ci-info' },
+        h('span', { class: 'ci-nom' }, (etiquetaFecha ? corta(c.fecha) + ' · ' + c.hora + ' · ' : '') + nombreCorto(c) + (et ? ' · ' + et : '')),
+        h('span', { class: 'ci-det' }, [c.motivo || 'Cita', tel, c.cliente.correo].filter(Boolean).join(' · '))),
+      acc, msg);
+  }
+
+  /* ---------- Hoy: línea de tiempo del día ---------- */
   async function tabHoy() {
     cargando();
-    let r, pasadas = [];
-    try { r = await llamar('agendaCitas', { desde: S.perfil.hoy, hasta: sumar(S.perfil.hoy, 7) }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
-    try { const p = await llamar('agendaCitas', { desde: sumar(S.perfil.hoy, -14), hasta: sumar(S.perfil.hoy, -1) }); pasadas = p.citas.filter(function (c) { return c.estado === 'confirmada' && c.inicioPasado; }); } catch (e) { pasadas = []; }
-    const activas = r.citas.filter(function (c) { return c.estado !== 'cancelada'; });
-    const hoy = activas.filter(function (c) { return c.fecha === S.perfil.hoy; });
-    const prox = activas.filter(function (c) { return c.fecha > S.perfil.hoy; });
-    const porDia = {}; prox.forEach(function (c) { (porDia[c.fecha] = porDia[c.fecha] || []).push(c); });
-    const marcar = hoy.concat(pasadas).filter(function (c) { return c.estado === 'confirmada' && c.inicioPasado; });
-    const lateral = marcar.length ? h('div', { class: 'panel' }, h('h2', { class: 'sec-t' }, 'Por marcar (' + marcar.length + ')'),
-      h('p', { class: 'note' }, 'Citas que ya pasaron. Indica si el cliente asistió.'), h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, marcar.map(function (c) { return h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, h('span', { class: 'meta', style: 'font-size:12px;color:var(--muted)' }, corta(c.fecha)), tarjeta(c)); }))) : null;
-    contenido.replaceChildren(
-      h('div', { class: 'hoy-grid' },
-        h('div', { class: 'col-p' },
-          h('h2', { class: 'sec-t' }, 'Hoy · ' + larga(S.perfil.hoy)),
-          hoy.length ? h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, hoy.map(tarjeta)) : h('p', { class: 'vacio' }, 'No tienes citas hoy.'),
-          h('h2', { class: 'sec-t', style: 'margin-top:12px' }, 'Próximos 7 días'),
-          Object.keys(porDia).length ? h('div', { style: 'display:flex;flex-direction:column;gap:14px' }, Object.keys(porDia).map(function (f) {
-            return h('div', { class: 'dia-sem' }, h('h3', null, larga(f)), porDia[f].map(tarjeta));
-          })) : h('p', { class: 'vacio' }, 'Sin citas próximas.')),
-        lateral));
+    const P = S.perfil, f = S.dia;
+    let r, pas = { citas: [] }, mes = { citas: [] };
+    try {
+      const res = await Promise.all([
+        llamar('agendaCitas', { desde: f, hasta: f }),
+        llamar('agendaCitas', { desde: sumar(P.hoy, -14), hasta: sumar(P.hoy, -1) }).catch(function () { return { citas: [] }; }),
+        llamar('agendaCitas', { desde: mesAbre(P.hoy), hasta: finMes(P.hoy) }).catch(function () { return { citas: [] }; })]);
+      r = res[0]; pas = res[1]; mes = res[2];
+    } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    const citas = r.citas.filter(function (c) { return c.estado !== 'cancelada'; });
+    const porMarcar = pas.citas.concat(S.dia === P.hoy ? citas : []).filter(function (c) { return c.estado === 'confirmada' && c.inicioPasado; });
+    const vis = mes.citas.filter(function (c) { return ['confirmada', 'asistio', 'no_asistio'].indexOf(c.estado) >= 0; });
+    const as = vis.filter(function (c) { return c.estado === 'asistio'; }).length, na = vis.filter(function (c) { return c.estado === 'no_asistio'; }).length;
+    const marcadas = as + na;
+
+    /* filas de la línea de tiempo */
+    const tiempos = {};
+    bloquesDe(f).forEach(function (b) { for (let m = aMin(b[0]); m < aMin(b[1]); m += 60) tiempos[m] = 1; });
+    citas.forEach(function (c) { tiempos[aMin(c.hora)] = 1; });
+    r.bloqueos.forEach(function (b) { for (let m = (b.fechaIni < f ? 0 : aMin(b.horaIni)); m < 24 * 60 && cubre(b, f, m); m += 60) if (m >= aMin(P.apertura) && m < aMin(P.cierre) && Object.keys(tiempos).length) tiempos[m] = tiempos[m] || 2; });
+    const orden = Object.keys(tiempos).map(Number).sort(function (a, b) { return a - b; });
+    const filas = []; let ultimoBq = null;
+    orden.forEach(function (m) {
+      const c = citas.filter(function (x) { return aMin(x.hora) === m; })[0];
+      const bq = r.bloqueos.filter(function (b) { return cubre(b, f, m); })[0];
+      let cuerpoFila;
+      if (c) { cuerpoFila = filaCita(c); ultimoBq = null; }
+      else if (bq) {
+        if (ultimoBq === bq.id) return;
+        ultimoBq = bq.id;
+        cuerpoFila = h('div', { class: 'tl-bq' }, h('span', null, (bq.diaCompleto ? 'Todo el día' : bq.horaIni + ' a ' + bq.horaFin) + ' · Bloqueado' + (bq.motivo ? ': ' + bq.motivo : '')),
+          h('button', { type: 'button', class: 'tl-link', onclick: async function (ev) { ev.target.disabled = true; try { await llamar('agendaEliminarBloqueo', { bloqueoId: bq.id }); recargar(); } catch (e) { ev.target.disabled = false; } } }, 'Quitar'));
+      } else { ultimoBq = null; cuerpoFila = h('div', { class: 'tl-libre' }, h('span', null, 'Libre'), h('button', { type: 'button', class: 'tl-link', onclick: function () { nuevaCita(f, hhmm(m)); } }, 'Agendar aquí')); }
+      filas.push(h('div', { class: 'tl-fila' }, h('div', { class: 'tl-hora' }, hhmm(m)), cuerpoFila));
+    });
+
+    const lista = h('div', { class: 'tl' }, filas.length ? filas : [h('p', { class: 'vacio', style: 'padding:14px 0' }, 'No hay horario de atención ese día. Puedes cambiarlo en Mi horario.')]);
+    const buscar = h('input', { id: 'buscar', type: 'search', class: 'busca', placeholder: 'Buscar cliente por nombre o celular', 'aria-label': 'Buscar cliente' });
+    let todas = null;
+    buscar.addEventListener('input', async function () {
+      const t = buscar.value.trim().toLowerCase();
+      if (t.length < 2) { lista.replaceChildren.apply(lista, filas.length ? filas : []); return; }
+      if (!todas) {
+        try {
+          const a = await llamar('agendaCitas', { desde: sumar(P.hoy, -60), hasta: sumar(P.hoy, 0) }), b = await llamar('agendaCitas', { desde: sumar(P.hoy, 1), hasta: sumar(P.hoy, 61) });
+          todas = a.citas.concat(b.citas);
+        } catch (e) { return; }
+      }
+      const q2 = buscar.value.trim().toLowerCase();
+      const res = todas.filter(function (c) { return c.estado !== 'cancelada' && (c.cliente.nombre + ' ' + c.cliente.telefono).toLowerCase().indexOf(q2) >= 0; }).slice(-30).reverse();
+      lista.replaceChildren.apply(lista, res.length ? res.map(function (c) { return h('div', { style: 'padding:8px 0;border-bottom:1px solid var(--line)' }, filaCita(c, true)); }) : [h('p', { class: 'vacio', style: 'padding:14px 0' }, 'Sin resultados.')]);
+    });
+
+    const hoyBtn = f !== P.hoy ? h('button', { type: 'button', class: 'hoy-btn', onclick: function () { S.dia = P.hoy; tabHoy(); } }, 'Hoy') : null;
+    const nav = function (d) { return function () { S.dia = sumar(S.dia, d); tabHoy(); }; };
+    const principal = h('div', { class: 'col-p' },
+      h('div', { class: 'dia-cab-r' },
+        h('div', { class: 'dia-nav' }, flecha('Día anterior', -1, nav(-1)), h('h2', { class: 'dia-tit' }, tituloDia(f)), flecha('Día siguiente', 1, nav(1)), hoyBtn),
+        h('button', { type: 'button', class: 'btn-oro', onclick: function () { nuevaCita(f, ''); } }, 'Nueva cita')),
+      buscar, lista);
+
+    const pm = porMarcar.length ? h('div', { class: 'panel crema' },
+      h('div', { style: 'display:flex;align-items:baseline;justify-content:space-between' }, h('h2', { class: 'sec-t', style: 'font-weight:700;font-size:28px' }, 'Por marcar'), h('span', { class: 'chip-t' }, porMarcar.length + (porMarcar.length === 1 ? ' cita pasada' : ' citas pasadas'))),
+      porMarcar.slice(0, 8).map(function (c) {
+        const m = h('div', { role: 'alert' });
+        const marcar = function (est) { return async function (ev) { ev.target.disabled = true; try { await llamar('agendaMarcar', { citaId: c.id, estado: est }); recargar(); } catch (e) { ev.target.disabled = false; m.replaceChildren(err(e.message)); } }; };
+        return h('div', { class: 'pm-item' }, h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, h('span', { style: 'font-size:15px;font-weight:600' }, nombreCorto(c)), h('span', { class: 'meta', style: 'font-size:13px;color:var(--muted)' }, corta(c.fecha) + ' · ' + c.hora)),
+          h('div', { style: 'display:flex;gap:8px' }, h('button', { type: 'button', class: 'pm-si', onclick: marcar('asistio') }, 'Asistió'), h('button', { type: 'button', class: 'pm-no', onclick: marcar('no_asistio') }, 'No asistió')), m);
+      }),
+      porMarcar.length > 8 ? h('span', { class: 'note' }, 'Y ' + (porMarcar.length - 8) + ' más. Márcalas en “Todas las citas”.') : null) : null;
+    const pct = function (n) { return marcadas ? Math.round(n * 100 / marcadas) + ' %' : '—'; };
+    const tuMes = h('div', { class: 'panel negro' }, h('h2', { class: 'mini-t' }, 'Tu mes'),
+      h('div', { class: 'tres' },
+        h('div', null, h('span', { class: 'big-n' }, String(vis.length)), h('span', { class: 'big-l' }, 'Citas')),
+        h('div', null, h('span', { class: 'big-n' }, pct(as)), h('span', { class: 'big-l' }, 'Asistencia')),
+        h('div', null, h('span', { class: 'big-n' }, pct(na)), h('span', { class: 'big-l' }, 'No asistió'))));
+    const lk = h('div', { class: 'panel' }, h('h2', { class: 'sec-t', style: 'font-weight:700;font-size:26px' }, 'Tu link para clientes'), h('div', { class: 'linkbox' }, P.linkReservas),
+      h('div', { style: 'display:flex;flex-wrap:wrap;gap:8px' },
+        h('button', { type: 'button', class: 'btn-oro', style: 'flex:1 1 120px', onclick: async function (ev) { ev.target.textContent = (await copiar(P.linkReservas)) ? 'Link copiado' : 'No se pudo copiar'; } }, 'Copiar link'),
+        h('button', { type: 'button', class: 'btn-borde', style: 'flex:1 1 120px', onclick: async function (ev) { ev.target.textContent = (await copiar('Reserva tu cita conmigo aquí: ' + P.linkReservas)) ? 'Mensaje copiado' : 'No se pudo copiar'; } }, 'Copiar mensaje')));
+    contenido.replaceChildren(h('div', { class: 'hoy-grid' }, principal, h('div', { class: 'col-s' }, pm, tuMes, lk)));
   }
 
-  /* ---------- Semana ---------- */
+  /* ---------- Nueva cita (la agenda el profesionista) ---------- */
+  function nuevaCita(fecha, hora) {
+    const P = S.perfil;
+    const horas = []; for (let m = aMin(P.apertura); m < aMin(P.cierre); m += 30) horas.push(hhmm(m));
+    const sel = h('select', { id: 'nc-h' }, horas.map(function (x) { return h('option', { value: x }, x); })); sel.value = hora || horas.filter(function (x) { return aMin(x) >= 9 * 60; })[0] || horas[0];
+    const fi = h('input', { id: 'nc-f', type: 'date', min: P.hoy, value: fecha });
+    const n = h('input', { id: 'nc-n', type: 'text', maxlength: '80', autocomplete: 'off' });
+    const t = h('input', { id: 'nc-t', type: 'tel', inputmode: 'numeric', placeholder: '10 dígitos' });
+    const c = h('input', { id: 'nc-c', type: 'email', autocomplete: 'off' });
+    const m = h('input', { id: 'nc-m', type: 'text', maxlength: '140', placeholder: 'Opcional' });
+    const av = h('input', { type: 'checkbox', id: 'nc-a' });
+    const msg = h('div', { role: 'alert' });
+    const previo = document.activeElement;
+    const cerrar = function () { cap.remove(); document.body.style.overflow = ''; if (previo && previo.focus) previo.focus(); };
+    const ok = h('button', { type: 'button', class: 'btn', onclick: async function () {
+      msg.replaceChildren();
+      if (!av.checked) { msg.appendChild(err('Confirma que el cliente aceptó el aviso de privacidad.')); return; }
+      ok.disabled = true; ok.textContent = 'Agendando…';
+      try { await api('crearCita', { profesionistaId: P.id, fecha: fi.value, hora: sel.value, nombre: n.value, telefono: t.value, correo: c.value, motivo: m.value, aviso: true, canal: 'correo' }); cerrar(); S.dia = fi.value; S.tab = 'hoy'; armar(); }
+      catch (e) { ok.disabled = false; ok.textContent = 'Agendar cita'; msg.replaceChildren(err(e.message)); }
+    } }, 'Agendar cita');
+    const cap = h('div', { class: 'overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Nueva cita' },
+      h('div', { class: 'overlay-bar' }, h('button', { type: 'button', class: 'btn solid-ink', style: 'width:auto;height:44px;font-size:14px;letter-spacing:0;text-transform:none;padding:0 18px', onclick: cerrar }, '← Volver a mi agenda')),
+      h('div', { class: 'modal-cuerpo' },
+        h('h2', { class: 'sec-t' }, 'Nueva cita'),
+        h('p', { class: 'note' }, 'Agenda a un cliente tú mismo. Le llega la confirmación por correo con el link para cambiarla.'),
+        h('div', { class: 'row2' }, h('div', { class: 'field' }, h('label', { for: 'nc-f' }, 'Fecha'), fi), h('div', { class: 'field' }, h('label', { for: 'nc-h' }, 'Hora'), sel)),
+        h('div', { class: 'field' }, h('label', { for: 'nc-n' }, 'Nombre del cliente'), n),
+        h('div', { class: 'row2' }, h('div', { class: 'field' }, h('label', { for: 'nc-t' }, 'Celular'), t), h('div', { class: 'field' }, h('label', { for: 'nc-c' }, 'Correo'), c)),
+        h('div', { class: 'field' }, h('label', { for: 'nc-m' }, 'Motivo'), m),
+        h('label', { class: 'check', for: 'nc-a' }, av, h('span', null, 'El cliente aceptó el aviso de privacidad.')),
+        msg, ok));
+    document.body.appendChild(cap); document.body.style.overflow = 'hidden'; n.focus();
+  }
+
+  /* ---------- Semana: cuadrícula por horas ---------- */
   async function tabSemana() {
     cargando();
-    const ini = S.semana, fin = sumar(ini, 6);
+    const P = S.perfil, ini = S.semana, fin = sumar(ini, 6);
     let r; try { r = await llamar('agendaCitas', { desde: ini, hasta: fin }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
-    const dias = [];
-    for (let i = 0; i < 7; i++) {
-      const f = sumar(ini, i);
-      const cs = r.citas.filter(function (c) { return c.fecha === f && c.estado !== 'cancelada'; });
-      const bs = r.bloqueos.filter(function (b) { return b.fechaIni <= f && (b.fechaFin > f || (b.fechaFin === f && b.horaFin !== '00:00')); });
-      dias.push(h('div', { class: 'dia-sem' + (f === S.perfil.hoy ? ' hoy' : '') }, h('h3', null, larga(f)), bs.map(chipBloqueo), cs.map(tarjeta), !cs.length && !bs.length ? h('p', { class: 'vacio' }, 'Sin citas.') : null));
-    }
+    const dias = []; for (let i = 0; i < 7; i++) dias.push(sumar(ini, i));
+    const citas = r.citas.filter(function (c) { return c.estado !== 'cancelada'; });
+    const hs = {};
+    dias.forEach(function (f) { bloquesDe(f).forEach(function (b) { for (let m = aMin(b[0]); m < aMin(b[1]); m += 60) hs[m] = 1; }); });
+    citas.forEach(function (c) { hs[Math.floor(aMin(c.hora) / 60) * 60] = 1; });
+    const horas = Object.keys(hs).map(Number).sort(function (a, b) { return a - b; });
+    const g = h('div', { class: 'sg' }, h('div'), dias.map(function (f) { return h('button', { type: 'button', class: 'sg-dia' + (f === P.hoy ? ' hoy' : ''), onclick: function () { S.dia = f; S.tab = 'hoy'; armar(); } }, h('span', null, DIA[U(f).getUTCDay()].slice(0, 3)), h('b', null, String(U(f).getUTCDate()))); }));
+    horas.forEach(function (m) {
+      g.appendChild(h('div', { class: 'sg-h' }, hhmm(m)));
+      dias.forEach(function (f) {
+        const c = citas.filter(function (x) { return x.fecha === f && Math.floor(aMin(x.hora) / 60) * 60 === m; })[0];
+        const bq = r.bloqueos.filter(function (b) { return cubre(b, f, m); })[0];
+        const dentro = bloquesDe(f).some(function (b) { return m >= aMin(b[0]) && m < aMin(b[1]); });
+        if (c) g.appendChild(h('button', { type: 'button', class: 'sg-c' + (c.estado === 'asistio' ? ' as' : c.estado === 'no_asistio' ? ' na' : ''), title: nombreCorto(c) + ' · ' + c.hora, onclick: function () { S.dia = f; S.tab = 'hoy'; armar(); } }, h('b', null, c.hora), h('span', null, nombreCorto(c))));
+        else if (bq) g.appendChild(h('div', { class: 'sg-b', title: bq.motivo || 'Bloqueado' }, h('span', null, bq.motivo || 'Bloq.')));
+        else g.appendChild(h('div', { class: dentro ? 'sg-l' : 'sg-x' }));
+      });
+    });
     const nav = function (d) { return function () { S.semana = sumar(S.semana, d * 7); tabSemana(); }; };
     contenido.replaceChildren(
-      h('div', { style: 'display:flex;align-items:center;justify-content:space-between' },
-        h('button', { type: 'button', class: 'arrow', 'aria-label': 'Semana anterior', onclick: nav(-1) }, Citas.svg('M15 5l-7 7 7 7', 20, 'currentColor')),
-        h('h2', { class: 'sec-t', style: 'font-size:22px' }, corta(ini) + ' – ' + corta(fin)),
-        h('button', { type: 'button', class: 'arrow', 'aria-label': 'Semana siguiente', onclick: nav(1) }, Citas.svg('M9 5l7 7-7 7', 20, 'currentColor'))),
-      h('div', { class: 'sem-grid' }, dias));
+      h('div', { class: 'dia-cab-r' }, h('div', { class: 'dia-nav' }, flecha('Semana anterior', -1, nav(-1)), h('h2', { class: 'dia-tit' }, corta(ini) + ' – ' + corta(fin)), flecha('Semana siguiente', 1, nav(1)),
+        S.semana !== lunesDe(P.hoy) ? h('button', { type: 'button', class: 'hoy-btn', onclick: function () { S.semana = lunesDe(P.hoy); tabSemana(); } }, 'Esta semana') : null),
+        h('button', { type: 'button', class: 'btn-oro', onclick: function () { nuevaCita(P.hoy, ''); } }, 'Nueva cita')),
+      h('p', { class: 'note' }, 'Toca un día o una cita para ver ese día. Fondo claro = tu horario de atención; rayado = bloqueado.'),
+      horas.length ? h('div', { class: 'sg-wrap' }, g) : h('p', { class: 'vacio' }, 'No hay horario de atención esta semana. Defínelo en Mi horario.'));
   }
 
-  /* ---------- Bloqueos ---------- */
+  /* ---------- Todas las citas ---------- */
+  async function tabCitas() {
+    cargando();
+    const P = S.perfil; let r;
+    try { r = await llamar('agendaCitas', { desde: sumar(P.hoy, -14), hasta: sumar(P.hoy, 47) }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    const todas = r.citas.filter(function (c) { return c.estado !== 'cancelada'; });
+    const grupo = function (lista, titulo, vacio) {
+      const por = {}; lista.forEach(function (c) { (por[c.fecha] = por[c.fecha] || []).push(c); });
+      const fechas = Object.keys(por).sort();
+      return [h('h2', { class: 'sec-t' }, titulo)].concat(fechas.length ? fechas.map(function (f) { return h('div', { class: 'dia-sem' }, h('h3', null, larga(f)), por[f].map(function (c) { return filaCita(c); })); }) : [h('p', { class: 'vacio' }, vacio)]);
+    };
+    const fut = todas.filter(function (c) { return c.fecha >= P.hoy; }), pas = todas.filter(function (c) { return c.fecha < P.hoy; }).reverse();
+    contenido.replaceChildren.apply(contenido, grupo(fut, 'Próximas citas', 'No tienes citas próximas.').concat(grupo(pas.reverse(), 'Últimos 14 días', 'Sin citas recientes.')));
+  }
+
+  /* ---------- Bloquear fechas (con calendario) ---------- */
   async function tabBloqueos() {
     cargando();
-    let r; try { r = await llamar('agendaCitas', { desde: S.perfil.hoy, hasta: sumar(S.perfil.hoy, 62) }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
-    const H = []; for (let m = 6 * 60; m <= 22 * 60; m += 30) H.push(String(Math.floor(m / 60)).padStart(2, '0') + ':' + (m % 60 ? '30' : '00'));
+    const P = S.perfil;
+    let r; try { r = await llamar('agendaCitas', { desde: P.hoy, hasta: sumar(P.hoy, 62) }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    let ini = null, fin = null, mes = P.hoy.slice(0, 7), tipo = 'dias';
+    const H = []; for (let m = aMin(P.apertura); m <= aMin(P.cierre); m += 30) H.push(hhmm(m));
     const opts = function (v) { const s = h('select', null, H.map(function (x) { return h('option', { value: x }, x); })); s.value = v; return s; };
-    const tipo = h('select', { id: 'tipo' }, h('option', { value: 'dias' }, 'Días completos'), h('option', { value: 'franja' }, 'Una franja del día'));
-    const f1 = h('input', { id: 'f1', type: 'date', min: S.perfil.hoy, value: S.perfil.hoy });
-    const f2 = h('input', { id: 'f2', type: 'date', min: S.perfil.hoy });
     const h1 = opts('09:00'), h2 = opts('11:00');
     const motivo = h('input', { id: 'mot', type: 'text', maxlength: '80', placeholder: 'Ej. Vacaciones, curso, cita médica' });
-    const filaF2 = h('div', { class: 'field' }, h('label', { for: 'f2' }, 'Hasta (opcional)'), f2);
-    const filaH = h('div', { class: 'row2', style: 'display:none' }, h('div', { class: 'field' }, h('label', null, 'Desde'), h1), h('div', { class: 'field' }, h('label', null, 'Hasta'), h2));
-    tipo.addEventListener('change', function () { const fr = tipo.value === 'franja'; filaH.style.display = fr ? 'grid' : 'none'; filaF2.style.display = fr ? 'none' : ''; });
+    const cal = h('div', { class: 'rcal' }), resumen = h('p', { class: 'rcal-res', 'aria-live': 'polite' }), franja = h('div', { class: 'row2', style: 'display:none' }, h('div', { class: 'field' }, h('label', null, 'Desde'), h1), h('div', { class: 'field' }, h('label', null, 'Hasta'), h2));
+    const tBtn = function (id, t) { return h('button', { type: 'button', class: 'opt', 'data-t': id, 'aria-pressed': id === tipo ? 'true' : 'false', onclick: function () { tipo = id; tBtns.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.t === tipo ? 'true' : 'false'); }); franja.style.display = tipo === 'franja' ? 'grid' : 'none'; pintar(); } }, t); };
+    const tBtns = [tBtn('dias', 'Días completos'), tBtn('franja', 'Una franja del día')];
+    function pintar() {
+      const p = mes.split('-'), y = +p[0], mo = +p[1];
+      const off = (new Date(Date.UTC(y, mo - 1, 1)).getUTCDay() + 6) % 7, nd = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+      const grid = h('div', { class: 'grid' }); for (let i = 0; i < off; i++) grid.appendChild(h('div'));
+      for (let d = 1; d <= nd; d++) {
+        const f = mes + '-' + String(d).padStart(2, '0');
+        const pas = f < P.hoy, sel = f === ini || f === fin, rng = tipo === 'dias' && ini && fin && f > ini && f < fin;
+        grid.appendChild(h('button', { type: 'button', class: 'day' + (pas ? '' : ' av') + (sel ? ' sel' : '') + (rng ? ' rng' : ''), disabled: pas, 'aria-pressed': sel ? 'true' : 'false', 'aria-label': tituloDia(f),
+          onclick: function () {
+            if (tipo === 'franja') { ini = f; fin = null; }
+            else if (!ini || (ini && fin) || f < ini) { ini = f; fin = null; }
+            else fin = f;
+            pintar();
+          } }, String(d)));
+      }
+      cal.replaceChildren(
+        h('div', { class: 'cal-head' }, h('button', { type: 'button', class: 'arrow', 'aria-label': 'Mes anterior', disabled: mes <= P.hoy.slice(0, 7), onclick: function () { mes = F(new Date(Date.UTC(y, mo - 2, 1))).slice(0, 7); pintar(); } }, Citas.svg('M15 5l-7 7 7 7', 20, 'currentColor')),
+          h('h2', null, MESL[mo - 1].charAt(0).toUpperCase() + MESL[mo - 1].slice(1) + ' ' + y),
+          h('button', { type: 'button', class: 'arrow', 'aria-label': 'Mes siguiente', onclick: function () { mes = F(new Date(Date.UTC(y, mo, 1))).slice(0, 7); pintar(); } }, Citas.svg('M9 5l7 7-7 7', 20, 'currentColor'))),
+        h('div', { class: 'dow' }, ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(function (d) { return h('span', null, d); })), grid);
+      resumen.textContent = !ini ? 'Toca el día que quieres bloquear.' : tipo === 'franja' ? 'Franja del ' + larga(ini) + '.' : !fin || fin === ini ? 'Bloquearás ' + larga(ini) + '. Toca otro día para bloquear varios seguidos.' : 'Bloquearás del ' + larga(ini) + ' al ' + larga(fin) + '.';
+    }
     const msg = h('div', { role: 'alert' });
     const btn = h('button', { type: 'button', class: 'btn solid-ink', onclick: async function () {
-      msg.replaceChildren(); btn.disabled = true;
+      msg.replaceChildren();
+      if (!ini) { msg.appendChild(err('Toca en el calendario el día que quieres bloquear.')); return; }
+      btn.disabled = true;
       try {
-        const fr = tipo.value === 'franja';
-        const res = await llamar('agendaCrearBloqueo', { fechaIni: f1.value, fechaFin: fr ? '' : (f2.value || ''), horaIni: fr ? h1.value : '', horaFin: fr ? h2.value : '', motivo: motivo.value.trim() });
-        if (res.citasAfectadas.length) {
-          S.aviso = res.citasAfectadas;
-        } else S.aviso = null;
+        const fr = tipo === 'franja';
+        const res = await llamar('agendaCrearBloqueo', { fechaIni: ini, fechaFin: fr ? '' : (fin || ''), horaIni: fr ? h1.value : '', horaFin: fr ? h2.value : '', motivo: motivo.value.trim() });
+        S.aviso = res.citasAfectadas.length ? res.citasAfectadas : null;
         tabBloqueos();
       } catch (e) { btn.disabled = false; msg.replaceChildren(err(e.message)); }
     } }, 'Bloquear');
@@ -228,12 +418,14 @@
         h('div', { class: 'acciones' }, h('button', { type: 'button', class: 'linkbtn', style: 'color:var(--danger)', onclick: async function (ev) { ev.target.disabled = true; try { await llamar('agendaEliminarBloqueo', { bloqueoId: b.id }); tabBloqueos(); } catch (e) { ev.target.disabled = false; } } }, 'Quitar bloqueo')));
     }) : [h('p', { class: 'vacio' }, 'No tienes bloqueos en los próximos 60 días.')];
     contenido.replaceChildren(
-      h('h2', { class: 'sec-t' }, 'Bloquear fechas'),
-      h('p', { class: 'note' }, 'Los clientes no podrán reservar en lo que bloquees. Las citas que ya existan no se cancelan solas.'),
-      h('div', { class: 'field' }, h('label', { for: 'tipo' }, 'Tipo'), tipo),
-      h('div', { class: 'row2' }, h('div', { class: 'field' }, h('label', { for: 'f1' }, 'Fecha'), f1), filaF2), filaH,
-      h('div', { class: 'field' }, h('label', { for: 'mot' }, 'Motivo (solo lo ves tú)'), motivo), aviso, msg, btn,
-      h('h2', { class: 'sec-t' }, 'Bloqueos próximos'), h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, lista));
+      h('div', { class: 'bq-grid' },
+        h('div', { class: 'col-p' },
+          h('h2', { class: 'sec-t' }, 'Bloquear fechas'),
+          h('p', { class: 'note' }, 'Los clientes no podrán reservar en lo que bloquees. Las citas que ya existan no se cancelan solas.'),
+          h('div', { class: 'opts' }, tBtns), cal, resumen, franja,
+          h('div', { class: 'field' }, h('label', { for: 'mot' }, 'Motivo (solo lo ves tú)'), motivo), aviso, msg, btn),
+        h('div', { class: 'col-p' }, h('h2', { class: 'sec-t' }, 'Bloqueos próximos'), h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, lista))));
+    pintar();
   }
 
   /* ---------- Mi horario ---------- */
