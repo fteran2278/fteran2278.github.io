@@ -1,5 +1,1 @@
-// ÚNICO lugar que se edita al instalar: pega aquí la URL de la app web de Apps Script
-// (termina en /exec). Ver INSTRUCCIONES_1A.md, paso 8.
-window.CITAS_CONFIG = {
-  API_URL: 'PEGAR_AQUI_LA_URL_DE_APPS_SCRIPT'
-};
+window.CITAS_CONFIG = { API_URL: 'https://script.google.com/macros/s/AKfycbzgGMQ13JYZhOnutACl5OpqkOefxx-p13OXnm-VIA9zra6g1H_Gb6GGtQSv3G_dTfFDEg/exec' };
