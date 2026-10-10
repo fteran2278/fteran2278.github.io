@@ -165,7 +165,7 @@
         h('div', { class: 'field' }, h('label', { for: 'canal' }, '¿Cómo quieres tus recordatorios?'), canal,
           h('span', { class: 'hint' }, 'Mientras SMS y WhatsApp no estén listos, te escribimos por correo.')),
         h('label', { class: 'check', for: 'aviso' }, aviso,
-          h('span', null, 'Acepto el ', h('a', { href: P.avisoUrl || 'aviso-privacidad.html', target: '_blank', rel: 'noopener' }, 'aviso de privacidad'), ' (obligatorio)')),
+          h('span', null, 'Acepto el ', h('a', { href: P.avisoUrl || 'aviso-privacidad.html', target: '_blank', rel: 'noopener', onclick: function (ev) { Citas.verAviso(P.avisoUrl || 'aviso-privacidad.html', ev); } }, 'aviso de privacidad'), ' (obligatorio)')),
         msg),
       h('div', { class: 'dock' }, enviar));
 
@@ -194,7 +194,7 @@
           h('div', { class: 'tear' }, h('i'), h('i'), h('u')),
           h('div', { class: 'pass-b' },
             c.consultorio ? h('div', null, h('div', { class: 'eyebrow dk' }, 'Dónde'),
-              h('div', { class: 'val' }, [c.consultorio.numero ? 'Consultorio ' + c.consultorio.numero : c.consultorio.nombre, c.consultorio.sede].filter(Boolean).join(' · ')),
+              h('div', { class: 'val' }, [c.consultorio.nombre, c.consultorio.sede].filter(Boolean).join(' · ')),
               c.consultorio.direccion ? h('div', { class: 'val2' }, c.consultorio.direccion) : null,
               c.consultorio.instruccionesLlegada ? h('div', { class: 'val2' }, c.consultorio.instruccionesLlegada) : null,
               mapsLink(c.consultorio)) : null,

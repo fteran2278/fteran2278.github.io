@@ -41,6 +41,6 @@
 <h2>7. Cambios a este aviso</h2>
 <p>Publicaremos cualquier cambio en esta misma página.</p>
 </main>
-<script>document.getElementById("volver").addEventListener("click",function(){if(window.opener){window.close();}if(!window.closed){if(history.length>1){history.back();}else{window.close();}}});</script>
+<script>if(window.parent!==window){document.getElementById("volver").style.display="none";}document.getElementById("volver").addEventListener("click",function(){if(window.opener){window.close();}if(!window.closed){if(history.length>1){history.back();}else{window.close();}}});</script>
 </body>
 </html>

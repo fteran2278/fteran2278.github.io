@@ -208,6 +208,21 @@
     return { nodo: h('div', { class: 'heditor' }, leyenda, chips, grid, h('div', { class: 'htotal' }, h('span', null, 'Atenderás'), total)), leer: leer, total: total };
   }
 
+  /* Aviso de privacidad dentro de la misma página (ventana encima): no se navega, no se pierde nada del formulario. */
+  function verAviso(url, ev) {
+    if (!/^[\w.\-]+\.html$/.test(String(url || ''))) return; // enlace externo: se abre normal en otra pestaña
+    if (ev) ev.preventDefault();
+    const previo = document.activeElement;
+    const cerrar = function () { cap.remove(); document.body.style.overflow = ''; document.removeEventListener('keydown', tecla); if (previo && previo.focus) previo.focus(); };
+    const tecla = function (e) { if (e.key === 'Escape') cerrar(); };
+    const btn = h('button', { type: 'button', class: 'btn solid-ink', style: 'width:auto;height:44px;font-size:14px;letter-spacing:0;text-transform:none;padding:0 18px', onclick: cerrar }, '← Volver al formulario');
+    const cap = h('div', { class: 'overlay', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Aviso de privacidad' },
+      h('div', { class: 'overlay-bar' }, btn),
+      h('iframe', { src: url, title: 'Aviso de privacidad', class: 'overlay-frame' }));
+    document.body.appendChild(cap); document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', tecla); btn.focus();
+  }
+
   async function copiar(txt) {
     try { await navigator.clipboard.writeText(txt); return true; } catch (e) { /* respaldo */ }
     const t = h('textarea', { style: 'position:fixed;opacity:0' }); t.value = txt; document.body.appendChild(t); t.select();
@@ -231,5 +246,5 @@
   }
 
   window.Citas = { h: h, svg: svg, api: api, calendario: calendario, slots: slots, fechaCorta: fechaCorta, cap: cap, fechaTitulo: fechaTitulo,
-    descargarIcs: descargarIcs, copiar: copiar, editorHorario: editorHorario, linkGoogleCal: linkGoogleCal, top: top, plaque: plaque, mapsLink: mapsLink, mesKey: mesKey, MESES: MESES };
+    descargarIcs: descargarIcs, copiar: copiar, verAviso: verAviso, editorHorario: editorHorario, linkGoogleCal: linkGoogleCal, top: top, plaque: plaque, mapsLink: mapsLink, mesKey: mesKey, MESES: MESES };
 })();

@@ -180,3 +180,8 @@ textarea{width:100%;border-radius:4px;border:1px solid #9C9A92;background:#fff;p
   .sem-grid .acciones{flex-direction:column;align-items:flex-start}
   .tabs{justify-content:center}
 }
+
+/* ---- Ventana del aviso de privacidad ---- */
+.overlay{position:fixed;inset:0;z-index:50;background:var(--paper);display:flex;flex-direction:column}
+.overlay-bar{flex:none;background:var(--ink);border-bottom:3px solid var(--gold);padding:10px 16px;display:flex}
+.overlay-frame{flex:1;border:0;width:100%;background:var(--paper)}

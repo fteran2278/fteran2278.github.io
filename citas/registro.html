@@ -122,7 +122,7 @@
         h('p', { class: 'note', style: 'font-size:14px;line-height:20px' }, '6 dígitos. Con él entras a tu agenda desde cualquier dispositivo. No lo compartas; si lo olvidas, lo restableces por correo.'),
         pin.el, pin2.el,
         h('div', { class: 'field' }, h('label', { for: 'instr' }, 'Mensaje para tus clientes (opcional)'), instr),
-        h('label', { class: 'check', for: 'aviso' }, aviso, h('span', null, 'Acepto el aviso de privacidad. ', h('a', { href: 'aviso-privacidad.html', target: '_blank', rel: 'noopener' }, 'Leer aviso'), h('span', { class: 'hint' }, ' (se abre en otra pestaña; no pierdes lo que llenaste)'))),
+        h('label', { class: 'check', for: 'aviso' }, aviso, h('span', null, 'Acepto el aviso de privacidad. ', h('a', { href: 'aviso-privacidad.html', target: '_blank', rel: 'noopener', onclick: function (ev) { Citas.verAviso('aviso-privacidad.html', ev); } }, 'Leer aviso'), h('span', { class: 'hint' }, ' (se abre encima; no pierdes lo que llenaste)'))),
         msg), p.dock];
     }
     function ir(n) { msg.replaceChildren(); pantalla([paso0, paso1, paso2, paso3][n]()); }
