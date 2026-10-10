@@ -95,7 +95,7 @@
   }
 
   /* ---------- armazón con pestañas ---------- */
-  const TABS = [['hoy', 'Hoy'], ['semana', 'Semana'], ['bloqueos', 'Bloqueos'], ['horario', 'Mi horario'], ['clientes', 'Clientes'], ['cuenta', 'Cuenta']];
+  const TABS = [['hoy', 'Hoy'], ['semana', 'Semana'], ['bloqueos', 'Bloquear fechas'], ['horario', 'Mi horario'], ['clientes', 'Clientes'], ['cuenta', 'Cuenta']];
   let contenido;
   async function iniciar() {
     marco(cuerpo(h('p', { class: 'spin', role: 'status' }, 'Cargando…')), true);
@@ -149,18 +149,26 @@
   /* ---------- Hoy ---------- */
   async function tabHoy() {
     cargando();
-    let r; try { r = await llamar('agendaCitas', { desde: S.perfil.hoy, hasta: sumar(S.perfil.hoy, 7) }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    let r, pasadas = [];
+    try { r = await llamar('agendaCitas', { desde: S.perfil.hoy, hasta: sumar(S.perfil.hoy, 7) }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    try { const p = await llamar('agendaCitas', { desde: sumar(S.perfil.hoy, -14), hasta: sumar(S.perfil.hoy, -1) }); pasadas = p.citas.filter(function (c) { return c.estado === 'confirmada' && c.inicioPasado; }); } catch (e) { pasadas = []; }
     const activas = r.citas.filter(function (c) { return c.estado !== 'cancelada'; });
     const hoy = activas.filter(function (c) { return c.fecha === S.perfil.hoy; });
     const prox = activas.filter(function (c) { return c.fecha > S.perfil.hoy; });
     const porDia = {}; prox.forEach(function (c) { (porDia[c.fecha] = porDia[c.fecha] || []).push(c); });
+    const marcar = hoy.concat(pasadas).filter(function (c) { return c.estado === 'confirmada' && c.inicioPasado; });
+    const lateral = marcar.length ? h('div', { class: 'panel' }, h('h2', { class: 'sec-t' }, 'Por marcar (' + marcar.length + ')'),
+      h('p', { class: 'note' }, 'Citas que ya pasaron. Indica si el cliente asistió.'), h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, marcar.map(function (c) { return h('div', { style: 'display:flex;flex-direction:column;gap:2px' }, h('span', { class: 'meta', style: 'font-size:12px;color:var(--muted)' }, corta(c.fecha)), tarjeta(c)); }))) : null;
     contenido.replaceChildren(
-      h('h2', { class: 'sec-t' }, 'Hoy · ' + larga(S.perfil.hoy)),
-      hoy.length ? h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, hoy.map(tarjeta)) : h('p', { class: 'vacio' }, 'No tienes citas hoy.'),
-      h('h2', { class: 'sec-t' }, 'Próximos 7 días'),
-      Object.keys(porDia).length ? h('div', { style: 'display:flex;flex-direction:column;gap:14px' }, Object.keys(porDia).map(function (f) {
-        return h('div', { class: 'dia-sem' }, h('h3', null, larga(f)), porDia[f].map(tarjeta));
-      })) : h('p', { class: 'vacio' }, 'Sin citas próximas.'));
+      h('div', { class: 'hoy-grid' },
+        h('div', { class: 'col-p' },
+          h('h2', { class: 'sec-t' }, 'Hoy · ' + larga(S.perfil.hoy)),
+          hoy.length ? h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, hoy.map(tarjeta)) : h('p', { class: 'vacio' }, 'No tienes citas hoy.'),
+          h('h2', { class: 'sec-t', style: 'margin-top:12px' }, 'Próximos 7 días'),
+          Object.keys(porDia).length ? h('div', { style: 'display:flex;flex-direction:column;gap:14px' }, Object.keys(porDia).map(function (f) {
+            return h('div', { class: 'dia-sem' }, h('h3', null, larga(f)), porDia[f].map(tarjeta));
+          })) : h('p', { class: 'vacio' }, 'Sin citas próximas.')),
+        lateral));
   }
 
   /* ---------- Semana ---------- */
@@ -181,7 +189,7 @@
         h('button', { type: 'button', class: 'arrow', 'aria-label': 'Semana anterior', onclick: nav(-1) }, Citas.svg('M15 5l-7 7 7 7', 20, 'currentColor')),
         h('h2', { class: 'sec-t', style: 'font-size:22px' }, corta(ini) + ' – ' + corta(fin)),
         h('button', { type: 'button', class: 'arrow', 'aria-label': 'Semana siguiente', onclick: nav(1) }, Citas.svg('M9 5l7 7-7 7', 20, 'currentColor'))),
-      h('div', { style: 'display:flex;flex-direction:column;gap:16px' }, dias));
+      h('div', { class: 'sem-grid' }, dias));
   }
 
   /* ---------- Bloqueos ---------- */
@@ -231,7 +239,7 @@
   /* ---------- Mi horario ---------- */
   function tabHorario() {
     const P = S.perfil;
-    const ed = editorHorario(P.horario);
+    const ed = editorHorario(P.horario, parseInt(P.apertura, 10) || 6, parseInt(P.cierre, 10) || 22);
     const wa = h('input', { id: 'wa', type: 'tel', inputmode: 'numeric', value: P.whatsapp });
     const ins = h('textarea', { id: 'ins', maxlength: '200' }); ins.value = P.instrucciones;
     const msg = h('div', { role: 'alert' });

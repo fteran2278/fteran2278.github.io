@@ -106,7 +106,7 @@ h2.sec{font-size:22px;line-height:26px}
 textarea{width:100%;border-radius:4px;border:1px solid #9C9A92;background:#fff;padding:10px 14px;font-family:inherit;font-size:16px;min-height:76px;resize:vertical}
 
 /* paneles (admin y agenda) */
-.wide{max-width:760px}
+.wide{max-width:1080px}
 .sec-t{font-family:var(--serif);font-size:26px;line-height:30px;font-weight:600;margin:0}
 .item{background:#fff;border:1px solid var(--line);border-radius:4px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
 .item b{font-size:15px}
@@ -130,3 +130,53 @@ textarea{width:100%;border-radius:4px;border:1px solid #9C9A92;background:#fff;p
 .dia-sem h3{margin:0;font-family:var(--serif);font-size:22px;font-weight:600}
 .dia-sem.hoy h3{color:var(--gold-d)}
 .vacio{font-size:14px;color:var(--muted);padding:2px 0 6px}
+
+/* ---- Editor de horario en calendario ---- */
+.heditor{display:flex;flex-direction:column;gap:10px}
+.hgrid{display:grid;grid-template-columns:40px repeat(7,minmax(0,1fr));gap:3px;align-items:center;user-select:none;-webkit-user-select:none}
+.hday{text-align:center;font-size:12px;font-weight:600;padding-bottom:4px}
+.hlab{font-size:11px;color:var(--muted);text-align:right;padding-right:6px}
+.hc{height:26px;border-radius:3px;border:1px solid #D9D6CC;background:#fff;padding:0;touch-action:none;display:block}
+.hc.on{background:var(--gold);border-color:var(--gold)}
+.hgrid .hc:hover{border-color:var(--ink)}
+.hleg{display:flex;gap:16px;font-size:13px;color:#4A4A45}
+.hleg span{display:flex;align-items:center;gap:6px}
+.hleg i.hc{width:16px;height:16px;display:inline-block;touch-action:auto}
+.hchips{display:flex;gap:8px;flex-wrap:wrap}
+.hchip{min-height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--text);background:#fff;font-size:13px;font-weight:500}
+.hchip:hover{background:var(--ink);color:var(--gold-l)}
+.htotal{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);padding-top:8px;font-size:15px}
+.htotal span:last-child{color:var(--gold-d)}
+
+/* ---- Registro por pasos ---- */
+.paso{font-size:13px;color:#A8A69E}
+.prog{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:12px 20px 14px}
+.prog i{height:4px;border-radius:2px;background:#3A3A37}
+.prog i.on{background:var(--gold)}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.opt{min-height:56px;border-radius:4px;border:1px solid var(--text);background:#fff;color:var(--text);font-size:15px;font-weight:600;padding:0 10px}
+.opt[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--gold-l);box-shadow:inset 0 -3px 0 var(--gold)}
+.pasos3{list-style:none;margin:0;padding:0;border-top:1px solid #2A2A27}
+.pasos3 li{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid #2A2A27;font-size:16px}
+.pasos3 li span{width:30px;height:30px;border-radius:50%;border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--gold-l)}
+.notacard{background:#1C1C1A;border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:2px;font-size:15px}
+.pin-in{font-size:22px;letter-spacing:.5em;text-align:center}
+
+/* ---- Agenda en pantallas anchas ---- */
+.hoy-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+.col-p{display:flex;flex-direction:column;gap:10px;min-width:0}
+.panel{background:#fff;border:1px solid var(--line);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:8px;align-self:start}
+.sem-grid{display:flex;flex-direction:column;gap:16px}
+@media (min-width:900px){
+  .hoy-grid{grid-template-columns:minmax(0,1fr) 340px}
+  .sem-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;align-items:start}
+  .sem-grid .dia-sem{min-width:0}
+  .sem-grid .item{padding:8px 8px}
+  .sem-grid .dia-sem h3{font-size:16px}
+  .sem-grid .hora{font-size:15px;white-space:nowrap;line-height:18px}
+  .sem-grid .item>div:first-child{flex-direction:column;gap:4px}
+  .sem-grid .item b,.sem-grid .item .meta{overflow-wrap:anywhere}
+  .sem-grid .linkbtn{min-height:36px;padding:0;justify-content:flex-start}
+  .sem-grid .acciones{flex-direction:column;align-items:flex-start}
+  .tabs{justify-content:center}
+}

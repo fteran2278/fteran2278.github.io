@@ -131,51 +131,81 @@
   }
 
 
-  /* Editor de horario semanal (registro y "Mi horario"). inicial = {lun:'09:00-13:00,16:00-19:00', ...} */
-  const DIAS_ED = [['lun', 'Lunes'], ['mar', 'Martes'], ['mie', 'Miércoles'], ['jue', 'Jueves'], ['vie', 'Viernes'], ['sab', 'Sábado'], ['dom', 'Domingo']];
-  function horasOpciones(ini, fin) { const o = []; for (let m = ini * 60; m <= fin * 60; m += 30) o.push(pad(Math.floor(m / 60)) + ':' + (m % 60 ? '30' : '00')); return o; }
-  function aMin(t) { return (+t.slice(0, 2)) * 60 + (+t.slice(3)); }
-  function editorHorario(inicial) {
-    const HORAS = horasOpciones(6, 22);
-    const sel = function (valor, vacio) {
-      const s = h('select', null, vacio ? h('option', { value: '' }, vacio) : null, HORAS.map(function (x) { return h('option', { value: x }, x); }));
-      s.value = valor || ''; return s;
-    };
-    const filas = {};
-    const ui = DIAS_ED.map(function (d) {
-      const bl = String((inicial && inicial[d[0]]) || '').split(',').map(function (x) { return x.trim().split('-'); }).filter(function (x) { return x.length === 2 && x[0]; });
-      const chk = h('input', { type: 'checkbox', id: 'd-' + d[0], 'aria-label': d[1] });
-      chk.checked = bl.length > 0;
-      const a1 = sel(bl[0] ? bl[0][0].padStart(5, '0') : '09:00'), b1 = sel(bl[0] ? bl[0][1].padStart(5, '0') : '13:00');
-      const a2 = sel(bl[1] ? bl[1][0].padStart(5, '0') : '', 'Sin 2º bloque'), b2 = sel(bl[1] ? bl[1][1].padStart(5, '0') : '');
-      const cuerpo = h('div', { style: 'display:' + (chk.checked ? 'flex' : 'none') + ';flex-direction:column;gap:8px' },
-        h('div', { class: 'rango' }, a1, h('span', { class: 'sep' }, 'a'), b1), h('div', { class: 'rango' }, a2, h('span', { class: 'sep' }, 'a'), b2));
-      chk.addEventListener('change', function () { cuerpo.style.display = chk.checked ? 'flex' : 'none'; });
-      filas[d[0]] = { chk: chk, a1: a1, b1: b1, a2: a2, b2: b2, cuerpo: cuerpo };
-      return h('div', { class: 'dia' }, h('label', { class: 'dia-cab', for: 'd-' + d[0] }, chk, d[1]), cuerpo);
-    });
-    const copiarLV = h('button', { type: 'button', class: 'linkbtn', style: 'justify-content:flex-start', onclick: function () {
-      const o = filas.lun;
-      ['mar', 'mie', 'jue', 'vie'].forEach(function (k) {
-        const f = filas[k]; f.chk.checked = o.chk.checked; f.cuerpo.style.display = o.chk.checked ? 'flex' : 'none';
-        ['a1', 'b1', 'a2', 'b2'].forEach(function (x) { f[x].value = o[x].value; });
+  /* Editor de horario semanal en calendario (registro y "Mi horario").
+     Se pinta por horas (toca o arrastra). inicial = {lun:'09:00-13:00,16:00-19:00', ...}; leer() regresa el mismo formato. */
+  const DIAS_ED = [['lun', 'Lun', 'lunes'], ['mar', 'Mar', 'martes'], ['mie', 'Mié', 'miércoles'], ['jue', 'Jue', 'jueves'], ['vie', 'Vie', 'viernes'], ['sab', 'Sáb', 'sábado'], ['dom', 'Dom', 'domingo']];
+  function editorHorario(inicial, ini, fin) {
+    ini = ini || 6; fin = fin || 22;
+    const horas = []; for (let x = ini; x < fin; x++) horas.push(x);
+    const on = {}; DIAS_ED.forEach(function (d) { on[d[0]] = {}; });
+    DIAS_ED.forEach(function (d) {
+      String((inicial && inicial[d[0]]) || '').split(',').forEach(function (b) {
+        const m = b.trim().match(/^(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/); if (!m) return;
+        const a = +m[1], z = +m[3] + (+m[4] > 0 ? 1 : 0);
+        for (let x = a; x < z; x++) if (x >= ini && x < fin) on[d[0]][x] = true;
       });
-    } }, 'Copiar el horario del lunes a martes–viernes');
+    });
+    const celdas = {}; // 'lun|9' -> nodo
+    const total = h('span', { style: 'font-weight:600' });
+    function pintar(dk, hr, v) {
+      if (v) on[dk][hr] = true; else delete on[dk][hr];
+      const c = celdas[dk + '|' + hr]; c.className = 'hc' + (v ? ' on' : ''); c.setAttribute('aria-pressed', v ? 'true' : 'false');
+    }
+    function contar() {
+      let n = 0; DIAS_ED.forEach(function (d) { n += Object.keys(on[d[0]]).length; });
+      total.textContent = n + (n === 1 ? ' hora por semana' : ' horas por semana');
+    }
+    const grid = h('div', { class: 'hgrid' }, h('div'), DIAS_ED.map(function (d) { return h('div', { class: 'hday' }, d[1]); }));
+    horas.forEach(function (hr) {
+      grid.appendChild(h('div', { class: 'hlab' }, String(hr).padStart(2, '0') + ':00'));
+      DIAS_ED.forEach(function (d) {
+        const c = h('button', { type: 'button', class: 'hc' + (on[d[0]][hr] ? ' on' : ''), 'aria-pressed': on[d[0]][hr] ? 'true' : 'false', 'aria-label': d[2] + ' ' + hr + ':00 a ' + (hr + 1) + ':00', 'data-d': d[0], 'data-h': hr });
+        celdas[d[0] + '|' + hr] = c; grid.appendChild(c);
+      });
+    });
+    let modo = null;
+    grid.addEventListener('pointerdown', function (ev) {
+      const c = ev.target.closest && ev.target.closest('.hc'); if (!c) return;
+      ev.preventDefault();
+      modo = !on[c.dataset.d][c.dataset.h];
+      pintar(c.dataset.d, +c.dataset.h, modo); contar();
+      try { grid.setPointerCapture(ev.pointerId); } catch (e) { /* sin captura */ }
+    });
+    grid.addEventListener('pointermove', function (ev) {
+      if (modo === null) return;
+      const el = document.elementFromPoint(ev.clientX, ev.clientY), c = el && el.closest && el.closest('.hc');
+      if (c && grid.contains(c) && !!on[c.dataset.d][c.dataset.h] !== modo) { pintar(c.dataset.d, +c.dataset.h, modo); contar(); }
+    });
+    const fuera = function () { modo = null; };
+    grid.addEventListener('pointerup', fuera); grid.addEventListener('pointercancel', fuera);
+    grid.addEventListener('click', function (ev) { // teclado (Enter/Espacio)
+      const c = ev.target.closest && ev.target.closest('.hc'); if (!c || ev.detail !== 0) return;
+      pintar(c.dataset.d, +c.dataset.h, !on[c.dataset.d][c.dataset.h]); contar();
+    });
+    grid.addEventListener('dragstart', function (ev) { ev.preventDefault(); });
+    function aplicar(fn) { DIAS_ED.forEach(function (d, i) { horas.forEach(function (hr) { pintar(d[0], hr, fn(i, hr)); }); }); contar(); }
+    const chip = function (t, fn) { return h('button', { type: 'button', class: 'hchip', onclick: fn }, t); };
+    const chips = h('div', { class: 'hchips' },
+      chip('Lun a vie 9–18', function () { aplicar(function (i, hr) { return i < 5 && hr >= 9 && hr < 18; }); }),
+      chip('Copiar lunes a todos los días', function () { const base = Object.assign({}, on.lun); aplicar(function (i, hr) { return !!base[hr]; }); }),
+      chip('Borrar todo', function () { aplicar(function () { return false; }); }));
+    const leyenda = h('div', { class: 'hleg' }, h('span', null, h('i', { class: 'hc on' }), ' Atiendo'), h('span', null, h('i', { class: 'hc' }), ' No atiendo'));
     function leer() {
       const out = {}; let alguno = false;
       DIAS_ED.forEach(function (d) {
-        const f = filas[d[0]]; out[d[0]] = '';
-        if (!f.chk.checked) return;
-        const bl = [[f.a1.value, f.b1.value]];
-        if (f.a2.value || f.b2.value) bl.push([f.a2.value, f.b2.value]);
-        bl.forEach(function (b) { if (!b[0] || !b[1] || aMin(b[1]) <= aMin(b[0])) throw new Error('Revisa el horario del ' + d[1].toLowerCase() + ': la hora final debe ser después de la inicial.'); });
-        if (bl.length === 2 && aMin(bl[1][0]) < aMin(bl[0][1])) throw new Error('Los dos bloques del ' + d[1].toLowerCase() + ' se traslapan.');
-        out[d[0]] = bl.map(function (b) { return b[0] + '-' + b[1]; }).join(','); alguno = true;
+        const bl = []; let a = null;
+        horas.concat([fin]).forEach(function (hr) {
+          const v = hr < fin && on[d[0]][hr];
+          if (v && a === null) a = hr;
+          if (!v && a !== null) { bl.push(String(a).padStart(2, '0') + ':00-' + String(hr).padStart(2, '0') + ':00'); a = null; }
+        });
+        out[d[0]] = bl.join(','); if (bl.length) alguno = true;
       });
-      if (!alguno) throw new Error('Marca al menos un día con horario de atención.');
+      if (!alguno) throw new Error('Pinta al menos un horario en el que atiendas.');
       return out;
     }
-    return { nodo: h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, ui), copiarLV), leer: leer };
+    contar();
+    return { nodo: h('div', { class: 'heditor' }, leyenda, chips, grid, h('div', { class: 'htotal' }, h('span', null, 'Atenderás'), total)), leer: leer, total: total };
   }
 
   async function copiar(txt) {
