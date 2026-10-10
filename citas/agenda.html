@@ -466,21 +466,18 @@
     const P = S.perfil;
     let sucio = false;
     const barra = h('div', { class: 'savebar' });
-    const wa = h('input', { id: 'wa', type: 'tel', inputmode: 'numeric', value: P.whatsapp });
-    const ins = h('textarea', { id: 'ins', maxlength: '200' }); ins.value = P.instrucciones;
     const msg = h('div', { role: 'alert' });
     const btn = h('button', { type: 'button', class: 'btn solid-ink', disabled: true }, 'Guardar cambios');
     const estado = h('span', { class: 'savebar-t' }, 'Sin cambios');
     const marcar = function () { if (sucio) return; sucio = true; S.sucio = true; estado.textContent = 'Tienes cambios sin guardar'; barra.classList.add('sucio'); btn.disabled = false; };
     const ed = editorHorario(P.horario, parseInt(P.apertura, 10) || 6, parseInt(P.cierre, 10) || 22, marcar);
-    wa.addEventListener('input', marcar); ins.addEventListener('input', marcar);
     btn.addEventListener('click', async function () {
       msg.replaceChildren(); let hor;
       try { hor = ed.leer(); } catch (e) { msg.appendChild(err(e.message)); return; }
       btn.disabled = true; btn.textContent = 'Guardando…';
       try {
-        const r = await llamar('agendaGuardarHorario', { horario: hor, whatsapp: wa.value, instrucciones: ins.value.trim() });
-        P.horario = hor; P.whatsapp = wa.value.replace(/\D/g, '').slice(-10); P.instrucciones = ins.value.trim();
+        const r = await llamar('agendaGuardarHorario', { horario: hor });
+        P.horario = hor;
         S.vent = null; sucio = false; S.sucio = false; barra.classList.remove('sucio'); estado.textContent = 'Guardado ✓';
         msg.replaceChildren(h('div', { class: 'ok' }, 'Guardado. Los clientes ya ven tu horario nuevo.'),
           r.citasFueraDeHorario.length ? h('div', { class: 'err', style: 'margin-top:8px' }, h('b', null, 'Estas citas quedaron fuera de tu nuevo horario (no se cancelaron):'),
@@ -489,15 +486,15 @@
       btn.textContent = 'Guardar cambios';
     });
     barra.append(estado, btn);
-    contenido.replaceChildren(
-      barra,
-      h('h2', { class: 'sec-t' }, 'Mi horario'),
-      h('p', { class: 'note' }, 'Pinta las horas en que atiendes y toca Guardar cambios: hasta que guardes, no cambia nada en Hoy, Semana ni para tus clientes. Citas de 1 hora, entre ' + P.apertura + ' y ' + P.cierre + '. Tu espacio: ' + (P.espacio || 'por asignar') + '.'),
-      h('div', { class: 'bq-grid' },
-        h('div', { class: 'col-p' }, ed.nodo),
-        h('div', { class: 'col-p' },
-          h('div', { class: 'field' }, h('label', { for: 'wa' }, 'Tu WhatsApp (lo ven clientes con cita fuera de plazo)'), wa),
-          h('div', { class: 'field' }, h('label', { for: 'ins' }, 'Mensaje para tus clientes'), ins), msg)));
+    contenido.replaceChildren(barra, h('p', { class: 'note', style: 'margin:0' }, 'Toca o arrastra para pintar tus horas de atención. No cambia nada hasta que guardes. Tu WhatsApp y el mensaje para tus clientes están en Cuenta.'), ed.nodo, msg);
+    const g = contenido.querySelector('.hgrid');
+    const ajusta = function () {
+      const rows = (parseInt(P.cierre, 10) || 22) - (parseInt(P.apertura, 10) || 6);
+      const top = g.getBoundingClientRect().top + window.scrollY - window.scrollY;
+      const hh = Math.max(16, Math.min(34, Math.floor((innerHeight - top - 28 - 76 - rows * 3) / rows)));
+      g.style.setProperty('--hh', hh + 'px');
+    };
+    ajusta(); S.reajusta = ajusta;
   }
 
   /* ---------- Clientes ---------- */
@@ -539,7 +536,25 @@
       try { await llamar('agendaCambiarPin', { pinActual: a.value, pinNuevo: n1.value }); guardar(''); login('PIN cambiado. Entra con tu PIN nuevo.'); }
       catch (e) { btn.disabled = false; msg.replaceChildren(err(e.message)); }
     } }, 'Cambiar PIN');
+    const wa = h('input', { id: 'wa', type: 'tel', inputmode: 'numeric', value: P.whatsapp, maxlength: '14' });
+    const ins = h('textarea', { id: 'ins', maxlength: '200', placeholder: 'Ej. Llega 5 minutos antes, toca el timbre del 2º piso.' }); ins.value = P.instrucciones || '';
+    const msgD = h('div', { role: 'alert' });
+    const btnD = h('button', { type: 'button', class: 'btn solid-ink', onclick: async function () {
+      msgD.replaceChildren(); btnD.disabled = true; btnD.textContent = 'Guardando…';
+      try {
+        await llamar('agendaGuardarHorario', { whatsapp: wa.value, instrucciones: ins.value.trim() });
+        P.whatsapp = wa.value.replace(/\D/g, '').slice(-10); P.instrucciones = ins.value.trim();
+        msgD.replaceChildren(h('div', { class: 'ok' }, 'Guardado.'));
+      } catch (e) { msgD.replaceChildren(err(e.message)); }
+      btnD.disabled = false; btnD.textContent = 'Guardar';
+    } }, 'Guardar');
+    const datos = h('div', { class: 'panel' }, h('h2', { class: 'sec-t' }, 'Datos para tus clientes'),
+      h('div', { class: 'field' }, h('label', { for: 'wa' }, 'Tu WhatsApp'), wa,
+        h('span', { class: 'note' }, 'Lo ve el cliente cuando ya no puede cambiar o cancelar en línea, para que te escriba.')),
+      h('div', { class: 'field' }, h('label', { for: 'ins' }, 'Mensaje para tus clientes'), ins,
+        h('span', { class: 'note' }, 'Va en el correo de confirmación y en la página de su cita.')), msgD, btnD);
     contenido.replaceChildren(
+      datos,
       h('h2', { class: 'sec-t' }, 'Mi link para clientes'),
       h('div', { class: 'linkbox' }, P.linkReservas), cp,
       h('a', { class: 'btn light', href: 'https://wa.me/?text=' + encodeURIComponent(texto), target: '_blank', rel: 'noopener noreferrer' }, 'Compartir por WhatsApp'),

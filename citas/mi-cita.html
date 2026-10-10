@@ -69,6 +69,7 @@
           cons.direccion ? h('span', { class: 'note', style: 'font-size:14px' }, cons.direccion) : null,
           cons.instruccionesLlegada ? h('span', { class: 'note', style: 'font-size:14px' }, cons.instruccionesLlegada) : null,
           mapsLink(cons)) : null,
+        c.profesionista.instrucciones && activa ? fila('Indicaciones', h('span', { class: 'note', style: 'font-size:14px' }, c.profesionista.instrucciones)) : null,
         fila('Folio', h('span', { class: 'val', style: 'letter-spacing:.06em' }, c.id))),
       activa ? h('div', { style: 'display:flex;flex-direction:column;gap:10px' },
         c.puedeCambiar ? h('button', { type: 'button', class: 'btn solid-ink', onclick: vistaCambiar }, 'Cambiar día u hora') : null,
