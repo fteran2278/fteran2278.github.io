@@ -136,7 +136,7 @@ textarea{width:100%;border-radius:4px;border:1px solid #9C9A92;background:#fff;p
 .hgrid{display:grid;grid-template-columns:40px repeat(7,minmax(0,1fr));gap:3px;align-items:center;user-select:none;-webkit-user-select:none}
 .hday{text-align:center;font-size:12px;font-weight:600;padding-bottom:4px}
 .hlab{font-size:11px;color:var(--muted);text-align:right;padding-right:6px}
-.hc{height:var(--hh,26px);border-radius:3px;border:1px solid #D9D6CC;background:#fff;padding:0;touch-action:none;display:block}
+.hc{height:var(--hh,26px);border-radius:3px;border:1px solid #D9D6CC;background:#fff;padding:0;touch-action:manipulation;display:block}
 .hc.on{background:var(--gold);border-color:var(--gold)}
 .hgrid .hc:hover{border-color:var(--ink)}
 .hleg{display:flex;gap:16px;font-size:13px;color:#4A4A45}
@@ -215,7 +215,9 @@ textarea{width:100%;border-radius:4px;border:1px solid #9C9A92;background:#fff;p
 .ci-info{display:flex;flex-direction:column;gap:2px;min-width:0}
 .ci-nom{font-size:16px;font-weight:600}
 .ci-det{font-size:14px;color:var(--gold-l);overflow-wrap:anywhere}
-.cb-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.cb-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cita-oscura .cb-row:not(:has(.cb-note)){flex-wrap:nowrap;flex-basis:100%}
+.cita-oscura .cb-row:not(:has(.cb-note)) .cb{flex:1 1 auto;justify-content:center;white-space:nowrap;padding:0 8px;font-size:12px;height:40px}
 .cb{height:44px;border-radius:4px;border:1px solid #8A8A82;background:transparent;color:#fff;font-size:13px;font-weight:500;padding:0 14px;display:inline-flex;align-items:center;text-decoration:none}
 .cb:hover{background:#2A2A27;color:#fff}
 .cb.gold{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
@@ -324,3 +326,6 @@ textarea{width:100%;border-radius:4px;border:1px solid #9C9A92;background:#fff;p
 .savebar.sucio{border-color:var(--gold);background:#FBF3E0}
 .savebar-t{font-size:14px;font-weight:600}
 .savebar .btn{width:auto;padding:10px 18px}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--gold-l);padding:12px 20px;border-radius:4px;font-size:14px;font-weight:600;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.25);transition:opacity .5s}
+.toast.off{opacity:0}

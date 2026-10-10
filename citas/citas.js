@@ -165,8 +165,10 @@
       });
     });
     let modo = null;
+    let tactil = false;
     grid.addEventListener('pointerdown', function (ev) {
       const c = ev.target.closest && ev.target.closest('.hc'); if (!c) return;
+      if (ev.pointerType && ev.pointerType !== 'mouse') { tactil = true; return; } // en celular: solo toque, deslizar = desplazar
       ev.preventDefault();
       modo = !on[c.dataset.d][c.dataset.h];
       pintar(c.dataset.d, +c.dataset.h, modo); contar();
@@ -178,9 +180,10 @@
       if (c && grid.contains(c) && !!on[c.dataset.d][c.dataset.h] !== modo) { pintar(c.dataset.d, +c.dataset.h, modo); contar(); }
     });
     const fuera = function () { modo = null; };
-    grid.addEventListener('pointerup', fuera); grid.addEventListener('pointercancel', fuera);
+    grid.addEventListener('pointerup', fuera); grid.addEventListener('pointercancel', function () { fuera(); tactil = false; });
     grid.addEventListener('click', function (ev) { // teclado (Enter/Espacio)
-      const c = ev.target.closest && ev.target.closest('.hc'); if (!c || ev.detail !== 0) return;
+      const c = ev.target.closest && ev.target.closest('.hc'); if (!c || (ev.detail !== 0 && !tactil)) return;
+      tactil = false;
       pintar(c.dataset.d, +c.dataset.h, !on[c.dataset.d][c.dataset.h]); contar();
     });
     grid.addEventListener('dragstart', function (ev) { ev.preventDefault(); });

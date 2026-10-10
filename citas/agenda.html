@@ -118,6 +118,7 @@
     ({ hoy: tabHoy, semana: tabSemana, citas: tabCitas, bloqueos: tabBloqueos, horario: tabHorario, clientes: tabClientes, cuenta: tabCuenta })[S.tab]();
   }
   const cargando = function () { if (S.suave) { S.suave = false; return; } contenido.replaceChildren(h('p', { class: 'spin', role: 'status' }, 'Cargando…')); };
+  const toast = function (t) { const n = h('div', { class: 'toast', role: 'status' }, t); document.body.appendChild(n); setTimeout(function () { n.classList.add('off'); }, 2200); setTimeout(function () { n.remove(); }, 2800); };
   const TABFN = function () { return { hoy: tabHoy, semana: tabSemana, citas: tabCitas, bloqueos: tabBloqueos, horario: tabHorario, clientes: tabClientes, cuenta: tabCuenta }; };
   /* recarga sin borrar la pantalla: se ve lo anterior hasta que llegan los datos nuevos */
   const recargar = function () { S.vent = null; S.suave = true; TABFN()[S.tab](); };
@@ -194,7 +195,7 @@
     const futura = c.estado === 'confirmada' && !c.inicioPasado;
     if (futura && c.link) {
       const texto = 'Hola ' + nombreCorto(c) + ', te comparto el link de tu cita del ' + corta(c.fecha) + ' a las ' + c.hora + ': ' + c.link;
-      if (tel) acc.appendChild(h('a', { class: 'cb gold', href: 'https://wa.me/52' + tel + '?text=' + encodeURIComponent(texto), target: '_blank', rel: 'noopener noreferrer' }, 'WhatsApp con link'));
+      if (tel) acc.appendChild(h('a', { class: 'cb gold', href: 'https://wa.me/52' + tel + '?text=' + encodeURIComponent(texto), target: '_blank', rel: 'noopener noreferrer' }, 'WhatsApp + link'));
       acc.appendChild(btn('Copiar link', '', async function (ev) { ev.target.textContent = (await copiar(c.link)) ? 'Link copiado' : 'No se pudo copiar'; }));
       const can = btn('Cancelar', 'danger', function () {
         can.replaceWith(h('span', { class: 'cb-row' }, h('span', { class: 'cb-note' }, 'Se avisa al cliente por correo, con disculpa e invitación a reservar de nuevo.'), btn('Sí, cancelar', 'danger', hacer(function () { return llamar('agendaCancelar', { citaId: c.id }); })), btn('No', '', recargar)));
@@ -375,8 +376,8 @@
   /* ---------- Todas las citas ---------- */
   async function tabCitas() {
     cargando();
-    const P = S.perfil; let r;
-    try { r = await llamar('agendaCitas', { desde: sumar(P.hoy, -14), hasta: sumar(P.hoy, 47) }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
+    const P = S.perfil; let r; const dias = S.diasCitas || 15;
+    try { r = await llamar('agendaCitas', { desde: sumar(P.hoy, -14), hasta: sumar(P.hoy, dias) }); } catch (e) { contenido.replaceChildren(err(e.message)); return; }
     const todas = r.citas.filter(function (c) { return c.estado !== 'cancelada'; });
     const grupo = function (lista, titulo, vacio) {
       const por = {}; lista.forEach(function (c) { (por[c.fecha] = por[c.fecha] || []).push(c); });
@@ -384,7 +385,8 @@
       return [h('h2', { class: 'sec-t' }, titulo)].concat(fechas.length ? fechas.map(function (f) { return h('div', { class: 'dia-sem' }, h('h3', null, larga(f)), por[f].map(function (c) { return filaCita(c); })); }) : [h('p', { class: 'vacio' }, vacio)]);
     };
     const fut = todas.filter(function (c) { return c.fecha >= P.hoy; }), pas = todas.filter(function (c) { return c.fecha < P.hoy; }).reverse();
-    contenido.replaceChildren.apply(contenido, grupo(fut, 'Próximas citas', 'No tienes citas próximas.').concat(grupo(pas.reverse(), 'Últimos 14 días', 'Sin citas recientes.')));
+    const mas = dias < 45 ? h('button', { type: 'button', class: 'btn-borde', style: 'align-self:flex-start', onclick: function () { S.diasCitas = Math.min(45, dias + 15); tabCitas(); } }, 'Ver 15 días más') : null;
+    contenido.replaceChildren.apply(contenido, grupo(fut, 'Próximas citas · ' + dias + ' días', 'No tienes citas en los próximos ' + dias + ' días.').concat([mas]).filter(Boolean).concat(grupo(pas.reverse(), 'Últimos 14 días', 'Sin citas recientes.')));
   }
 
   /* ---------- Bloquear fechas (con calendario) ---------- */
@@ -479,14 +481,14 @@
         const r = await llamar('agendaGuardarHorario', { horario: hor });
         P.horario = hor;
         S.vent = null; sucio = false; S.sucio = false; barra.classList.remove('sucio'); estado.textContent = 'Guardado ✓';
-        msg.replaceChildren(h('div', { class: 'ok' }, 'Guardado. Los clientes ya ven tu horario nuevo.'),
-          r.citasFueraDeHorario.length ? h('div', { class: 'err', style: 'margin-top:8px' }, h('b', null, 'Estas citas quedaron fuera de tu nuevo horario (no se cancelaron):'),
-            h('ul', { style: 'margin:6px 0 0;padding-left:18px' }, r.citasFueraDeHorario.map(function (c) { return h('li', null, corta(c.fecha) + ' ' + c.hora + ' · ' + c.cliente); }))) : null);
+        toast('Horario guardado ✓');
+        if (r.citasFueraDeHorario && r.citasFueraDeHorario.length) msg.replaceChildren(h('div', { class: 'err', style: 'margin-top:8px' }, h('b', null, 'Estas citas quedaron fuera de tu nuevo horario (no se cancelaron):'),
+          h('ul', { style: 'margin:6px 0 0;padding-left:18px' }, r.citasFueraDeHorario.map(function (c) { return h('li', null, corta(c.fecha) + ' ' + c.hora + ' · ' + c.cliente); }))));
       } catch (e) { msg.replaceChildren(err(e.message)); btn.disabled = false; }
       btn.textContent = 'Guardar cambios';
     });
     barra.append(estado, btn);
-    contenido.replaceChildren(barra, h('p', { class: 'note', style: 'margin:0' }, 'Toca o arrastra para pintar tus horas de atención. No cambia nada hasta que guardes. Tu WhatsApp y el mensaje para tus clientes están en Cuenta.'), ed.nodo, msg);
+    contenido.replaceChildren(barra, h('p', { class: 'note', style: 'margin:0' }, 'Toca cada hora en que atiendes (con mouse también puedes arrastrar). No cambia nada hasta que guardes. Tu WhatsApp y el mensaje para tus clientes están en Cuenta.'), ed.nodo, msg);
     const g = contenido.querySelector('.hgrid');
     const ajusta = function () {
       const rows = (parseInt(P.cierre, 10) || 22) - (parseInt(P.apertura, 10) || 6);
@@ -544,7 +546,7 @@
       try {
         await llamar('agendaGuardarHorario', { whatsapp: wa.value, instrucciones: ins.value.trim() });
         P.whatsapp = wa.value.replace(/\D/g, '').slice(-10); P.instrucciones = ins.value.trim();
-        msgD.replaceChildren(h('div', { class: 'ok' }, 'Guardado.'));
+        toast('Guardado ✓');
       } catch (e) { msgD.replaceChildren(err(e.message)); }
       btnD.disabled = false; btnD.textContent = 'Guardar';
     } }, 'Guardar');
