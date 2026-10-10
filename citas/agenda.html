@@ -191,13 +191,14 @@
     const msg = h('div', { role: 'alert' });
     const hacer = function (fn) { return async function (ev) { ev.target.disabled = true; msg.replaceChildren(); try { await fn(); recargar(); } catch (e) { ev.target.disabled = false; msg.replaceChildren(err(e.message)); } }; };
     const btn = function (t, cls, fn) { return h('button', { type: 'button', class: 'cb ' + (cls || ''), onclick: fn }, t); };
-    const acc = h('div', { class: 'cb-row' });
+    const acc = h('div', { class: 'cb-row una' });
     const futura = c.estado === 'confirmada' && !c.inicioPasado;
     if (futura && c.link) {
       const texto = 'Hola ' + nombreCorto(c) + ', te comparto el link de tu cita del ' + corta(c.fecha) + ' a las ' + c.hora + ': ' + c.link;
       if (tel) acc.appendChild(h('a', { class: 'cb gold', href: 'https://wa.me/52' + tel + '?text=' + encodeURIComponent(texto), target: '_blank', rel: 'noopener noreferrer' }, 'WhatsApp + link'));
       acc.appendChild(btn('Copiar link', '', async function (ev) { ev.target.textContent = (await copiar(c.link)) ? 'Link copiado' : 'No se pudo copiar'; }));
       const can = btn('Cancelar', 'danger', function () {
+        acc.classList.remove('una');
         can.replaceWith(h('span', { class: 'cb-row' }, h('span', { class: 'cb-note' }, 'Se avisa al cliente por correo, con disculpa e invitación a reservar de nuevo.'), btn('Sí, cancelar', 'danger', hacer(function () { return llamar('agendaCancelar', { citaId: c.id }); })), btn('No', '', recargar)));
       });
       acc.appendChild(can);

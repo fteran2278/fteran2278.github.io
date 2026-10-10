@@ -216,9 +216,11 @@ textarea{width:100%;border-radius:4px;border:1px solid #9C9A92;background:#fff;p
 .ci-nom{font-size:16px;font-weight:600}
 .ci-det{font-size:14px;color:var(--gold-l);overflow-wrap:anywhere}
 .cb-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.cita-oscura .cb-row:not(:has(.cb-note)){flex-wrap:nowrap;flex-basis:100%}
-.cita-oscura .cb-row:not(:has(.cb-note)) .cb{flex:1 1 auto;justify-content:center;white-space:nowrap;padding:0 8px;font-size:12px;height:40px}
 .cb{height:44px;border-radius:4px;border:1px solid #8A8A82;background:transparent;color:#fff;font-size:13px;font-weight:500;padding:0 14px;display:inline-flex;align-items:center;text-decoration:none}
+.cb-row.una{flex-wrap:nowrap;flex-basis:100%}
+.cb-row.una .cb{flex:1 1 auto;justify-content:center;white-space:nowrap;padding:0 8px;font-size:12px;height:40px}
+.cb-row.una .cb-row{flex-wrap:wrap}
+.cb-row.una .cb-row .cb{flex:0 0 auto;white-space:normal}
 .cb:hover{background:#2A2A27;color:#fff}
 .cb.gold{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
 .cb.gold:hover{background:var(--gold-l);color:var(--ink)}
