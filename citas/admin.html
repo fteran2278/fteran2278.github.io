@@ -55,10 +55,11 @@
     pin.focus();
   }
 
+  let periodo = 'mes';
   async function panel(nuevo) {
     marco('ADMINISTRADOR', h('div', { class: 'body' }, h('p', { class: 'spin', role: 'status' }, 'Cargando…')), true);
-    let d;
-    try { d = await llamar('adminPanel'); } catch (e) { if (sesion) marco('ADMINISTRADOR', h('div', { class: 'body' }, h('div', { class: 'err' }, e.message)), true); return; }
+    let d, est = null;
+    try { d = await llamar('adminPanel'); est = await llamar('adminEstadisticas', { periodo: periodo }).catch(function () { return null; }); } catch (e) { if (sesion) marco('ADMINISTRADOR', h('div', { class: 'body' }, h('div', { class: 'err' }, e.message)), true); return; }
 
     // --- nueva invitación
     const sedes = {}; d.consultorios.forEach(function (c) { (sedes[c.sede] = sedes[c.sede] || []).push(c); });
@@ -119,9 +120,42 @@
         msgP);
     }) : [h('p', { class: 'note' }, 'Aún no hay profesionistas registrados.')];
 
+
+    // --- estadísticas de la red
+    const kpi = function (et, num, sub, cls) { return h('div', { class: 'kpi' + (cls ? ' ' + cls : '') }, h('span', { class: 'kpi-e' }, et), h('span', { class: 'kpi-n' }, String(num)), h('span', { class: 'kpi-s' }, sub)); };
+    const selPer = function (id, t) { return h('button', { type: 'button', class: 'per' + (periodo === id ? ' on' : ''), onclick: function () { periodo = id; panel(); } }, t); };
+    const stats = est ? h('div', { style: 'display:flex;flex-direction:column;gap:22px' },
+      h('div', { class: 'dia-cab-r' }, h('h1', { class: 'adm-t' }, est.etiqueta), h('div', { style: 'display:flex;gap:8px' }, selPer('mes', 'Este mes'), selPer('60', 'Últimos 60 días'))),
+      h('div', { class: 'kpis' },
+        kpi('Usando la agenda', est.usando + ' de ' + est.habilitados, 'profesionistas con agenda activa'),
+        kpi('Citas del periodo', est.citas, est.asistenciaPct == null ? 'aún sin asistencia marcada' : 'asistencia ' + est.asistenciaPct + ' % de las marcadas'),
+        kpi('Personas distintas', est.personas, est.multi + (est.multi === 1 ? ' usa' : ' usan') + ' más de un profesionista'),
+        kpi('Citas sin marcar', est.sinMarcar, 'la asistencia puede estar subestimada', 'crema')),
+      h('div', { class: 'adm-cols' },
+        h('div', { class: 'panel', style: 'flex:999 1 560px;min-width:0' },
+          h('h2', { class: 'sec-t', style: 'font-weight:700;font-size:28px' }, 'Por profesionista'),
+          h('div', { style: 'overflow-x:auto' }, h('div', { class: 'tabla' },
+            h('div', { class: 'tr th' }, h('span', null, 'Profesionista'), h('span', null, 'Plan'), h('span', null, 'Citas'), h('span', null, 'Asistencia'), h('span', null, 'Sin marcar')),
+            est.porProfesionista.length ? est.porProfesionista.map(function (f) {
+              return h('div', { class: 'tr' }, h('div', { style: 'display:flex;flex-direction:column;gap:2px;min-width:0' }, h('b', null, f.nombre), h('span', { class: 'meta' }, f.esp)),
+                h('span', null, f.plan), h('b', null, String(f.citas)), h('span', null, f.asistencia == null ? '—' : f.asistencia + ' %'), h('span', null, String(f.sin)));
+            }) : [h('p', { class: 'vacio' }, 'Aún no hay profesionistas activos.')]))),
+        h('div', { class: 'col-s', style: 'flex:1 1 320px' },
+          h('div', { class: 'panel negro' }, h('h2', { class: 'sec-t', style: 'font-weight:700;font-size:28px;color:#fff' }, 'Uso de consultorios'),
+            est.consultorios.length ? est.consultorios.map(function (c) {
+              return h('div', { style: 'display:flex;flex-direction:column;gap:6px' },
+                h('div', { style: 'display:flex;justify-content:space-between;font-size:14px;color:#fff' }, h('span', null, c.nombre), h('b', { style: 'color:var(--gold-l)' }, c.pct + ' %')),
+                h('div', { class: 'barra' }, h('i', { style: 'width:' + c.pct + '%' })));
+            }) : [h('span', { class: 'note' }, 'Aún no hay oficinas con profesionistas activos.')],
+            h('span', { class: 'note' }, 'Citas ÷ horas disponibles en el periodo.')),
+          h('div', { class: 'panel' }, h('h2', { class: 'sec-t', style: 'font-weight:700;font-size:28px' }, 'Clientes y avisos'),
+            h('div', { style: 'display:flex;flex-direction:column' }, h('span', { class: 'big-n', style: 'color:var(--text)' }, String(est.clientesTotal)), h('span', { class: 'meta' }, 'clientes registrados en la red')),
+            h('div', { style: 'display:flex;flex-direction:column;border-top:1px solid var(--line);padding-top:12px' }, h('span', { class: 'big-n', style: 'color:var(--text)' }, est.pidenSmsWa == null ? '—' : est.pidenSmsWa + ' %'), h('span', { class: 'meta' }, 'pidió aviso por SMS o WhatsApp (hoy los avisos salen por correo)'))),
+          h('span', { class: 'note' }, 'Esta vista solo muestra totales. No muestra nombres, teléfonos ni motivos de los clientes.')))) : h('div', { class: 'err' }, 'No se pudieron cargar las estadísticas. Intenta recargar.');
+
     const ocup = d.consultorios.length ? d.consultorios.filter(function (c) { return c.profesionistas > 0; }).length : 0;
 
-    marco('ADMINISTRADOR', h('div', { class: 'body', style: 'gap:20px' },
+    marco('RED DE PROFESIONISTAS', h('div', { class: 'body', style: 'gap:24px' }, stats,
       h('h2', { class: 'sec-t' }, 'Nueva invitación'),
       h('div', { class: 'row2' },
         h('div', { class: 'field' }, h('label', { for: 'cons' }, 'Oficina'), selCons),
@@ -132,7 +166,7 @@
       h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, pros),
       h('h2', { class: 'sec-t' }, 'Invitaciones'),
       h('div', { style: 'display:flex;flex-direction:column;gap:8px' }, invs),
-      h('p', { class: 'note' }, 'Esta vista no muestra datos de clientes. Las estadísticas de la red llegan en la siguiente fase.')), true);
+      h('p', { class: 'note' }, 'Esta vista no muestra datos de clientes.')), true);
   }
 
   if (sesion) panel(); else login();
