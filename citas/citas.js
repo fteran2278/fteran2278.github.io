@@ -134,7 +134,7 @@
   /* Editor de horario semanal en calendario (registro y "Mi horario").
      Se pinta por horas (toca o arrastra). inicial = {lun:'09:00-13:00,16:00-19:00', ...}; leer() regresa el mismo formato. */
   const DIAS_ED = [['lun', 'Lun', 'lunes'], ['mar', 'Mar', 'martes'], ['mie', 'Mié', 'miércoles'], ['jue', 'Jue', 'jueves'], ['vie', 'Vie', 'viernes'], ['sab', 'Sáb', 'sábado'], ['dom', 'Dom', 'domingo']];
-  function editorHorario(inicial, ini, fin) {
+  function editorHorario(inicial, ini, fin, alCambiar) {
     ini = ini || 6; fin = fin || 22;
     const horas = []; for (let x = ini; x < fin; x++) horas.push(x);
     const on = {}; DIAS_ED.forEach(function (d) { on[d[0]] = {}; });
@@ -152,6 +152,7 @@
       const c = celdas[dk + '|' + hr]; c.className = 'hc' + (v ? ' on' : ''); c.setAttribute('aria-pressed', v ? 'true' : 'false');
     }
     function contar() {
+      if (alCambiar && listo) alCambiar();
       let n = 0; DIAS_ED.forEach(function (d) { n += Object.keys(on[d[0]]).length; });
       total.textContent = n + (n === 1 ? ' hora por semana' : ' horas por semana');
     }
@@ -204,7 +205,7 @@
       if (!alguno) throw new Error('Pinta al menos un horario en el que atiendas.');
       return out;
     }
-    contar();
+    let listo = false; contar(); listo = true;
     return { nodo: h('div', { class: 'heditor' }, leyenda, chips, grid, h('div', { class: 'htotal' }, h('span', null, 'Atenderás'), total)), leer: leer, total: total };
   }
 
