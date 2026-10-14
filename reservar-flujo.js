@@ -1,4 +1,4 @@
-function () {
+(function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
   var MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
