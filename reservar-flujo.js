@@ -384,13 +384,22 @@
   function alertLine(t) { var w = document.querySelector("#rfClabe .rf-proto"); if (w) { var e = document.createElement("div"); e.style.cssText = "color:#b3412f;margin-top:6px"; e.textContent = t; w.appendChild(e); } }
 
   /* ── paso 3: confirmación / casos especiales ── */
-  function fmtCode(c) { c = String(c); return (c.length === 6 ? c.slice(0, 3) + " " + c.slice(3) : c) + "#"; }
+  function fmtCode(c) { c = String(c); return c.length === 6 ? c.slice(0, 3) + " " + c.slice(3) : c; }
   function addMin(h, m) { var x = h * 60 + m; return Math.floor(x / 60) + ":" + pad2(x % 60); }
   function maskTel(t) { return t.slice(0, 3) + " *** " + t.slice(-4); }
-  var ICO_SMS = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>';
-  var ICO_MAIL = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>';
-  var ICO_LOCK_G = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C9953A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-  var ICO_CLOCK_G = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C9953A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  var ICO_SMS = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d1b18" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg>';
+  var ICO_MAIL = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d1b18" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>';
+  var ICO_LOCK_G = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C9953A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  var ICO_CLOCK_G = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C9953A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+  function fitDone() {
+    var box = $("rfStep3").firstElementChild, ov = $("rfOverlay"); if (!box || !ov) return;
+    box.style.zoom = 1;
+    var pad = parseFloat(getComputedStyle(ov).paddingTop) || 0, foot = $("rfFoot");
+    var avail = ov.clientHeight - 2 * pad - ((foot && !foot.hidden) ? foot.offsetHeight : 0) - 2;
+    var need = box.offsetHeight;
+    if (need > avail) box.style.zoom = Math.max(0.5, avail / need).toFixed(3);
+  }
+  window.addEventListener("resize", function () { if (S.step === 3) fitDone(); });
   function dlIcs(items) {
     var L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//D Espacios//ES"];
     items.forEach(function (it, i) {
@@ -414,7 +423,7 @@
       var a = Math.min.apply(null, S.hours), b = Math.max.apply(null, S.hours) + 1, n = S.hours.length;
       l1 = of + " · Privada"; l2 = fmtShort(fromYmd(S.date)) + " · " + a + ":00 – " + b + ":00 · " + n + (n === 1 ? " hora" : " horas");
       cal.push({ f: S.date, a: a, b: b, t: of });
-      card = '<div class="rf-coderow"><div><small>Tu código de acceso</small><div class="rf-code">' + (ac[0] ? fmtCode(ac[0].codigo) : "—") + '</div></div>' + ICO_LOCK_G + '</div><div class="rf-codeval">' + (ac[0] ? "Válido de " + addMin(a, -10) + " a " + addMin(b, 10) + " · Puerta principal y oficina." : "Te lo enviamos por SMS.") + "</div>";
+      card = '<div class="rf-coderow"><div><small>Tu código de acceso</small><div class="rf-code">' + (ac[0] ? fmtCode(ac[0].codigo) : "—") + '</div></div>' + ICO_LOCK_G + '</div><div class="rf-codeval">' + (ac[0] ? "Válido de " + addMin(a, -10).replace(/^(\d):/, "$1:") + " a " + addMin(b, 10) + " · Puerta principal y oficina." : "Te lo enviamos por SMS.") + "</div>";
     } else if (k === "daypass") {
       var ds = S.days.slice().sort(), np = ds.length;
       l1 = of + " · Privada"; l2 = "Day pass · " + np + (np === 1 ? " día" : " días") + " · 8:00 a 16:00";
@@ -424,26 +433,27 @@
         cal.push({ f: f, a: 8, b: 16, t: of + " (day pass)" });
         card += '<div class="rf-day-row"><div><b>' + fmtLong(fromYmd(f)) + "</b><span>8:00 – 16:00</span></div><strong>" + (x ? fmtCode(x.codigo) : "—") + "</strong></div>";
       });
-      card += "</div>"; extra = '<div class="rf-note" style="margin-top:0;width:100%;box-sizing:border-box;text-align:left"><span>Cambia o cancela tus días desde tu link personal, hasta 24 horas antes de cada día.</span></div>';
+      card += "</div>"; extra = '<div class="rf-n2">Cambia o cancela tus días desde tu link personal, hasta 24 horas antes de cada día.</div>';
     } else {
       var pl = PLANES.filter(function (x) { return x.id === S.plan; })[0], v = new Date(); v.setDate(v.getDate() + 30);
       l1 = "Plan " + pl.n + " · " + pl.h + " horas"; l2 = of + " · " + money(pl.p / pl.h) + " por hora";
-      card = '<div class="rf-coderow"><div><small>Horas disponibles</small><div class="rf-hrs">' + pl.h + " <i>de " + pl.h + "</i></div></div>" + ICO_CLOCK_G + '</div><div class="rf-codeval">Vigente hasta el ' + v.getDate() + " de " + MESES[v.getMonth()] + " de " + v.getFullYear() + "</div>";
+      card = '<div class="rf-coderow"><div><small>Horas disponibles</small><div class="rf-hrs">' + pl.h + " <i>de " + pl.h + "</i></div></div>" + ICO_CLOCK_G + '</div><div class="rf-codeval rf-plan-val">Vigente hasta el ' + v.getDate() + " de " + MESES[v.getMonth()] + " de " + v.getFullYear() + "</div>";
     }
-    var h = '<div class="rf-ok"><div class="rf-done-ico">✓</div><h3>' + title + '</h3><div class="rf-sub" style="margin-top:-8px">Tu pago fue recibido.</div>';
+    var h = '<div class="rf-ok"><div class="rf-done-ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2f7d5b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h3>' + title + '</h3><div class="rf-sub">Tu pago fue recibido.</div>';
     h += '<div class="rf-summary"><img alt="" src="' + photoOf(S.of) + '"><div class="rf-summary-txt"><b>' + l1 + "</b><span>" + l2 + "</span></div></div>";
-    h += '<div class="rf-codecard">' + card + "</div>" + extra;
-    if (k === "plan") h += '<div class="rf-note" style="margin-top:0;width:100%;box-sizing:border-box;text-align:left"><span><b>Aún no tienes horario.</b> Agenda tus horas cuando quieras desde tu link personal. Cada vez que agendes, recibes tu código de acceso.</span></div>';
-    h += '<div class="rf-ch-q">¿Cómo quieres recibir tu link y tus códigos?</div><div class="rf-chan" role="radiogroup">';
+    h += '<div class="rf-codecard' + (k === "daypass" ? " rf-dp" : "") + '">' + card + "</div>" + extra;
+    if (k === "plan") h += '<div class="rf-n2 rf-n2p"><b>Aún no tienes horario.</b> Agenda tus horas cuando quieras desde tu link personal. Cada vez que agendes, recibes tu código de acceso.</div>';
+    h += '<div class="rf-ch-q">' + (k === "plan" ? "¿Cómo quieres recibir tu link personal?" : (k === "daypass" ? "¿Cómo quieres recibir tu link y tus códigos?" : "¿Cómo quieres recibir tu link y tu código?")) + '</div><div class="rf-chan" role="radiogroup">';
     h += '<button type="button" class="rf-ch" role="radio" aria-checked="true" data-ch="sms"><span class="rf-radio"></span>' + ICO_SMS + "<div><b>Por SMS</b><span>Al " + esc(maskTel(c.tel || "0000000000")) + "</span></div></button>";
     h += '<button type="button" class="rf-ch" role="radio" aria-checked="false" data-ch="correo"><span class="rf-radio"></span>' + ICO_MAIL + "<div><b>Por correo electrónico</b><span>" + esc(c.correo || "") + "</span></div></button></div>";
     h += '<div class="rf-sendmsg" id="rfSendMsg" role="status"></div>';
     h += '<div class="rf-fine">Te escribimos desde solucionandoespacios@gmail.com. Si no lo ves, revisa tu carpeta de spam. ¿Sigue sin llegar? <a href="https://wa.me/524448295401" target="_blank" rel="noopener"><b>Escríbenos por WhatsApp</b></a> y te lo reenviamos.' + (TEST ? " <b>Modo de prueba: el SMS es simulado y no se envió.</b>" : "") + "</div>";
-    var main = k === "plan" ? "Agendar mis horas →" : (k === "daypass" ? "Ver mis días →" : "Ver mi reserva →");
-    h += link ? '<a class="rf-btn rf-btn-dark" href="' + esc(link) + '" target="_blank" rel="noopener">' + main + "</a>" : "";
+    h += '<div class="rf-ft">';
+    var main = k === "plan" ? "Agendar mis horas" : (k === "daypass" ? "Ver mis días" : "Ver mi reserva");
+    h += link ? '<a class="rf-btn rf-btn-dark" href="' + esc(link) + '" target="_blank" rel="noopener">' + main + ' <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9953A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>' + "</a>" : "";
     h += k === "plan" ? (link ? '<a class="rf-btn rf-btn-out" href="' + esc(link) + '" target="_blank" rel="noopener">Ver mi cuenta</a>' : "") : '<button type="button" class="rf-btn rf-btn-out" id="rfIcs">Agregar a mi calendario</button>';
-    h += '<button type="button" class="rf-link" id="rfDoneClose">Cerrar</button></div>';
-    $("rfStep3").innerHTML = h; showStep(3);
+    h += '<button type="button" class="rf-link" id="rfDoneClose" hidden>Cerrar</button></div></div>';
+    $("rfStep3").innerHTML = h; showStep(3); fitDone();
     $("rfDoneClose").onclick = hideFlow;
     var ib = $("rfIcs"); if (ib) ib.onclick = function () { dlIcs(cal); };
     $("rfStep3").querySelectorAll(".rf-ch").forEach(function (b) {
