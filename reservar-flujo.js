@@ -59,6 +59,8 @@ function () {
   function closedDay(d) { return d < today() || d.getDay() === 0; }
 
   /* ── calendario ── */
+  var dpT = null;
+  function dpRefresh() { clearTimeout(dpT); dpT = setTimeout(function () { if (S.tab === "daypass" && S.step === 1) rerender(); }, 150); }
   function calendar(mode) {
     var m = S.month, first = new Date(m.getFullYear(), m.getMonth(), 1);
     var lead = (first.getDay() + 6) % 7, total = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
@@ -72,6 +74,11 @@ function () {
     for (var d = 1; d <= total; d++) {
       var dt = new Date(m.getFullYear(), m.getMonth(), d), key = ymd(dt);
       var full = closedDay(dt);
+      if (mode === "daypass" && !full) {
+        var st0 = S.av[avKey(dt)];
+        if (!st0) loadAv(dt, dpRefresh);
+        else if (Array.isArray(st0)) { for (var h8 = 8; h8 < 16; h8++) if (!hourFree(dt, h8)) { full = true; break; } }
+      }
       var sel = mode === "suelta" ? S.date === key : S.days.indexOf(key) > -1;
       var cls = "rf-day" + (sel ? " sel" : "") + (key === ymd(new Date()) ? " today" : "") + (full && dt >= today() ? " full" : "");
       h += '<button type="button" class="' + cls + '" data-act="day" data-date="' + key + '"' + (full ? " disabled" : "") + ' aria-pressed="' + (sel ? "true" : "false") + '" aria-label="' + fmtLong(dt) + (full ? ", no disponible" : "") + '">' + d + "</button>";
