@@ -145,7 +145,10 @@ function () {
     var pk = PACKS.filter(function (x) { return x.d === S.pack; })[0];
     if (S.days.length < S.pack) return { ok: false, price: 0, label: "<b>Elige " + S.pack + (S.pack === 1 ? " día" : " días") + "</b>" + S.days.length + " de " + S.pack + " seleccionados", btn: "Elige " + (S.pack - S.days.length) + (S.pack - S.days.length === 1 ? " día más" : " días más") };
     var ds = S.days.slice().sort().map(function (k) { return fromYmd(k); });
-    var names = ds.map(function (d) { return fmtShort(d).replace(/ (\w+)$/, ""); });
+    var mset = {}; ds.forEach(function (d) { mset[d.getMonth()] = 1; });
+    var oneMonth = Object.keys(mset).length === 1;
+    var names = ds.map(function (d) { return oneMonth ? fmtShort(d).replace(/ (\w+)$/, "") : fmtShort(d); });
+    if (oneMonth) names[names.length - 1] += " de " + MESES[ds[0].getMonth()];
     return { ok: true, price: pk.p, label: "<b>" + names.join(", ") + "</b>" + pk.d + (pk.d === 1 ? " día" : " días") + " · de 8:00 a 16:00 cada día", title: o + " · Day pass " + pk.d + (pk.d === 1 ? " día" : " días"), l1: names.join(", "), l2: "8:00 a 16:00 cada día", holds: true };
   }
   function renderFoot() {
