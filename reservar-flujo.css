@@ -157,3 +157,43 @@
 .rf-done h3{font-family:var(--font-display);font-size:36px;font-weight:500;line-height:1;margin:0}
 .rf-done-ico{width:58px;height:58px;border-radius:50%;background:#eaf3ee;color:#1f5a40;font-size:30px;display:flex;align-items:center;justify-content:center;font-weight:700}
 .rf-input:disabled{background:var(--surface);color:#6b655b}
+
+/* ── Confirmación: diseño exacto del mockup V2 ── */
+.rf-ok{padding:20px 20px 18px;gap:12px}
+.rf-ok .rf-done-ico{width:60px;height:60px;font-size:0}
+.rf-ok h3{font-size:36px;font-weight:500;line-height:1;margin:6px 0 0}
+.rf-ok .rf-sub{margin-top:-6px;font-size:14px;color:#6b655b}
+.rf-ok .rf-summary{padding:10px 0;border-top:1px solid #e4ded2;border-bottom:1px solid #e4ded2;gap:12px}
+.rf-ok .rf-summary img{width:76px;height:62px;border-radius:10px}
+.rf-ok .rf-summary-txt{gap:0}
+.rf-ok .rf-summary-txt b{font-size:15px;font-weight:700}
+.rf-ok .rf-summary-txt span{font-size:13px;color:#6b655b}
+.rf-ok .rf-codecard{background:linear-gradient(135deg,#1d1b18,#3a342b);border:1px solid #c9953a;border-radius:16px;padding:16px 18px}
+.rf-ok .rf-codecard small{font-size:11px;letter-spacing:.16em;color:#e8c98a}
+.rf-ok .rf-code{font-size:40px;letter-spacing:.14em;line-height:1.15;margin-top:0;color:#fff}
+.rf-ok .rf-codeval{font-size:12px;color:#d8d2c4;margin-top:0;line-height:1.4}
+.rf-ok .rf-hrs{font-size:54px;line-height:1.05;margin-top:0;color:#fff}
+.rf-ok .rf-hrs i{font-size:20px;font-weight:500;color:#d8d2c4}
+.rf-ok .rf-plan-val{font-size:12.5px}
+.rf-ok .rf-codecard.rf-dp{padding:0;overflow:hidden}
+.rf-ok .rf-dp small{padding:12px 14px 4px}
+.rf-ok .rf-dp .rf-days{margin-top:0;gap:0}
+.rf-ok .rf-dp .rf-day-row{padding:10px 14px;border-bottom:1px solid rgba(201,149,58,.28)}
+.rf-ok .rf-dp .rf-day-row:last-child{border-bottom:0}
+.rf-ok .rf-dp .rf-day-row b{font-size:14px;color:#fff}
+.rf-ok .rf-dp .rf-day-row span{font-size:12px;color:#d8d2c4}
+.rf-ok .rf-dp .rf-day-row strong{font-size:24px;letter-spacing:.12em;color:#f3dfae}
+.rf-ok .rf-n2{width:100%;box-sizing:border-box;text-align:left;background:#f6f3ec;border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.45}
+.rf-ok .rf-n2p{padding:12px 14px;line-height:1.5}
+.rf-ok .rf-ch-q{font-size:13px;letter-spacing:.1em}
+.rf-ok .rf-chan{gap:12px}
+.rf-ok .rf-ch{border:1px solid #e4ded2;padding:12px 14px}
+.rf-ok .rf-ch[aria-checked="true"]{border:2px solid #c9953a;padding:12px 14px;background:#fbefd6}
+.rf-ok .rf-ch .rf-radio{border-color:#cfc8ba}
+.rf-ok .rf-ch[aria-checked="true"] .rf-radio{border-color:#c9953a}
+.rf-ok .rf-ch[aria-checked="true"] .rf-radio::after{background:#c9953a}
+.rf-ok .rf-fine{font-size:12px}
+.rf-ok .rf-sendmsg:empty{display:none}
+.rf-ok .rf-ft{width:100%;display:flex;flex-direction:column;gap:8px;margin-top:-2px}
+.rf-ok .rf-btn-dark{height:56px;border:1px solid #c9953a;background:linear-gradient(135deg,#1d1b18,#3a342b);color:#f3dfae;font-size:14px;letter-spacing:.14em;gap:10px;box-shadow:0 8px 20px rgba(29,27,24,.28)}
+.rf-ok .rf-btn-out{height:46px;border:1px solid #cfc8ba;background:#fff;color:#1d1b18;font-size:14px;letter-spacing:0;font-weight:500}
