@@ -1,4 +1,4 @@
-(function () {
+function () {
   "use strict";
   var $ = function (id) { return document.getElementById(id); };
   var MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
@@ -140,7 +140,7 @@
     }
     if (S.tab === "plan") {
       var pl = PLANES.filter(function (x) { return x.id === S.plan; })[0];
-      return { ok: true, price: pl.p, label: "<b>Plan " + pl.n + " · " + pl.h + " horas</b>" + money(pl.p / pl.h) + " por hora · vigencia 30 días", title: "Plan " + pl.n + " · " + pl.h + " horas", l1: o + " · " + money(pl.p / pl.h) + " por hora", l2: "Vigencia de 30 días desde el pago", holds: false };
+      return { ok: true, price: pl.p, label: "<b>Plan " + pl.n + " · " + pl.h + " horas</b>" + money(pl.p / pl.h) + " por hora", title: "Plan " + pl.n + " · " + pl.h + " horas", l1: o + " · " + money(pl.p / pl.h) + " por hora", l2: "Vigencia de 30 días desde el pago", holds: false };
     }
     var pk = PACKS.filter(function (x) { return x.d === S.pack; })[0];
     if (S.days.length < S.pack) return { ok: false, price: 0, label: "<b>Elige " + S.pack + (S.pack === 1 ? " día" : " días") + "</b>" + S.days.length + " de " + S.pack + " seleccionados", btn: "Elige " + (S.pack - S.days.length) + (S.pack - S.days.length === 1 ? " día más" : " días más") };
@@ -384,7 +384,7 @@
   function alertLine(t) { var w = document.querySelector("#rfClabe .rf-proto"); if (w) { var e = document.createElement("div"); e.style.cssText = "color:#b3412f;margin-top:6px"; e.textContent = t; w.appendChild(e); } }
 
   /* ── paso 3: confirmación / casos especiales ── */
-  function fmtCode(c) { c = String(c); return c.length === 6 ? c.slice(0, 3) + " " + c.slice(3) : c; }
+  function fmtCode(c) { c = String(c); return (c.length === 6 ? c.slice(0, 3) + " " + c.slice(3) : c) + "#"; }
   function addMin(h, m) { var x = h * 60 + m; return Math.floor(x / 60) + ":" + pad2(x % 60); }
   function maskTel(t) { return t.slice(0, 3) + " *** " + t.slice(-4); }
   var ICO_SMS = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d1b18" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg>';
