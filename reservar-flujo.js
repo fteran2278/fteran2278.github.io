@@ -384,7 +384,7 @@
   function alertLine(t) { var w = document.querySelector("#rfClabe .rf-proto"); if (w) { var e = document.createElement("div"); e.style.cssText = "color:#b3412f;margin-top:6px"; e.textContent = t; w.appendChild(e); } }
 
   /* ── paso 3: confirmación / casos especiales ── */
-  function fmtCode(c) { c = String(c); return c.length === 6 ? c.slice(0, 3) + " " + c.slice(3) : c; }
+  function fmtCode(c) { c = String(c); return (c.length === 6 ? c.slice(0, 3) + " " + c.slice(3) : c) + "#"; }
   function addMin(h, m) { var x = h * 60 + m; return Math.floor(x / 60) + ":" + pad2(x % 60); }
   function maskTel(t) { return t.slice(0, 3) + " *** " + t.slice(-4); }
   var ICO_SMS = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>';
@@ -409,12 +409,12 @@
     S.pago = null; S.av = {}; S.chan = "sms";
     var of = NOMBRES[S.of], cal = [];
     var title = k === "plan" ? "¡Plan activado!" : (k === "daypass" ? "¡Day pass confirmado!" : "¡Reserva confirmada!");
-    var l1, l2, card;
+    var l1, l2, card, extra = "";
     if (k === "suelta") {
       var a = Math.min.apply(null, S.hours), b = Math.max.apply(null, S.hours) + 1, n = S.hours.length;
       l1 = of + " · Privada"; l2 = fmtShort(fromYmd(S.date)) + " · " + a + ":00 – " + b + ":00 · " + n + (n === 1 ? " hora" : " horas");
       cal.push({ f: S.date, a: a, b: b, t: of });
-      card = '<div class="rf-coderow"><div><small>Tu código de acceso</small><div class="rf-code">' + (ac[0] ? fmtCode(ac[0].codigo) : "—") + '</div></div>' + ICO_LOCK_G + '</div><div class="rf-codeval">' + (ac[0] ? "Válido de " + addMin(a, -10) + " a " + addMin(b, 10) + " · Puerta principal y oficina. Marca los 6 dígitos y presiona #." : "Te lo enviamos por SMS.") + "</div>";
+      card = '<div class="rf-coderow"><div><small>Tu código de acceso</small><div class="rf-code">' + (ac[0] ? fmtCode(ac[0].codigo) : "—") + '</div></div>' + ICO_LOCK_G + '</div><div class="rf-codeval">' + (ac[0] ? "Válido de " + addMin(a, -10) + " a " + addMin(b, 10) + " · Puerta principal y oficina." : "Te lo enviamos por SMS.") + "</div>";
     } else if (k === "daypass") {
       var ds = S.days.slice().sort(), np = ds.length;
       l1 = of + " · Privada"; l2 = "Day pass · " + np + (np === 1 ? " día" : " días") + " · 8:00 a 16:00";
@@ -424,7 +424,7 @@
         cal.push({ f: f, a: 8, b: 16, t: of + " (day pass)" });
         card += '<div class="rf-day-row"><div><b>' + fmtLong(fromYmd(f)) + "</b><span>8:00 – 16:00</span></div><strong>" + (x ? fmtCode(x.codigo) : "—") + "</strong></div>";
       });
-      card += '</div><div class="rf-codeval">Marca los 6 dígitos y presiona #. Cambia o cancela tus días desde tu link personal, hasta 24 horas antes de cada día.</div>';
+      card += "</div>"; extra = '<div class="rf-note" style="margin-top:0;width:100%;box-sizing:border-box;text-align:left"><span>Cambia o cancela tus días desde tu link personal, hasta 24 horas antes de cada día.</span></div>';
     } else {
       var pl = PLANES.filter(function (x) { return x.id === S.plan; })[0], v = new Date(); v.setDate(v.getDate() + 30);
       l1 = "Plan " + pl.n + " · " + pl.h + " horas"; l2 = of + " · " + money(pl.p / pl.h) + " por hora";
@@ -432,7 +432,7 @@
     }
     var h = '<div class="rf-ok"><div class="rf-done-ico">✓</div><h3>' + title + '</h3><div class="rf-sub" style="margin-top:-8px">Tu pago fue recibido.</div>';
     h += '<div class="rf-summary"><img alt="" src="' + photoOf(S.of) + '"><div class="rf-summary-txt"><b>' + l1 + "</b><span>" + l2 + "</span></div></div>";
-    h += '<div class="rf-codecard">' + card + "</div>";
+    h += '<div class="rf-codecard">' + card + "</div>" + extra;
     if (k === "plan") h += '<div class="rf-note" style="margin-top:0;width:100%;box-sizing:border-box;text-align:left"><span><b>Aún no tienes horario.</b> Agenda tus horas cuando quieras desde tu link personal. Cada vez que agendes, recibes tu código de acceso.</span></div>';
     h += '<div class="rf-ch-q">¿Cómo quieres recibir tu link y tus códigos?</div><div class="rf-chan" role="radiogroup">';
     h += '<button type="button" class="rf-ch" role="radio" aria-checked="true" data-ch="sms"><span class="rf-radio"></span>' + ICO_SMS + "<div><b>Por SMS</b><span>Al " + esc(maskTel(c.tel || "0000000000")) + "</span></div></button>";
