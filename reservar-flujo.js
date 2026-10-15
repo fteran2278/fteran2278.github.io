@@ -432,7 +432,7 @@
     stopTimer(); stopPoll();
     var s = S.sel, k = S.tab, c = S.contact || {}, pid = S.pago ? S.pago.pagoId : S.lastId;
     var res = (r && r.resultado) || r || {}, ac = res.accesos || [], link = res.linkPersonal || "";
-    S.pago = null; S.av = {}; S.chan = "sms";
+    S.pago = null; S.av = {};
     var of = NOMBRES[S.of], cal = [];
     var title = k === "plan" ? "¡Plan activado!" : (k === "daypass" ? "¡Day pass confirmado!" : "¡Reserva confirmada!");
     var l1, l2, card, extra = "";
@@ -460,11 +460,11 @@
     h += '<div class="rf-summary"><img alt="" src="' + photoOf(S.of) + '"><div class="rf-summary-txt"><b>' + l1 + "</b><span>" + l2 + "</span></div></div>";
     h += '<div class="rf-codecard' + (k === "daypass" ? " rf-dp" : "") + '">' + card + "</div>" + extra;
     if (k === "plan") h += '<div class="rf-n2 rf-n2p"><b>Aún no tienes horario.</b> Agenda tus horas cuando quieras desde tu link personal. Cada vez que agendes, recibes tu código de acceso.</div>';
-    h += '<div class="rf-ch-q">' + (k === "plan" ? "¿Cómo quieres recibir tu link personal?" : (k === "daypass" ? "¿Cómo quieres recibir tu link y tus códigos?" : "¿Cómo quieres recibir tu link y tu código?")) + '</div><div class="rf-chan" role="radiogroup">';
-    h += '<button type="button" class="rf-ch" role="radio" aria-checked="true" data-ch="sms"><span class="rf-radio"></span>' + ICO_SMS + "<div><b>Por SMS</b><span>Al " + esc(maskTel(c.tel || "0000000000")) + "</span></div></button>";
-    h += '<button type="button" class="rf-ch" role="radio" aria-checked="false" data-ch="correo"><span class="rf-radio"></span>' + ICO_MAIL + "<div><b>Por correo electrónico</b><span>" + esc(c.correo || "") + "</span></div></button></div>";
-    h += '<div class="rf-sendmsg" id="rfSendMsg" role="status"></div>';
-    h += '<div class="rf-fine">Te escribimos desde solucionandoespacios@gmail.com. Si no lo ves, revisa tu carpeta de spam. ¿Sigue sin llegar? <a href="https://wa.me/524448295401" target="_blank" rel="noopener"><b>Escríbenos por WhatsApp</b></a> y te lo reenviamos.' + (TEST ? " <b>Modo de prueba: el SMS es simulado y no se envió.</b>" : "") + "</div>";
+    var en = res.enviado || {}, viaSms = en.canal === "sms";
+    var what = k === "plan" ? "tu link personal" : (k === "daypass" ? "tu link y tus códigos" : "tu link y tu código");
+    h += '<div class="rf-sentok"><span class="rf-sentck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><b>Te enviamos ' + what + (viaSms ? " por SMS" : " por correo") + "</b><span>" + esc(viaSms ? "Al " + maskTel(c.tel || "0000000000") : (c.correo || "")) + "</span></div></div>";
+    if (!viaSms) h += '<button type="button" class="rf-smsopt" id="rfSmsOpt" role="checkbox" aria-checked="false"><span class="rf-box"></span>' + ICO_SMS + '<div><b>Quiero recibirlo también por SMS</b><span id="rfSmsSub">Al ' + esc(maskTel(c.tel || "0000000000")) + "</span></div></button>";
+    h += '<div class="rf-fine">Si no ves el correo, revisa tu carpeta de spam. ¿Sigue sin llegar? <a href="https://wa.me/524448295401" target="_blank" rel="noopener"><b>Escríbenos por WhatsApp</b></a> y te lo reenviamos.' + (TEST ? " <b>Modo de prueba: el SMS es simulado y no se envía.</b>" : "") + "</div>";
     h += '<div class="rf-ft">';
     var main = k === "plan" ? "Agendar mis horas" : (k === "daypass" ? "Ver mis días" : "Ver mi reserva");
     h += link ? '<a class="rf-btn rf-btn-dark" href="' + esc(link) + '" target="_blank" rel="noopener">' + main + ' <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9953A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>' + "</a>" : "";
@@ -473,17 +473,15 @@
     $("rfStep3").innerHTML = h; showStep(3); fitDone();
     $("rfDoneClose").onclick = hideFlow;
     var ib = $("rfIcs"); if (ib) ib.onclick = function () { dlIcs(cal); };
-    $("rfStep3").querySelectorAll(".rf-ch").forEach(function (b) {
-      b.onclick = function () {
-        var ch = b.getAttribute("data-ch"); if (ch === S.chan) return;
-        S.chan = ch;
-        $("rfStep3").querySelectorAll(".rf-ch").forEach(function (x) { x.setAttribute("aria-checked", x === b ? "true" : "false"); });
-        var m = $("rfSendMsg"); m.className = "rf-sendmsg"; m.textContent = "Enviando…";
-        api("/pago/enviar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pagoId: pid, canal: ch }) })
-          .then(function (x) { if (x.exito) m.textContent = ch === "sms" ? "Listo: te lo reenviamos por SMS." : "Listo: te lo enviamos a " + (c.correo || "tu correo") + "."; else { m.className = "rf-sendmsg bad"; m.textContent = x.error || "No se pudo enviar."; } })
-          .catch(function () { m.className = "rf-sendmsg bad"; m.textContent = "Sin conexión con el servidor."; });
-      };
-    });
+    var so = $("rfSmsOpt");
+    if (so) so.onclick = function () {
+      if (so.getAttribute("aria-checked") === "true" || so.disabled) return;
+      var sub = $("rfSmsSub"), mk = maskTel(c.tel || "0000000000");
+      so.setAttribute("aria-checked", "true"); so.disabled = true; sub.className = ""; sub.textContent = "Enviando…";
+      api("/pago/enviar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pagoId: pid, canal: "sms" }) })
+        .then(function (x) { if (x.exito) { sub.className = "ok"; sub.textContent = "Enviado al " + mk; } else { so.setAttribute("aria-checked", "false"); so.disabled = false; sub.className = "bad"; sub.textContent = x.error || "No se pudo enviar. Intenta de nuevo."; } })
+        .catch(function () { so.setAttribute("aria-checked", "false"); so.disabled = false; sub.className = "bad"; sub.textContent = "Sin conexión con el servidor."; });
+    };
   }
   function showLate() {
     stopTimer(); stopPoll(); S.pago = null; S.av = {};
