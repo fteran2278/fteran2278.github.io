@@ -633,7 +633,7 @@
 
     // "Comprar un paquete adicional" ya conoce el clienteId en sesión — se suma
     // al saldo actual con vigencia propia (ver comprar-paquete-adicional.html).
-    const linkMas = linkComprarPaqueteAdicional();
+    const linkMas = linkComprarMas({ nombre: saldoActual.nombre, telefono: saldoActual.telefono, correo: saldoActual.correo, espacio: saldoActual.espacio }, "plan");
     $("linkComprarMasSaldo").href = linkMas;
     $("linkComprarMasSinSaldo").href = linkMas;
 
