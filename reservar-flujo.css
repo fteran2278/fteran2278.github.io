@@ -215,3 +215,7 @@
 .rf-box{flex:none;width:22px;height:22px;box-sizing:border-box;border-radius:6px;border:2px solid #cfc8ba;background:#fff;display:flex;align-items:center;justify-content:center}
 .rf-smsopt[aria-checked="true"] .rf-box{background:#c9953a;border-color:#c9953a}
 .rf-smsopt[aria-checked="true"] .rf-box::after{content:"";width:5px;height:10px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+
+.rf-mailhint{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;background:#FFF4DD;border:1px solid var(--gold);border-radius:10px;padding:9px 12px;font-size:13px;margin-top:8px}
+.rf-mailhint span{color:#6b655b}
+.rf-mailhint[hidden]{display:none}
