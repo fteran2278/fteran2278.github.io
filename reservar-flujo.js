@@ -213,6 +213,33 @@
   function validName(v) { return v.trim().length >= 3 && /[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]{2}/.test(v); }
   function validTel(v) { return v.replace(/\D/g, "").length === 10; }
   function validMail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()); }
+  var DOMS = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com", "live.com", "yahoo.com.mx", "hotmail.es", "outlook.es", "hotmail.com.mx", "outlook.com.mx", "live.com.mx", "prodigy.net.mx", "me.com"];
+  function lev(a, b) {
+    var m = a.length, n = b.length, d = [], i, j;
+    for (i = 0; i <= m; i++) { d[i] = [i]; }
+    for (j = 1; j <= n; j++) { d[0][j] = j; }
+    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1));
+    return d[m][n];
+  }
+  function mailSuggest(v) {
+    v = String(v || "").trim().toLowerCase(); var i = v.lastIndexOf("@");
+    if (i < 1 || !validMail(v)) return "";
+    var d = v.slice(i + 1); if (DOMS.indexOf(d) >= 0) return "";
+    var best = "", bd = 3;
+    DOMS.forEach(function (x) { var k = lev(d, x); if (k < bd) { bd = k; best = x; } });
+    return best ? v.slice(0, i + 1) + best : "";
+  }
+  function mailPending() { var el = $("rfCorreo"); if (!el) return false; var v = el.value.trim().toLowerCase(); return !!mailSuggest(v) && S.mailOk !== v; }
+  function showMailHint() {
+    var h = $("rfMailHint"), el = $("rfCorreo"); if (!h || !el) return;
+    var v = el.value.trim().toLowerCase(), sg = mailSuggest(v);
+    if (!sg || S.mailOk === v) { h.hidden = true; h.innerHTML = ""; return; }
+    h.hidden = false;
+    h.innerHTML = '<span>¿Tu correo es <b>' + esc(sg) + '</b>?</span><button type="button" class="rf-link" id="rfMailYes">Sí, corregir</button><button type="button" class="rf-link" id="rfMailNo">Es correcto</button>';
+    if (!S.pago) lockMsg("<b>Confirma tu correo.</b><br>Ahí te enviaremos tu link y tu código.");
+    $("rfMailYes").onclick = function () { el.value = sg; S.mailOk = sg; el.classList.remove("bad"); showMailHint(); tryCreate(); };
+    $("rfMailNo").onclick = function () { S.mailOk = v; showMailHint(); tryCreate(); };
+  }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   function payload(s) {
@@ -234,7 +261,7 @@
     h += '<div class="rf-summary"><img alt="" src="' + photoOf(S.of) + '"><div class="rf-summary-txt"><b>' + s.title + "</b><span>" + s.l1 + "</span><span>" + s.l2 + '</span></div><div class="rf-summary-price">' + money(s.price) + "</div></div>";
     h += '<div class="rf-fields"><div class="rf-field"><label for="rfNombre">Nombre completo</label><input class="rf-input" id="rfNombre" type="text" autocomplete="name" placeholder="Tu nombre" value="' + esc(cli.nombre || "") + '"></div>';
     h += '<div class="rf-row"><div class="rf-field" style="flex:5"><label for="rfTel">Teléfono (SMS)</label><input class="rf-input" id="rfTel" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="10 dígitos" value="' + esc(cli.tel || "") + '"></div>';
-    h += '<div class="rf-field" style="flex:6"><label for="rfCorreo">Correo</label><input class="rf-input" id="rfCorreo" type="email" autocomplete="email" placeholder="tu@correo.com" value="' + esc(cli.correo || "") + '"></div></div></div>';
+    h += '<div class="rf-field" style="flex:6"><label for="rfCorreo">Correo</label><input class="rf-input" id="rfCorreo" type="email" autocomplete="email" placeholder="tu@correo.com" value="' + esc(cli.correo || "") + '"></div></div><div class="rf-mailhint" id="rfMailHint" hidden></div></div>';
     h += '<div class="rf-label">Forma de pago</div>';
     h += '<div class="rf-method">' + ICO_BANK + "<div><b>Transferencia SPEI</b><span>Desde la app de tu banco, a cualquier hora</span></div></div>";
     h += '<div id="rfClabeLock" class="rf-clabe-lock">' + ICO_LOCK + '<div id="rfLockTxt"><b>Aquí aparecerá tu CLABE.</b><br>Completa tu nombre, teléfono y correo para verla.</div></div>';
@@ -250,7 +277,7 @@
     setTimeout(function () { var n = $(first); if (n) n.focus(); }, 30);
     tryCreate();
   }
-  function formOk() { return validName($("rfNombre").value) && validTel($("rfTel").value) && validMail($("rfCorreo").value); }
+  function formOk() { return validName($("rfNombre").value) && validTel($("rfTel").value) && validMail($("rfCorreo").value) && !mailPending(); }
   function lockMsg(html, bad) { var t = $("rfLockTxt"); if (t) t.innerHTML = html; var l = $("rfClabeLock"); if (l) l.classList.toggle("bad", !!bad); }
 
   function tryCreate() {
@@ -311,11 +338,13 @@
       var el = $(id);
       el.addEventListener("input", function () {
         if (fn[i](el.value)) el.classList.remove("bad");
+        clearTimeout(S.mailT); S.mailT = setTimeout(showMailHint, 700);
         if (S.err) { S.err = false; lockMsg("<b>Aquí aparecerá tu CLABE.</b><br>Completa tu nombre, teléfono y correo para verla.", false); }
         tryCreate();
       });
-      el.addEventListener("blur", function () { el.classList.toggle("bad", el.value !== "" && !fn[i](el.value)); });
+      el.addEventListener("blur", function () { el.classList.toggle("bad", el.value !== "" && !fn[i](el.value)); if (id === "rfCorreo") showMailHint(); });
     });
+    showMailHint();
   }
   function fallbackCopy(v) {
     var t = document.createElement("textarea"); t.value = v; t.style.position = "fixed"; t.style.opacity = "0";
