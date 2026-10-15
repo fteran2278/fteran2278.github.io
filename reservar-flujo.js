@@ -511,7 +511,7 @@
     h += '<button type="button" class="rf-link" id="rfDoneClose" hidden>Cerrar</button></div></div>';
     $("rfStep3").innerHTML = h; showStep(3); fitDone();
     $("rfDoneClose").onclick = hideFlow;
-    if (S.volver) { var ftb = document.querySelector("#rfStep3 .rf-ft"); if (ftb) { var va = document.createElement("a"); va.className = "rf-btn rf-btn-out"; va.href = S.volver; va.textContent = "Volver a mi cuenta"; va.style.cssText = "display:inline-flex;align-items:center;justify-content:center;text-decoration:none"; ftb.insertBefore(va, ftb.firstChild); } }
+    if (S.volver) { var ftb = document.querySelector("#rfStep3 .rf-ft"); if (ftb) { ftb.querySelectorAll("a[target=_blank]").forEach(function (x) { x.parentNode.removeChild(x); }); var va = document.createElement("a"); va.className = "rf-btn rf-btn-dark"; va.href = S.volver; va.textContent = "Ver mis compras en mi cuenta"; va.style.cssText = "display:inline-flex;align-items:center;justify-content:center;text-decoration:none"; ftb.insertBefore(va, ftb.firstChild); } }
     var ib = $("rfIcs"); if (ib) ib.onclick = function () { dlIcs(cal); };
     var so = $("rfSmsOpt");
     if (so) so.onclick = function () {
