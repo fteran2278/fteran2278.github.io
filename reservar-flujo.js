@@ -194,6 +194,7 @@
     stopTimer(); stopPoll();
     var ov = $("rfOverlay"); ov.classList.remove("open"); ov.setAttribute("aria-hidden", "true");
     document.documentElement.style.overflow = "";
+    S.cli = {}; // los datos precargados valen una sola vez
     if (S.opener && S.opener.focus) S.opener.focus();
   }
   // Cerrar con un pago pendiente pide confirmación (liberar el horario)
@@ -577,6 +578,7 @@
   try {
     var qa = new URLSearchParams(location.search), ab = qa.get("abrir");
     if (ab === "suelta" || ab === "plan" || ab === "daypass") setTimeout(function () { openFlow(ab, qa.get("of")); }, 350);
+    if (location.search) history.replaceState(null, "", location.pathname + location.hash); // limpia la direccion: no reusar datos
   } catch (e) {}
   window.toggleMobileNav = function () { $("navLinks").classList.toggle("open"); $("navBurger").classList.toggle("active"); };
   document.querySelectorAll("#navLinks a").forEach(function (a) {
