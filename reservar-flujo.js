@@ -340,9 +340,9 @@
         if (fn[i](el.value)) el.classList.remove("bad");
         clearTimeout(S.mailT); S.mailT = setTimeout(showMailHint, 700);
         if (S.err) { S.err = false; lockMsg("<b>Aquí aparecerá tu CLABE.</b><br>Completa tu nombre, teléfono y correo para verla.", false); }
-        tryCreate();
+        clearTimeout(S.cT); S.cT = setTimeout(tryCreate, 1100);
       });
-      el.addEventListener("blur", function () { el.classList.toggle("bad", el.value !== "" && !fn[i](el.value)); if (id === "rfCorreo") showMailHint(); });
+      el.addEventListener("blur", function () { el.classList.toggle("bad", el.value !== "" && !fn[i](el.value)); if (id === "rfCorreo") { showMailHint(); clearTimeout(S.cT); tryCreate(); } });
     });
     showMailHint();
   }
