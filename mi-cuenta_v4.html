@@ -198,6 +198,81 @@
   .comprar-grid { display: flex; flex-wrap: wrap; gap: 10px; }
   .comprar-grid a { text-decoration: none; flex: 1; text-align: center; min-width: 120px; padding: 12px 14px; }
   .sub-hola { font-size: 14px; color: var(--ash); margin-top: 4px; }
+
+  /* ===== Diseño premium (cuenta v4) ===== */
+  :root { --surface:#F6F1E9; --radius-lg:20px; --line:#E6DCCB; }
+  .card { border:none; box-shadow:0 1px 0 #E6DCCB; padding:22px; }
+  .brand { font-size:26px; }
+  .hola-nombre { font-family:var(--font-display); font-size:38px; line-height:1.05; font-weight:500; margin:4px 0 4px; }
+  .hola-sub { font-size:14px; color:#6E655A; margin-bottom:22px; }
+  .hero { background:#1F1B16; color:#F6F1E9; border-radius:22px; padding:22px; margin-bottom:22px; display:flex; flex-direction:column; gap:16px; }
+  .hero-top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .hero-name { font-family:var(--font-display); font-size:24px; font-weight:600; }
+  .chip { font-size:10px; letter-spacing:.12em; font-weight:600; border-radius:99px; padding:5px 11px; white-space:nowrap; text-transform:uppercase; }
+  .chip-ok { background:#D9B97C; color:#1F1B16; }
+  .chip-warn { background:#E9B26B; color:#1F1B16; }
+  .chip-bad { background:#6B5E48; color:#F6F1E9; }
+  .hero-main { display:flex; align-items:center; gap:20px; }
+  .hero-lines { display:flex; flex-direction:column; gap:8px; font-size:13px; color:#CFC5B5; }
+  .hero-lines b { color:#F6F1E9; }
+  .hero-total-lbl { font-size:11px; letter-spacing:.16em; color:#B9AE9E; }
+  .hero-total { font-family:var(--font-display); font-size:46px; font-weight:600; line-height:1; color:#D9B97C; }
+  .lote { background:#2A241D; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px; }
+  .lote-top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .lote-name { font-weight:600; font-size:14px; }
+  .lote-bar { height:6px; border-radius:99px; background:#3A332A; }
+  .lote-bar > i { display:block; height:6px; border-radius:99px; background:#D9B97C; }
+  .lote-meta { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:#CFC5B5; flex-wrap:wrap; }
+  .lote-meta b { color:#F6F1E9; }
+  .hero-note { font-size:12px; color:#B9AE9E; line-height:1.5; }
+  .hero .btn-gold { background:#D9B97C; color:#1F1B16; border-radius:14px; height:50px; font-weight:600; font-size:15px; display:flex; align-items:center; justify-content:center; text-decoration:none; width:100%; border:none; cursor:pointer; }
+  .hero-links { display:flex; justify-content:space-between; gap:10px; font-size:12px; flex-wrap:wrap; }
+  .hero-links a { color:#D9B97C; text-decoration:none; }
+  .hero-cancel { color:#9C9183; cursor:pointer; text-decoration:underline; }
+  .sec-h { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px; }
+  .sec-h .t { font-family:var(--font-display); font-size:24px; font-weight:600; }
+  .sec-h .s { font-size:12px; color:#6E655A; }
+  .ticket { background:#fff; border-radius:18px; padding:16px 18px; display:flex; flex-direction:column; gap:12px; box-shadow:0 1px 0 #E6DCCB; margin-bottom:12px; }
+  .ticket.dark { background:#1F1B16; color:#F6F1E9; }
+  .ticket-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .ticket-of { font-weight:600; font-size:15px; }
+  .ticket-when { font-size:13px; color:#6E655A; margin-top:2px; }
+  .ticket.dark .ticket-when { color:#CFC5B5; }
+  .tag { font-size:10px; letter-spacing:.12em; font-weight:600; border-radius:99px; padding:5px 10px; white-space:nowrap; text-transform:uppercase; }
+  .tag-plan { background:#F1E6CF; color:#7A5A2B; }
+  .tag-day { background:#1F1B16; color:#fff; }
+  .ticket.dark .tag-day { background:#D9B97C; color:#1F1B16; }
+  .tag-suelta { background:#EFE7D9; color:#6E655A; }
+  .code-box { border:1px dashed #D5C7AC; border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; }
+  .ticket.dark .code-box { border-color:#6B5E48; }
+  .code-lbl { font-size:11px; letter-spacing:.14em; color:#6E655A; }
+  .ticket.dark .code-lbl { color:#B9AE9E; }
+  .code-num { font-family:var(--font-display); font-size:28px; font-weight:600; letter-spacing:.06em; }
+  .ticket.dark .code-num { color:#D9B97C; }
+  .day-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 0; border-top:1px solid #3A332A; }
+  .day-row .d { font-size:14px; font-weight:500; }
+  .day-row .acts { display:flex; gap:14px; font-size:12px; margin-top:3px; }
+  .acts a, .acts button { background:none; border:none; padding:0; font:inherit; cursor:pointer; text-decoration:none; }
+  .ticket.dark .acts .a1 { color:#D9B97C; }
+  .ticket.dark .acts .a2 { color:#B9AE9E; }
+  .tk-acts { display:flex; gap:10px; }
+  .tk-acts button { flex:1; height:42px; border-radius:12px; font:500 14px var(--font-body); cursor:pointer; background:#fff; color:#1F1B16; border:1px solid #CDBF9F; }
+  .tk-acts button.sec { border-color:#E1D6C3; color:#6E655A; }
+  .tk-acts button:disabled { opacity:.5; cursor:not-allowed; }
+  .tk-note { font-size:12px; color:#6E655A; line-height:1.5; }
+  .ticket.dark .tk-note { color:#B9AE9E; }
+  .tk-note a { color:#7A5A2B; }
+  .buy-card { display:flex; align-items:center; gap:14px; background:#fff; border-radius:16px; padding:14px 16px; text-decoration:none; color:#1F1B16; box-shadow:0 1px 0 #E6DCCB; margin-bottom:10px; }
+  .buy-ic { width:42px; height:42px; border-radius:12px; background:#F1E6CF; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .buy-tx { flex:1; min-width:0; }
+  .buy-tx b { display:block; font-size:15px; }
+  .buy-tx span { font-size:12px; color:#6E655A; }
+  .aviso-ok { background:#fff; border-radius:20px; padding:22px; margin-bottom:22px; box-shadow:0 1px 0 #E6DCCB; display:flex; flex-direction:column; gap:14px; }
+  .aviso-ok h3 { font-family:var(--font-display); font-size:28px; font-weight:600; line-height:1.1; }
+  .aviso-ok p { font-size:14px; line-height:1.55; color:#3A3A37; }
+  .aviso-ok .btn-dark { display:flex; align-items:center; justify-content:center; height:50px; border-radius:14px; background:#1F1B16; color:#F6F1E9; font-weight:600; font-size:15px; text-decoration:none; }
+  .aviso-ok .btn-line { display:flex; align-items:center; justify-content:center; height:44px; border-radius:14px; border:1px solid #CDBF9F; background:none; font:500 14px var(--font-body); cursor:pointer; color:#1F1B16; }
+  .historial-item { border-bottom:1px solid #EFE7D9; }
 </style>
 </head>
 <body>
@@ -227,52 +302,20 @@
   </div>
 
   <div id="contenido" style="display:none">
-    <div id="bloquePagoPend" class="card aviso-pago" style="display:none"></div>
-    <div id="bloqueSinPlan" class="card" style="display:none"></div>
-    <div class="card" id="bloqueSaldo">
-      <div class="saldo-header">
-        <div>
-          <div class="saldo-nombre" id="cNombre">—</div>
-          <div class="saldo-paquete" id="cPaquete">—</div>
-        </div>
-        <span class="badge" id="cBadge">—</span>
-      </div>
-
-      <div class="saldo-grid">
-        <div class="saldo-stat">
-          <div class="num" id="cTotal">—</div>
-          <div class="lbl">Compradas</div>
-        </div>
-        <div class="saldo-stat">
-          <div class="num" id="cUsadas">—</div>
-          <div class="lbl">Usadas</div>
-        </div>
-        <div class="saldo-stat">
-          <div class="num" id="cRestantes">—</div>
-          <div class="lbl">Restantes</div>
-        </div>
-      </div>
-      <div class="vigencia-note" id="cVigencia"></div>
-      <div id="cLotes" style="margin-top:10px"></div>
-
-      <p style="text-align:center; margin-top:10px">
-        <a class="btn-link" id="linkComprarMasSaldo" href="#" target="_blank" rel="noopener">+ Comprar un paquete adicional</a>
-      </p>
-
-      <div class="cancelar-paquete-row" id="bloqueCancelarPaquete" style="display:none">
-        <span class="btn-link" onclick="cancelarPaquete()">Cancelar mi paquete completo</span>
+    <div id="bloqueAviso"></div>
+    <div id="bloqueSinPlan" style="display:none"></div>
+    <div class="hero" id="bloqueSaldo" style="display:none">
+      <div id="heroBody"></div>
+      <a class="btn-gold" id="btnIrAgendar" href="#bloqueAgendar" onclick="irAAgendar(event)">Agendar con mis horas</a>
+      <div class="hero-links">
+        <a id="linkComprarMasSaldo" href="#">+ Comprar un paquete adicional</a>
+        <span class="hero-cancel" id="bloqueCancelarPaquete" style="display:none" onclick="cancelarPaquete()">Cancelar paquete</span>
       </div>
     </div>
 
-    <div class="card" id="bloqueMisReservas" style="display:none">
-      <div class="section-title">Mis próximas reservas</div>
+    <div id="bloqueMisReservas" style="display:none">
+      <div class="sec-h"><div class="t">Próximas reservas</div><div class="s" id="cuentaReservas"></div></div>
       <div id="listaReservas"></div>
-    </div>
-
-    <div class="card" id="bloqueHistorial" style="display:none">
-      <div class="section-title">Historial</div>
-      <div id="listaHistorial"></div>
-      <button type="button" class="btn-outline" id="btnVerMasHistorial" style="display:none" onclick="cargarHistorial(false)">Ver más</button>
     </div>
 
     <div id="bloqueAgendar" class="card" style="display:none">
@@ -327,7 +370,14 @@
       <p style="margin-top:10px"><a class="btn-link" id="linkComprarMasSinSaldo" href="#" target="_blank" rel="noopener">O compra un paquete adicional aquí →</a></p>
     </div>
 
-    <div id="bloqueComprar" class="card" style="display:none"></div>
+    <div id="bloqueComprar" style="display:none"></div>
+
+    <div class="card" id="bloqueHistorial" style="display:none">
+      <div class="sec-h"><div class="t">Historial</div></div>
+      <div id="listaHistorial"></div>
+      <button type="button" class="btn-outline" id="btnVerMasHistorial" style="display:none" onclick="cargarHistorial(false)">Ver más</button>
+    </div>
+
 
     <div id="bloqueExito" class="card success-box" style="display:none">
       <div class="check">✓</div>
@@ -380,6 +430,7 @@
     if (datos && datos.telefono) p.set("tel", datos.telefono);
     if (datos && datos.correo) p.set("correo", datos.correo);
     if (datos && datos.espacio && NOMBRES_OFICINA[datos.espacio]) p.set("of", datos.espacio);
+    p.set("volver", location.origin + location.pathname + location.search);
     return "https://despacios.com.mx/despacios_2_v4.html?" + p.toString();
   }
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -402,6 +453,13 @@
       resumen = data;
       misReservas = data.reservas || [];
       saldoActual = data.plan ? Object.assign({ nombre: data.nombre, telefono: data.telefono, correo: data.correo }, data.plan) : null;
+      if (saldoActual) {
+        try {
+          const r2 = await fetch(`${SERVER_URL}/saldo-paquete?clienteId=${encodeURIComponent(clienteId)}`);
+          const d2 = await r2.json();
+          if (d2 && Array.isArray(d2.lotes)) saldoActual.lotes = d2.lotes;
+        } catch (e) { console.error(e); }
+      }
       if (!saldoActual && data.planCancelado && !misReservas.length) {
         mostrarCancelado({ nombre: data.nombre, paquete: data.paqueteCancelado, telefono: data.telefono, correo: data.correo });
         return;
@@ -423,24 +481,63 @@
     } catch (err) { console.error(err); }
   }
 
-  // Saludo, pago pendiente (si lo hay), vista sin plan y botones de compra
+  const ICONOS = {
+    suelta: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A5A2B" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    plan: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A5A2B" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18"/></svg>',
+    daypass: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A5A2B" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></svg>'
+  };
+  const CHEV = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9C9183" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+
+  function tipoRes(r) {
+    const t = String(r.tipo || "").toLowerCase();
+    return /day/.test(t) ? "daypass" : (t === "paquete" ? "paquete" : "suelta");
+  }
+  function fechaCorta(iso) {
+    if (!iso) return "—";
+    const t = new Date(iso + "T00:00:00").toLocaleDateString("es-MX", { weekday: "short", day: "numeric", month: "short" }).replace(/[.,]/g, "");
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  }
+  function diasPara(iso) {
+    if (!iso) return null;
+    const hoy = new Date(fechaLocalISO(new Date()) + "T00:00:00");
+    return Math.round((new Date(iso + "T00:00:00") - hoy) / 86400000);
+  }
+  function chipVence(l) {
+    if (l.vencido) return '<span class="chip chip-bad">Vencido</span>';
+    const d = diasPara(l.fechaVencimiento);
+    if (d !== null && d <= 30) return '<span class="chip chip-warn">' + (d <= 0 ? "Vence hoy" : "Vence en " + d + (d === 1 ? " día" : " días")) + '</span>';
+    return '<span class="chip chip-ok">Vigente</span>';
+  }
+  function irAAgendar(e) {
+    if (e) e.preventDefault();
+    const b = $("bloqueAgendar");
+    if (b && b.style.display !== "none") b.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function cerrarAviso() { $("bloqueAviso").innerHTML = ""; }
+
+  // Saludo y botones de compra
   function renderHola() {
     const r = resumen || {};
-    const etq = { hora: "Hora suelta", plan: "Plan de horas", daypass: "Day pass" };
-    const pp = $("bloquePagoPend"), lst = r.pagosPendientes || [];
-    if (lst.length) {
-      pp.innerHTML = lst.map(p => `<div class="section-title" style="margin-bottom:6px">Tienes un pago pendiente</div><p style="font-size:14px;color:var(--ash)">${esc(etq[p.tipo] || "Pago")} por <b>$${Number(p.monto).toLocaleString("es-MX")}</b>${p.vence ? " · vence a las " + esc(hhmm(p.vence)) : ""}. Si ya transferiste, se confirma solo en unos minutos; no tienes que hacer nada más.</p>`).join("");
-      pp.style.display = "block";
-    } else { pp.style.display = "none"; }
     const sp = $("bloqueSinPlan");
-    if (!saldoActual) {
-      sp.innerHTML = `<div class="saldo-nombre">Hola${r.nombre ? ", " + esc(String(r.nombre).split(" ")[0]) : ""}</div><div class="sub-hola">Aquí ves tus reservas y tus códigos de acceso.</div>`;
-      sp.style.display = "block";
-    } else { sp.style.display = "none"; }
+    sp.innerHTML = `<div class="hola-nombre">Hola${r.nombre ? ", " + esc(String(r.nombre).split(" ")[0]) : ""}</div><div class="hola-sub">${saldoActual ? "Todo lo tuyo en un solo lugar." : "Aquí ves tus reservas y tus códigos de acceso."}</div>`;
+    sp.style.display = "block";
     const d = { nombre: r.nombre, telefono: r.telefono, correo: r.correo, espacio: saldoActual && saldoActual.espacio };
     const cb = $("bloqueComprar");
-    cb.innerHTML = `<div class="section-title">Reservar más</div><div class="comprar-grid"><a class="btn-mini" href="${esc(linkComprarMas(d, "suelta"))}">Hora suelta</a><a class="btn-mini" href="${esc(linkComprarMas(d, "plan"))}">Plan de horas</a><a class="btn-mini" href="${esc(linkComprarMas(d, "daypass"))}">Day pass</a></div>`;
+    const card = (tipo, tit, sub) => `<a class="buy-card" href="${esc(linkComprarMas(d, tipo))}"><div class="buy-ic">${ICONOS[tipo === "suelta" ? "suelta" : tipo]}</div><div class="buy-tx"><b>${tit}</b><span>${sub}</span></div>${CHEV}</a>`;
+    cb.innerHTML = `<div class="sec-h" style="flex-direction:column;gap:2px"><div class="t">Reservar más</div><div class="s">Se abre sobre tu cuenta; puedes regresar cuando quieras.</div></div>` +
+      card("suelta", "Hora suelta", "Elige día y horario, sin compromiso") +
+      card("plan", "Plan de horas", "Paquetes de horas con vigencia de 30 días") +
+      card("daypass", "Day pass", "Día completo 8:00–16:00");
     cb.style.display = "block";
+    cb.style.marginBottom = "22px";
+  }
+
+  function accionesTicket(r) {
+    const id = esc(r.reservaId);
+    if (r.puedeCambiar) {
+      return `<div class="tk-acts"><button type="button" onclick="iniciarCambioId('${id}')">Cambiar</button><button type="button" class="sec" onclick="cancelarReservaIndividual('${id}', this)">Cancelar</button></div>`;
+    }
+    return `<div class="tk-note">Faltan menos de 24 h: ya no se puede cambiar ni cancelar desde aquí. Si algo pasó, <a href="https://wa.me/${WA_NUMBER}" target="_blank" rel="noopener">escríbenos por WhatsApp</a>.</div>`;
   }
 
   function renderMisReservas() {
@@ -448,43 +545,42 @@
     const lista = $("listaReservas");
     if (!misReservas.length) { bloque.style.display = "none"; return; }
     bloque.style.display = "block";
-    lista.innerHTML = "";
-    misReservas.forEach(r => {
-      const tipo = String(r.tipo || "").toLowerCase();
-      const esPaquete = tipo === "paquete", esDay = /day/.test(tipo);
-      const etiqueta = esDay ? "Day pass" : (esPaquete ? "Horas de tu plan" : "Hora suelta");
+    $("cuentaReservas").textContent = misReservas.length + (misReservas.length === 1 ? " programada" : " programadas") + " · por fecha";
+    const orden = misReservas.slice().sort((a, b) => (a.fecha + " " + a.hora).localeCompare(b.fecha + " " + b.hora));
+    // Day pass del mismo espacio: una sola tarjeta con una fila por día.
+    const dayPorOf = {};
+    orden.forEach(r => { if (tipoRes(r) === "daypass") (dayPorOf[r.oficina] = dayPorOf[r.oficina] || []).push(r); });
+    const hechos = {};
+    let html = "";
+    orden.forEach(r => {
+      const tipo = tipoRes(r);
+      const of = esc(NOMBRES_OFICINA[r.oficina] || r.oficina);
+      if (tipo === "daypass" && dayPorOf[r.oficina].length > 1) {
+        if (hechos[r.oficina]) return;
+        hechos[r.oficina] = true;
+        const dias = dayPorOf[r.oficina];
+        html += `<div class="ticket dark"><div class="ticket-top"><div><div class="ticket-of">${of}</div><div class="ticket-when">${dias.length} días programados · cada día 8:00 – 16:00</div></div><span class="tag tag-day">Day pass</span></div>` +
+          dias.map(x => `<div class="day-row"><div><div class="d">${esc(fechaCorta(x.fecha))}</div>${x.puedeCambiar ? `<div class="acts"><button type="button" class="a1" onclick="iniciarCambioId('${esc(x.reservaId)}')">Cambiar</button><button type="button" class="a2" onclick="cancelarReservaIndividual('${esc(x.reservaId)}', this)">Cancelar</button></div>` : `<div class="tk-note" style="margin-top:3px">Faltan menos de 24 h</div>`}</div><div class="code-num" style="font-family:var(--font-display);font-size:26px;font-weight:600;letter-spacing:.06em;color:#D9B97C">${x.codigo ? esc(fmtCodigo(x.codigo)) : "—"}</div></div>`).join("") +
+          `<div class="tk-note">Cada código funciona solo su día, de 8:00 a 16:00. Cada día se cambia o se cancela por separado, hasta 24 h antes.</div></div>`;
+        return;
+      }
       const horaFin = addHours(r.hora, r.horas);
-      const item = document.createElement("div");
-      item.className = "reserva-item";
-      const cod = r.codigo ? `<div class="reserva-codigo">Código: <span class="codigo">${esc(fmtCodigo(r.codigo))}</span></div>` : "";
-      const nota = esPaquete
-        ? (!r.puedeCambiar ? '<div class="reserva-nota">Faltan menos de 24 h — ya no se puede cambiar ni cancelar</div>' : "")
-        : '<div class="reserva-nota">Para cambiar o cancelar escríbenos por WhatsApp</div>';
-      const acciones = esPaquete ? `
-        <div class="reserva-actions">
-          <button type="button" class="btn-mini" ${!r.puedeCambiar ? "disabled" : ""} onclick='iniciarCambio(${JSON.stringify(r)})'>Cambiar</button>
-          <button type="button" class="btn-mini" ${!r.puedeCambiar ? "disabled" : ""} onclick='cancelarReservaIndividual(${JSON.stringify(r.reservaId)})'>Cancelar</button>
-        </div>` : "";
-      item.innerHTML = `
-        <div class="reserva-info">
-          <div class="of">${esc(NOMBRES_OFICINA[r.oficina] || r.oficina)} · ${etiqueta}</div>
-          <div class="cuando">${esc(fechaLegible(r.fecha))} · ${esc(r.hora)} – ${esc(horaFin)}</div>
-          ${cod}${nota}
-        </div>${acciones}`;
-      lista.appendChild(item);
+      const tag = tipo === "paquete" ? '<span class="tag tag-plan">De tu plan</span>' : (tipo === "daypass" ? '<span class="tag tag-day">Day pass</span>' : '<span class="tag tag-suelta">Hora suelta</span>');
+      const cod = r.codigo ? `<div class="code-box"><div class="code-lbl">CÓDIGO DE ACCESO</div><div class="code-num">${esc(fmtCodigo(r.codigo))}</div></div>` : "";
+      html += `<div class="ticket${tipo === "daypass" ? " dark" : ""}"><div class="ticket-top"><div><div class="ticket-of">${of}</div><div class="ticket-when">${esc(fechaCorta(r.fecha))} · ${esc(r.hora)} – ${esc(horaFin)}</div></div>${tag}</div>${cod}${accionesTicket(r)}</div>`;
     });
+    lista.innerHTML = html;
   }
 
-  // Cancela una hora reservada dentro del paquete (no el paquete completo).
-  // Restituye las horas al saldo siempre que el paquete siga vigente — misma
-  // regla de 24h de anticipación que aplica para Cambiar.
+  // Cancela una reserva. Horas de plan: las horas regresan al saldo (como siempre).
+  // Hora suelta y day pass: se libera el horario y el reembolso se gestiona por WhatsApp.
   async function cancelarReservaIndividual(reservaId, btn) {
-    if (!confirm("¿Cancelar esta reserva? Las horas se restituyen a tu saldo.")) return;
-    // Deshabilita el botón mientras espera respuesta (mismo patrón que "Confirmar
-    // y agendar") — evita el doble clic cuando /cancelar-reserva tarda en
-    // responder: sin esto, un segundo clic sobre la misma reserva ya cancelada
-    // regresa "Esta reserva ya no está activa" y confunde, aunque la primera
-    // cancelación sí se haya guardado bien.
+    const r = misReservas.find(x => x.reservaId === reservaId) || {};
+    const tipo = tipoRes(r);
+    const msgConfirm = tipo === "paquete"
+      ? "¿Cancelar esta reserva? Las horas se restituyen a tu saldo."
+      : "¿Cancelar esta reserva? El horario se libera y tu reembolso se gestiona por WhatsApp.";
+    if (!confirm(msgConfirm)) return;
     const textoOriginal = btn ? btn.textContent : "";
     if (btn) { btn.disabled = true; btn.textContent = "Cancelando..."; }
     try {
@@ -494,10 +590,19 @@
         body: JSON.stringify({ reservaId }),
       });
       const data = await resp.json();
-      if (data.error) {
-        alert(data.error);
-        return;
+      if (data.error) { alert(data.error); return; }
+      const horaFin = addHours(r.hora, r.horas);
+      const cuando = `${fechaCorta(r.fecha)} · ${r.hora} – ${horaFin}`;
+      const of = esc(NOMBRES_OFICINA[r.oficina] || r.oficina || "");
+      if (tipo === "paquete") {
+        $("bloqueAviso").innerHTML = `<div class="aviso-ok"><h3>Reserva cancelada</h3><p>${of}<br>${esc(cuando)}</p><p>El horario ya quedó libre y el código dejó de funcionar. <b>Tus ${esc(r.horas)} ${Number(r.horas) === 1 ? "hora regresó" : "horas regresaron"} a tu saldo.</b></p><button type="button" class="btn-line" onclick="cerrarAviso()">Entendido</button></div>`;
+      } else {
+        const etq = tipo === "daypass" ? "day pass" : "hora suelta";
+        const nombre = (resumen && resumen.nombre) || clienteId;
+        const msg = encodeURIComponent(`Hola, cancelé mi ${etq} en D Espacios (${NOMBRES_OFICINA[r.oficina] || r.oficina}, ${cuando}; cliente: ${nombre}, ID ${clienteId}) y necesito mi reembolso.`);
+        $("bloqueAviso").innerHTML = `<div class="aviso-ok"><h3>Reserva cancelada</h3><p>${of}<br>${esc(cuando)}</p><p>El horario ya quedó libre y el código dejó de funcionar. <b>Tu reembolso lo gestionamos contigo por WhatsApp</b> para revisar tu pago.</p><a class="btn-dark" href="https://wa.me/${WA_NUMBER}?text=${msg}" target="_blank" rel="noopener">Solicitar mi reembolso por WhatsApp</a><button type="button" class="btn-line" onclick="cerrarAviso()">Volver a mi cuenta</button></div>`;
       }
+      window.scrollTo({ top: 0, behavior: "smooth" });
       cargarSaldo();
     } catch (err) {
       alert("Error de conexión. Intenta de nuevo o contáctanos por WhatsApp.");
@@ -544,15 +649,36 @@
     });
   }
 
+  function iniciarCambioId(id) {
+    const r = misReservas.find(x => x.reservaId === id);
+    if (r) iniciarCambio(r);
+  }
+
+  function restaurarHorasUI() {
+    const g = $("numHoras").closest(".form-group");
+    if (g) g.style.display = "";
+    const row = $("rSaldoDespues").parentElement;
+    if (row) row.style.display = "";
+  }
+
   function iniciarCambio(reserva) {
-    reservaEnCambio = { reservaId: reserva.reservaId, horasOriginales: Number(reserva.horas) };
+    const tipo = tipoRes(reserva);
+    reservaEnCambio = { reservaId: reserva.reservaId, horasOriginales: Number(reserva.horas), tipo };
     $("tituloAgendar").textContent = "Cambiar reserva";
     $("btnAgendar").textContent = "Confirmar cambio";
     $("btnCancelarCambio").style.display = "block";
     $("selOficina").value = reserva.oficina;
     $("selFecha").value = "";
     $("numHoras").value = reserva.horas;
-    $("numHoras").max = Number(saldoActual.horasRestantes) + Number(reserva.horas);
+    // Plan: puede ajustar duración dentro de su saldo. Hora suelta / day pass: misma duración (y mismo precio).
+    const g = $("numHoras").closest(".form-group");
+    if (tipo === "paquete" && saldoActual) {
+      $("numHoras").max = Number(saldoActual.horasRestantes) + Number(reserva.horas);
+      if (g) g.style.display = "";
+    } else {
+      $("numHoras").max = Number(reserva.horas);
+      if (g) g.style.display = "none";
+    }
     horaSeleccionada = null;
     $("slotsBox").innerHTML = '<div class="slots-empty">Selecciona una fecha para ver horarios disponibles</div>';
     actualizarResumen();
@@ -564,6 +690,7 @@
 
   function cancelarModoCambio() {
     reservaEnCambio = null;
+    restaurarHorasUI();
     $("tituloAgendar").textContent = "Agenda con tus horas";
     $("btnAgendar").textContent = "Confirmar y agendar";
     $("btnCancelarCambio").style.display = "none";
@@ -617,91 +744,61 @@
     $("estadoCarga").style.display = "none";
     $("contenido").style.display = "block";
     renderHola();
+    const hero = $("bloqueSaldo");
     if (!saldoActual) {
-      $("bloqueSaldo").style.display = "none";
-      $("bloqueAgendar").style.display = "none";
-      $("bloqueSinSaldo").style.display = "none";
+      hero.style.display = "none";
+      if (!reservaEnCambio) { $("bloqueAgendar").style.display = "none"; $("bloqueSinSaldo").style.display = "none"; }
       return;
     }
-    $("bloqueSaldo").style.display = "block";
-
-    $("cNombre").textContent = saldoActual.nombre || "—";
-    $("cPaquete").textContent = saldoActual.paquete || "—";
-    $("cTotal").textContent = saldoActual.horasTotal;
-    $("cUsadas").textContent = saldoActual.horasUsadas;
-    $("cRestantes").textContent = saldoActual.horasRestantes;
-
-    // "Comprar un paquete adicional" ya conoce el clienteId en sesión — se suma
-    // al saldo actual con vigencia propia (ver comprar-paquete-adicional.html).
-    const linkMas = linkComprarMas({ nombre: saldoActual.nombre, telefono: saldoActual.telefono, correo: saldoActual.correo, espacio: saldoActual.espacio }, "plan");
-    $("linkComprarMasSaldo").href = linkMas;
-    $("linkComprarMasSinSaldo").href = linkMas;
-
-    const badge = $("cBadge");
-    if (saldoActual.vencido) {
-      badge.textContent = "Vencido";
-      badge.className = "badge badge-bad";
+    hero.style.display = "flex";
+    const s = saldoActual;
+    const total = Number(s.horasTotal) || 0, rest = Number(s.horasRestantes) || 0;
+    const lotes = (Array.isArray(s.lotes) ? s.lotes : []).slice().sort((a, b) => String(a.fechaVencimiento || "9999").localeCompare(String(b.fechaVencimiento || "9999")));
+    const vigentes = lotes.filter(l => !l.vencido && Number(l.horasRestantes) > 0);
+    let html = "";
+    if (lotes.length > 1) {
+      const prox = vigentes.length ? vigentes[0].fechaVencimiento : null;
+      html += `<div class="hero-top" style="align-items:flex-end"><div><div class="hero-total-lbl">MIS HORAS DISPONIBLES</div><div class="hero-total">${rest} h</div></div><div class="hero-lines" style="text-align:right;gap:2px">${vigentes.length} paquete${vigentes.length === 1 ? "" : "s"} con horas${prox ? `<br>Próximo vencimiento<br><b>${esc(fechaLegible(prox))}</b>` : ""}</div></div><div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">` +
+        lotes.map(l => {
+          const lt = Number(l.horasTotal) || 0, lr = Number(l.horasRestantes) || 0;
+          const barra = lt ? `<div class="lote-bar"><i style="width:${Math.max(0, Math.min(100, Math.round(lr / lt * 100)))}%"></i></div>` : "";
+          return `<div class="lote"><div class="lote-top"><div class="lote-name">${esc(l.paquete || "Paquete")}</div>${chipVence(l)}</div>${barra}<div class="lote-meta"><span><b>${lr}${lt ? " de " + lt : ""} h</b> disponibles</span><span>${l.vencido ? "Venció" : "Vence"} ${esc(fechaLegible(l.fechaVencimiento))}</span></div></div>`;
+        }).join("") + `</div><div class="hero-note" style="margin-top:12px">Se usan primero las horas que vencen antes, para que no pierdas ninguna.</div>`;
     } else {
-      badge.textContent = "Vigente";
-      badge.className = "badge badge-ok";
+      const l = lotes[0] || { vencido: s.vencido, fechaVencimiento: s.fechaVencimiento };
+      const pct = total ? Math.max(0, Math.min(100, rest / total)) : 0;
+      const circ = 276.5;
+      html += `<div class="hero-top"><div class="hero-name">${esc(s.paquete || "Tu plan")}</div>${chipVence(l)}</div>
+        <div class="hero-main" style="margin-top:14px"><svg width="104" height="104" viewBox="0 0 104 104" role="img" aria-label="${rest} de ${total} horas restantes"><circle cx="52" cy="52" r="44" fill="none" stroke="#3A332A" stroke-width="8"/><circle cx="52" cy="52" r="44" fill="none" stroke="#D9B97C" stroke-width="8" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${(circ * (1 - pct)).toFixed(1)}" transform="rotate(-90 52 52)"/><text x="52" y="56" text-anchor="middle" font-family="Cormorant Garamond" font-size="34" font-weight="600" fill="#F6F1E9">${rest}</text><text x="52" y="73" text-anchor="middle" font-family="DM Sans" font-size="9" letter-spacing="1.5" fill="#B9AE9E">HORAS</text></svg>
+        <div class="hero-lines"><div><b style="font-size:15px">${rest} de ${total}</b> horas disponibles</div><div>${esc(s.horasUsadas)} usadas</div><div>${s.vencido ? "Venció el" : "Vigente hasta el"} <b>${esc(fechaLegible(s.fechaVencimiento))}</b></div></div></div>`;
     }
-    // Con un solo paquete, la vigencia general de arriba es la del paquete —
-    // se muestra igual que siempre. Con 2+ paquetes (distintas vigencias),
-    // NO se muestra una fecha "general" arriba (confundía cuál aplicaba) —
-    // cada paquete trae su propia fecha en el detalle de abajo (cLotes).
-    const multiPaquete = Array.isArray(saldoActual.lotes) && saldoActual.lotes.length > 1;
-    const cVigencia = $("cVigencia");
-    if (multiPaquete) {
-      cVigencia.innerHTML = "";
-    } else {
-      cVigencia.innerHTML = saldoActual.vencido
-        ? `Tu vigencia terminó el <strong>${fechaLegible(saldoActual.fechaVencimiento)}</strong>.`
-        : `Vigente hasta el <strong>${fechaLegible(saldoActual.fechaVencimiento)}</strong>.`;
-    }
+    $("heroBody").innerHTML = html;
 
-    // Detalle por paquete (lotes): cuando el cliente tiene más de un paquete activo
-    // (cada uno con su propia vigencia — ver punto 22 en pendientes-tecnicos.md),
-    // el total de arriba es la suma; aquí se ve la vigencia de cada uno por separado
-    // (reemplaza a la vigencia general, que arriba se deja vacía en este caso).
-    // "lotes" es un campo nuevo del backend — si no viene (Apps Script viejo),
-    // simplemente no se muestra nada extra y el resto de la página sigue igual.
-    const cLotes = $("cLotes");
-    if (multiPaquete) {
-      cLotes.innerHTML = saldoActual.lotes.map(l =>
-        `<div style="font-size:12px;color:var(--muted);display:flex;justify-content:space-between;padding:3px 0">
-          <span>${l.paquete || "Paquete"}${l.vencido ? " (vencido)" : ""}</span>
-          <span>${l.horasRestantes} hrs · vence ${fechaLegible(l.fechaVencimiento)}</span>
-        </div>`
-      ).join("");
-    } else {
-      cLotes.innerHTML = "";
-    }
+    $("linkComprarMasSaldo").href = linkComprarMas({ nombre: s.nombre, telefono: s.telefono, correo: s.correo, espacio: s.espacio }, "plan");
+    $("bloqueCancelarPaquete").style.display = Number(s.horasUsadas) === 0 ? "inline" : "none";
 
-    // Cancelar paquete completo: solo mostramos el link si no hay horas usadas —
-    // el servidor valida además las 24h desde la compra al momento de intentarlo.
-    $("bloqueCancelarPaquete").style.display = Number(saldoActual.horasUsadas) === 0 ? "block" : "none";
-
-    const puedeAgendar = !saldoActual.vencido && Number(saldoActual.horasRestantes) > 0;
+    const puedeAgendar = !s.vencido && rest > 0;
+    $("btnIrAgendar").style.display = puedeAgendar ? "flex" : "none";
     if (!reservaEnCambio) {
       $("bloqueAgendar").style.display = puedeAgendar ? "block" : "none";
       $("bloqueSinSaldo").style.display = puedeAgendar ? "none" : "block";
     }
     if (!puedeAgendar) {
-      $("sinSaldoTexto").textContent = saldoActual.vencido
+      $("sinSaldoTexto").textContent = s.vencido
         ? "Tu paquete ya venció. Contáctanos para renovar tu saldo de horas."
         : "Ya usaste todas tus horas de este paquete. Contáctanos para comprar más.";
+      $("linkComprarMasSinSaldo").href = linkComprarMas({ nombre: s.nombre, telefono: s.telefono, correo: s.correo, espacio: s.espacio }, "plan");
     }
 
     if (puedeAgendar || reservaEnCambio) {
       $("selFecha").min = fechaLocalISO(new Date());
-      if (saldoActual.espacio && NOMBRES_OFICINA[saldoActual.espacio] && !reservaEnCambio) {
-        $("selOficina").value = saldoActual.espacio;
-      }
-      if (!reservaEnCambio) $("numHoras").max = saldoActual.horasRestantes;
+      if (s.espacio && NOMBRES_OFICINA[s.espacio] && !reservaEnCambio) $("selOficina").value = s.espacio;
+      if (!reservaEnCambio) $("numHoras").max = rest;
     }
   }
 
   function cambiarHoras(delta) {
+    if (reservaEnCambio && reservaEnCambio.tipo !== "paquete") return;
     const input = $("numHoras");
     const max = Number(input.max || saldoActual.horasRestantes || 1);
     let v = Number(input.value || 1) + delta;
@@ -821,14 +918,15 @@
       // deshabilita el botón de entrada — sin importar cuántas horas hayas
       // puesto. Si la duración no cabe desde aquí, el botón se queda activo:
       // la validación se hace al dar clic (ver más abajo), no antes.
-      const ocupado = yaPaso || !slot.disponible;
+      const soloDia = reservaEnCambio && reservaEnCambio.tipo === "daypass" && slot.horaTexto !== "08:00";
+      const ocupado = yaPaso || !slot.disponible || soloDia;
       const enBloqueSeleccionado = idxSel !== -1 && idx >= idxSel && idx < idxSel + horasNecesarias;
 
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "slot-btn" + (ocupado ? " slot-disabled" : "") + (enBloqueSeleccionado ? " slot-selected" : "");
       btn.textContent = slot.horaTexto;
-      btn.title = yaPaso ? "Ese horario ya pasó" : !slot.disponible ? "Ese horario ya está ocupado" : "";
+      btn.title = yaPaso ? "Ese horario ya pasó" : !slot.disponible ? "Ese horario ya está ocupado" : soloDia ? "El day pass empieza a las 8:00" : "";
       btn.disabled = ocupado;
       btn.onclick = () => {
         // La validación de si caben las horas pasa aquí, al dar clic — no
@@ -878,10 +976,16 @@
     $("rOficina").textContent = NOMBRES_OFICINA[oficina] || oficina;
     $("rHorario").textContent = `${fecha} · ${horaSeleccionada} – ${horaFin}`;
     $("rHoras").textContent = `${horas} hora${horas !== 1 ? "s" : ""}`;
-    const saldoBase = reservaEnCambio
-      ? Number(saldoActual.horasRestantes) + reservaEnCambio.horasOriginales
-      : Number(saldoActual.horasRestantes);
-    $("rSaldoDespues").textContent = `${saldoBase - horas} hrs`;
+    const rowSaldo = $("rSaldoDespues").parentElement;
+    if (!saldoActual || (reservaEnCambio && reservaEnCambio.tipo !== "paquete")) {
+      rowSaldo.style.display = "none";
+    } else {
+      rowSaldo.style.display = "";
+      const saldoBase = reservaEnCambio
+        ? Number(saldoActual.horasRestantes) + reservaEnCambio.horasOriginales
+        : Number(saldoActual.horasRestantes);
+      $("rSaldoDespues").textContent = `${saldoBase - horas} hrs`;
+    }
     box.classList.add("show");
     btn.disabled = false;
   }
@@ -999,6 +1103,7 @@
         `Te llega un SMS con tu nuevo código de acceso.`;
 
       reservaEnCambio = null;
+      restaurarHorasUI();
       $("tituloAgendar").textContent = "Agenda con tus horas";
       $("btnAgendar").textContent = "Confirmar y agendar";
       $("btnCancelarCambio").style.display = "none";
