@@ -415,9 +415,7 @@
   function fitDone() { cancelAnimationFrame(fitT); fitT = requestAnimationFrame(fitModal); }
   window.addEventListener("resize", fitDone);
   if (window.MutationObserver) {
-    var mo = new MutationObserver(fitDone);
-    ["rfScroll", "rfFoot"].forEach(function (id) { var e = $(id); if (e) mo.observe(e, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "class", "disabled"] }); });
-    var ovE = $("rfOverlay"); if (ovE) mo.observe(ovE, { attributes: true, attributeFilter: ["class"] });
+    new MutationObserver(fitDone).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "hidden", "disabled"] });
   }
   function dlIcs(items) {
     var L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//D Espacios//ES"];
