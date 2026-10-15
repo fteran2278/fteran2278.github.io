@@ -401,15 +401,24 @@
   var ICO_MAIL = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d1b18" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>';
   var ICO_LOCK_G = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C9953A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
   var ICO_CLOCK_G = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C9953A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
-  function fitDone() {
-    var box = $("rfStep3").firstElementChild, ov = $("rfOverlay"); if (!box || !ov) return;
-    box.style.zoom = 1;
-    var pad = parseFloat(getComputedStyle(ov).paddingTop) || 0, foot = $("rfFoot");
-    var avail = ov.clientHeight - 2 * pad - ((foot && !foot.hidden) ? foot.offsetHeight : 0) - 2;
-    var need = box.offsetHeight;
-    if (need > avail) box.style.zoom = Math.max(0.5, avail / need).toFixed(3);
+  function fitModal() {
+    var ov = $("rfOverlay"), m = ov && ov.querySelector(".rf-modal"); if (!m) return;
+    m.style.zoom = ""; m.style.maxHeight = ""; m.style.width = ""; m.style.maxWidth = "";
+    if (!ov.classList.contains("open") || window.innerWidth <= 600) return;
+    m.style.maxHeight = "none";
+    var pad = parseFloat(getComputedStyle(ov).paddingTop) || 0;
+    var avail = ov.clientHeight - 2 * pad, need = m.offsetHeight;
+    if (need > avail) { var z = Math.max(0.6, avail / need); m.style.zoom = z.toFixed(3); m.style.width = (520 / z) + "px"; m.style.maxWidth = (100 / z) + "%"; }
+    else m.style.maxHeight = "";
   }
-  window.addEventListener("resize", function () { if (S.step === 3) fitDone(); });
+  var fitT = 0;
+  function fitDone() { cancelAnimationFrame(fitT); fitT = requestAnimationFrame(fitModal); }
+  window.addEventListener("resize", fitDone);
+  if (window.MutationObserver) {
+    var mo = new MutationObserver(fitDone);
+    ["rfScroll", "rfFoot"].forEach(function (id) { var e = $(id); if (e) mo.observe(e, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "class", "disabled"] }); });
+    var ovE = $("rfOverlay"); if (ovE) mo.observe(ovE, { attributes: true, attributeFilter: ["class"] });
+  }
   function dlIcs(items) {
     var L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//D Espacios//ES"];
     items.forEach(function (it, i) {
