@@ -573,6 +573,11 @@
   $("rfRibbon").hidden = !TEST;
   window.irAReservar = function (tab, of) { openFlow(tab === "paquete" ? "plan" : (tab || "suelta"), of); };
   window.selectSpace = function () {};
+  // Apertura automática desde otras páginas (mi-cuenta, mi-reserva): ?abrir=suelta|plan|daypass&of=oficina11|oficina12
+  try {
+    var qa = new URLSearchParams(location.search), ab = qa.get("abrir");
+    if (ab === "suelta" || ab === "plan" || ab === "daypass") setTimeout(function () { openFlow(ab, qa.get("of")); }, 350);
+  } catch (e) {}
   window.toggleMobileNav = function () { $("navLinks").classList.toggle("open"); $("navBurger").classList.toggle("active"); };
   document.querySelectorAll("#navLinks a").forEach(function (a) {
     a.addEventListener("click", function () { $("navLinks").classList.remove("open"); $("navBurger").classList.remove("active"); });
