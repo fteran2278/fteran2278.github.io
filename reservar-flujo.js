@@ -183,6 +183,13 @@
     S.tab = tab; resetSel(); S.pago = null; S.busy = false; stopTimer(); stopPoll();
     var t = today(); S.month = new Date(t.getFullYear(), t.getMonth(), 1);
     S.opener = document.activeElement;
+    if (S.volver && !$("rfVolver")) {
+      var vp = document.createElement("a"); vp.id = "rfVolver"; vp.href = S.volver; vp.setAttribute("aria-label", "Volver a mi cuenta");
+      vp.innerHTML = "&#8592; Mi cuenta";
+      vp.style.cssText = "position:absolute;top:14px;left:14px;z-index:6;height:40px;padding:0 16px;border-radius:99px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);display:flex;align-items:center;font:600 13px DM Sans,sans-serif;color:#1F1B16;text-decoration:none";
+      vp.addEventListener("click", function (e) { e.preventDefault(); closeFlow(); });
+      $("rfClose").parentNode.insertBefore(vp, $("rfClose"));
+    }
     showStep(1);
     renderAll();
     var ov = $("rfOverlay"); ov.classList.add("open"); ov.setAttribute("aria-hidden", "false");
@@ -195,6 +202,7 @@
     var ov = $("rfOverlay"); ov.classList.remove("open"); ov.setAttribute("aria-hidden", "true");
     document.documentElement.style.overflow = "";
     S.cli = {}; // los datos precargados valen una sola vez
+    if (S.volver) { location.href = S.volver; return; } // llegaste desde tu cuenta: regresas a ella
     if (S.opener && S.opener.focus) S.opener.focus();
   }
   // Cerrar con un pago pendiente pide confirmación (liberar el horario)
@@ -205,6 +213,7 @@
   function hideAfterCancel() { releasePago(function () { hideFlow(); }); }
   function showStep(n) {
     S.step = n;
+    var vb = $("rfVolver"); if (vb) vb.hidden = n !== 1;
     $("rfStep1").hidden = n !== 1; $("rfStep2").hidden = n !== 2; $("rfStep3").hidden = n !== 3; $("rfFoot").hidden = n !== 1;
     $("rfScroll").scrollTop = 0;
   }
@@ -502,6 +511,7 @@
     h += '<button type="button" class="rf-link" id="rfDoneClose" hidden>Cerrar</button></div></div>';
     $("rfStep3").innerHTML = h; showStep(3); fitDone();
     $("rfDoneClose").onclick = hideFlow;
+    if (S.volver) { var ftb = document.querySelector("#rfStep3 .rf-ft"); if (ftb) { var va = document.createElement("a"); va.className = "rf-btn rf-btn-out"; va.href = S.volver; va.textContent = "Volver a mi cuenta"; va.style.cssText = "display:inline-flex;align-items:center;justify-content:center;text-decoration:none"; ftb.insertBefore(va, ftb.firstChild); } }
     var ib = $("rfIcs"); if (ib) ib.onclick = function () { dlIcs(cal); };
     var so = $("rfSmsOpt");
     if (so) so.onclick = function () {
@@ -569,6 +579,7 @@
   /* ── enganches con la página ── */
   try {
     var qp = new URLSearchParams(location.search);
+    var vv = qp.get("volver") || ""; S.volver = /^https:\/\/despacios\.com\.mx\//.test(vv) ? vv : ""; // solo si llegas desde tu cuenta
     S.cli = { nombre: qp.get("nombre") || "", tel: (qp.get("tel") || "").replace(/\D/g, "").slice(-10), correo: qp.get("correo") || "" };
   } catch (e) { S.cli = {}; }
   $("rfRibbon").hidden = !TEST;
