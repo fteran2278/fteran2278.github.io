@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Despacios — Panel interno (PRUEBA)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f2f4f7;color:#16212c;font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button{font-family:inherit;font-size:14px;cursor:pointer}
+input,select{font-family:inherit;font-size:14px}
+.card{background:#fff;border-radius:14px;box-shadow:0 1px 2px rgba(22,33,44,.06),0 4px 16px rgba(22,33,44,.05)}
+.h2{margin:0;font-size:16px;font-weight:600;letter-spacing:-.01em}
+.muted{color:#5b6876}
+.num{font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.c-teal{background:#d9f0ec;color:#0b5149}
+.c-green{background:#d9f0e2;color:#14532d}
+.c-amber{background:#fdebc8;color:#7a4300}
+.c-pink{background:#fbdce8;color:#9d174d}
+.c-red{background:#fbe0dc;color:#9c1f12}
+.c-blue{background:#e3eaf7;color:#22407a}
+.c-grey{background:#eceff3;color:#3c4856}
+.c-dark{background:#0f6b62;color:#fff}
+.seg{display:flex;background:#eceff3;border-radius:10px;padding:3px}
+.seg button{border:0;background:none;padding:7px 14px;border-radius:8px;font-weight:500;color:#5b6876}
+.seg .on{background:#fff;color:#16212c;font-weight:600;box-shadow:0 1px 3px rgba(22,33,44,.15)}
+.btn{padding:9px 14px;border-radius:10px;border:1px solid #c5ccd5;background:#fff;color:#16212c;font-weight:600}
+.btn-main{background:#16212c;border-color:#16212c;color:#fff}
+.btn-teal{background:#0f6b62;border-color:#0f6b62;color:#fff}
+.btn-ghost{border-color:transparent;background:none;color:#5b6876}
+.btn-sm{padding:7px 12px;font-size:13px}
+.fld{width:100%;padding:9px 11px;border:1px solid #c5ccd5;border-radius:10px;background:#fff;color:#16212c}
+.fld:disabled{background:#eef0f3;color:#8793a0}
+.lbl{display:block;font-size:12px;font-weight:600;color:#3c4856;margin-bottom:4px}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex:0 0 auto}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px 14px;border-radius:12px}
+.row:hover{background:#f6f8fa}
+.bar{height:6px;border-radius:3px;background:#e3e8ee;overflow:hidden}
+.bar>span{display:block;height:100%;background:#0f6b62;border-radius:3px}
+.kpi{flex:1 1 190px;padding:16px 18px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.row3{display:grid;grid-template-columns:1.3fr 1fr 1.4fr;gap:16px}.split{display:flex;height:12px;border-radius:99px;overflow:hidden;margin:12px 0 8px;background:#eceff3}.th{position:relative;height:70px;width:26px;border:2px solid #cfd6de;border-radius:14px;background:#fff;overflow:hidden;flex:none}.th i{position:absolute;left:0;right:0;bottom:0;background:#0f6b62}.sec{font-size:12px;color:#5b6876;font-weight:600;letter-spacing:.05em;margin:6px 4px -4px}.yr{position:relative;display:grid;grid-template-columns:repeat(12,1fr);gap:8px;height:190px;margin-top:6px}.yr>div:not(.eq){display:flex;flex-direction:column;justify-content:flex-end;align-items:center;font-size:11px;color:#5b6876;position:relative;z-index:1}.st{width:56%;display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden}.eq{position:absolute;left:0;right:0;border-top:2px dashed #d0503f;z-index:0}.eqt{position:absolute;right:0;top:-20px;font-size:11px;color:#b42318;background:#fff;padding:0 4px}.tb2{width:100%;min-width:640px;border-collapse:collapse;font-size:13px}.tb2 th{font-size:11px;color:#5b6876;text-align:left;font-weight:600;letter-spacing:.04em;padding:8px 6px;border-bottom:1px solid #e6eaef}.tb2 td{padding:11px 6px;border-bottom:1px solid #e6eaef}.tb2 tr.tt td{background:#f7f9fb;font-weight:700}
+@media(max-width:760px){.row3{grid-template-columns:1fr}}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.kk{padding:20px 24px}.kk .lb{font-size:14px;color:#5b6876}.kk .bg{font-size:44px;font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-top:4px}.kk .de{font-size:18px;font-weight:500;color:#5b6876}.kk .nt{font-size:13px;color:#5b6876;margin-top:8px}.tk{position:absolute;top:-4px;width:2px;height:18px;background:#9aa5b1}.tl{position:absolute;top:20px;font-size:11px;color:#5b6876;transform:translateX(-50%);white-space:nowrap}
+@media(max-width:760px){.g3{grid-template-columns:1fr}}@media(max-width:640px){.g2{grid-template-columns:1fr}.kk .bg{font-size:38px}}
+.kpi .t{font-size:12px;font-weight:600;letter-spacing:.04em;color:#5b6876}
+.kpi .v{font-size:30px;font-weight:600;letter-spacing:-.02em;line-height:1.15;margin-top:4px}
+.blk{position:absolute;left:5px;right:5px;border-radius:9px;padding:6px 9px;overflow:hidden;font-size:12px;line-height:1.3}
+.blk b{display:block;font-size:13px;font-weight:600}
+.col{position:relative;height:480px;border-left:1px solid #e9edf1;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 39px,#eef1f4 39px,#eef1f4 40px)}
+.hr{height:40px;font-size:11px;color:#8793a0;text-align:right;padding:0 8px 0 0;font-variant-numeric:tabular-nums}
+.tab{display:flex;align-items:center;gap:8px;padding:13px 16px;border:0;background:none;color:#5b6876;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap}
+.tab:hover{color:#16212c}
+.tab-on{color:#0f6b62;font-weight:600;border-bottom-color:#0f6b62}
+.tab .cnt{background:#b42318;color:#fff;border-radius:999px;font-size:11px;font-weight:700;padding:1px 7px}
+.tabu{padding:10px 4px;margin-right:18px;border:0;background:none;color:#5b6876;font-weight:500;border-bottom:2px solid transparent}
+.tabu-on{color:#0f6b62;font-weight:600;border-bottom-color:#0f6b62}
+.stat{flex:1;text-align:center;background:#f2f4f7;border-radius:10px;padding:10px 6px}
+.stat .n{font-size:26px;font-weight:600;line-height:1;letter-spacing:-.02em}
+.stat .l{font-size:11px;font-weight:600;color:#5b6876;margin-top:5px;letter-spacing:.03em}
+.mini{flex:1 1 90px}
+.mini .k{font-size:11px;font-weight:600;color:#5b6876}
+.mini .x{font-weight:600}
+.tb{width:100%;min-width:860px;border-collapse:collapse;table-layout:fixed}
+.tb th{padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.04em;color:#5b6876;border-bottom:1px solid #dfe4ea;white-space:nowrap}
+.tb td{padding:12px;border-bottom:1px solid #eef1f4;vertical-align:middle;height:66px}
+.tb tbody tr:hover{background:#f7f9fb}
+.tb .r{text-align:right}
+.tb-on{background:#eaf6f3}
+.tb tbody tr.tb-on:hover{background:#eaf6f3}
+.cell-name{display:flex;align-items:center;gap:10px}
+
+.hide{display:none!important}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.err{color:#9c1f12;font-size:13px;min-height:18px}
+.grid{display:grid;gap:16px}
+.sel{outline:2px solid #0f6b62}
+.tb tbody tr{cursor:pointer}
+@media(max-width:900px){.two{flex-direction:column}}
+
+.grid>*,.two>*{min-width:0}
+@media(max-width:760px){
+  main{padding:12px 12px 32px!important}
+  header>div:first-child{padding:10px 12px 0!important}
+  header nav{padding:6px 4px 0!important;overflow-x:auto;flex-wrap:nowrap!important}
+  header nav .tab{padding:11px 12px;font-size:13px}
+  .two{flex-direction:column!important}
+  .two>*{flex:none!important;width:100%!important}
+  .kpi{flex:1 1 140px!important;padding:12px 14px!important}.kpi .v{font-size:24px!important}
+  .card{border-radius:12px}
+  .tb{min-width:0!important;display:block}
+  .tb colgroup,.tb thead{display:none}
+  .tb tbody{display:block}
+  .tb tr{display:grid!important;grid-template-columns:1fr 1fr;gap:8px 12px;padding:12px 8px;border-bottom:1px solid #eef1f4}
+  .tb td{display:block;padding:0!important;height:auto!important;border:0!important;min-width:0}
+  .tb td:first-child{grid-column:1/-1}
+  .tb td[data-l]::before{content:attr(data-l);display:block;font-size:10px;font-weight:600;color:#5b6876;letter-spacing:.04em;margin-bottom:2px}
+  .tb td:first-child::before{display:none!important}
+  .tb td[colspan]{grid-column:1/-1}
+  .tb .r{text-align:left}
+  #cal{margin:0 -6px}
+  .seg button{padding:7px 10px}
+}
+.c-violet{background:#e8e3f4;color:#40286b}
+.btn-gen{background:#fff;border:1.5px solid #c9a227;color:#5c4500;font-weight:600}.btn-gen:hover{background:#fffaf0}.btn-gen:disabled{opacity:.6}.btn:disabled{opacity:.45;cursor:not-allowed}td.r{white-space:nowrap}</style></head><body>
+
+<div id="login" class="login"><div class="card" style="padding:28px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:38px;height:38px;border-radius:11px;background:#0f6b62;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px">D</div><div><div style="font-size:20px;font-weight:700">Despacios</div><div class="muted" style="font-size:11px;letter-spacing:.08em;text-transform:uppercase">Panel interno</div></div></div>
+<div><label class="lbl" for="pin">PIN de acceso</label><input id="pin" class="fld" type="password" autocomplete="current-password" placeholder="Escribe tu PIN"></div>
+<div id="loginErr" class="err"></div>
+<button id="btnLogin" class="btn btn-teal" type="button">Entrar</button>
+</div></div>
+
+<div id="app" class="hide" style="min-height:100vh;display:flex;flex-direction:column">
+<header style="background:#fff;box-shadow:0 1px 0 #dfe4ea,0 4px 14px rgba(22,33,44,.04)">
+<div style="max-width:1400px;margin:0 auto;padding:12px 24px 0;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px">
+<div style="display:flex;align-items:center;gap:10px"><div style="width:38px;height:38px;border-radius:11px;background:#0f6b62;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px">D</div><div><div style="font-size:20px;font-weight:700;line-height:1.1">Despacios</div><div class="muted" style="font-size:11px;letter-spacing:.08em;text-transform:uppercase">Panel interno</div></div></div>
+<div style="flex:1 1 240px;max-width:420px;margin-left:auto"><input id="q" class="fld" style="border-radius:999px;background:#f2f4f7;border-color:#e3e8ee" type="search" placeholder="Buscar por nombre o teléfono"></div>
+<button id="btnRef" class="btn btn-sm" type="button">Actualizar</button>
+<div style="font-size:13px;line-height:1.2"><b id="usr">Administración</b><div class="muted" style="font-size:12px"><a href="#" id="salir" style="color:inherit">Salir</a></div></div>
+</div>
+<nav style="max-width:1400px;margin:0 auto;padding:6px 16px 0;display:flex;flex-wrap:wrap">
+<button class="tab tab-on" data-t="t1" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Citas y clientes<span class="cnt hide" id="cntNuevos"></span></button>
+<button class="tab" data-t="t2" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.8-9.8M16 7l3 3"/></svg>Links y códigos</button>
+<button class="tab" data-t="t3" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2M10 6h4M10 10h4M10 14h4M10 18h4"/></svg>Oficinas</button>
+<button class="tab" data-t="t4" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>Alertas y comisiones<span class="cnt hide" id="cntCanc"></span></button>
+</nav></header>
+<main style="width:100%;max-width:1400px;margin:0 auto;padding:20px 24px 40px;display:flex;flex-direction:column;gap:16px">
+<div id="estado" class="muted" style="font-size:13px"></div>
+
+<section id="t1" class="grid">
+<div style="display:flex;flex-wrap:wrap;gap:16px" id="kpis"></div>
+<div id="nuevos" class="hide"></div>
+<div class="card" style="padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><h2 class="h2" style="flex:1">Calendario de citas · <span id="calFecha"></span></h2>
+<div class="seg" id="vista"><button class="on" data-v="dia">Día</button><button data-v="semana">Semana</button></div><button class="btn btn-sm" id="dPrev" type="button">‹</button><button class="btn btn-sm" id="dHoy" type="button">Hoy</button><button class="btn btn-sm" id="dNext" type="button">›</button></div>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><span class="chip c-teal">Oficina 11</span><span class="chip c-violet">Oficina 12</span><span class="chip c-grey">Paquete = relleno</span><span class="chip c-grey" style="border:1px dashed #8793a0;background:#fff">Hora suelta = borde punteado</span><span class="chip c-grey" style="border-left:4px solid #8793a0">Day pass = barra lateral</span><span class="chip c-grey">En curso = color fuerte</span><span class="chip c-amber" style="opacity:.6">Sin acceso registrado (próximamente)</span></div>
+<div id="selOf" class="seg" style="display:none;width:max-content;margin-bottom:10px"></div><div id="cal" style="overflow-x:auto"></div></div>
+<div class="two" style="display:flex;gap:16px;align-items:flex-start">
+<div class="card" style="flex:1 1 640px;min-width:0;padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><h2 class="h2" style="flex:1">Clientes</h2><div class="seg" id="filtro"><button class="on" data-f="todos">Todos</button><button data-f="activo">Con horas</button><button data-f="porvencer">Por vencer</button></div></div>
+<div style="overflow-x:auto"><table class="tb"><colgroup><col style="width:25%"><col style="width:14%"><col style="width:14%"><col style="width:13%"><col style="width:12%"><col style="width:12%"><col style="width:10%"></colgroup><thead><tr><th>CLIENTE</th><th>PAQUETE</th><th>HORAS</th><th>VENCE</th><th>PAGADO</th><th>ORIGEN</th><th>SUELTAS</th></tr></thead><tbody id="tbCli"></tbody></table></div></div>
+<aside class="card" id="panelCli" style="flex:0 0 380px;padding:20px"></aside>
+</div></section>
+
+<section id="t2" class="grid hide">
+<div class="card" style="padding:16px"><input id="q2" class="fld" style="padding:12px 14px;font-size:16px" placeholder="Escribe nombre o teléfono (puede ser parcial)"></div>
+<div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Códigos de hoy · todas las oficinas</h2><div style="overflow-x:auto"><table class="tb" style="min-width:700px"><colgroup><col style="width:10%"><col style="width:13%"><col style="width:23%"><col style="width:13%"><col style="width:13%"><col style="width:28%"></colgroup><thead><tr><th>OFICINA</th><th>HORARIO</th><th>CLIENTE</th><th>CÓDIGO</th><th>ESTADO</th><th class="r">ACCIÓN</th></tr></thead><tbody id="tbHoy"></tbody></table></div></div>
+<div id="resBusca" class="grid"></div>
+</section>
+
+<section id="t3" class="grid hide">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1"><h2 class="h2" style="font-size:20px">Oficinas</h2><div class="muted" style="font-size:12px" id="ofiAct">&nbsp;</div></div>
+<div class="seg" id="vistaOfi"><button class="on" data-m="mes">Mes</button><button data-m="anio">Año</button></div>
+<div id="navMes" style="display:flex;align-items:center;gap:4px"><button type="button" id="mPrev" class="btn btn-sm" aria-label="Mes anterior">‹</button><input id="mes" type="month" class="fld" style="width:auto"><button type="button" id="mNext" class="btn btn-sm" aria-label="Mes siguiente">›</button></div><select id="anio" class="fld hide" style="width:auto"></select></div>
+<div id="ofi" class="grid"></div>
+<div class="muted" style="font-size:12px;line-height:1.6"><b>Cómo se calcula.</b> <b>Dinero vendido</b> = paquetes en el mes en que se compran (a su precio completo) + horas sueltas y day pass en el mes en que se reservan; es bruto, con IVA y antes de la comisión de cobro. Una compra cancelada <b>sigue contando</b> hasta que en Alertas marques «Sí se reembolsó». <b>Horas reservadas</b> = horas agendadas en el mes, ya usadas o por usar. <b>Ocupación</b> = horas reservadas ÷ 280 h por oficina (14 h × 20 días). <b>Por usar</b> = horas agendadas que todavía no pasan. <b>Vencidas</b> = horas de paquete que caducaron sin usarse. <b>Renta</b> = renta fija alternativa de $7,600 ÷ precio promedio por hora usada (110 si aún no hay horas usadas).</div>
+</section>
+<section id="t4" class="grid hide"><div id="alertas" class="grid"></div></section>
+</main></div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbwCMuygZuvEEG_WvSh9RfAcw1E0BECPLATBMsarmxo8weo2fzrDlPjZtcY5HnVaZ2fQ/exec';
+let PIN = '', D = null, ING = null, selCli = null, fecha = null, filtro = 'todos';
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money = n => '$' + Math.round(n).toLocaleString('es-MX');
+const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'], DIA = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const fmtF = f => { if(!f) return '—'; const [y,m,d] = f.slice(0,10).split('-'); return +d + ' ' + MES[+m-1]; };
+const fmtTel = t => t && t.length === 10 ? t.slice(0,3) + ' ' + t.slice(3,6) + ' ' + t.slice(6) : (t || '');
+const ini = n => String(n||'?').trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
+const COLS = ['#e3eaf7|#22407a','#e8e3f4|#40286b','#f4dede|#6b2020','#d9f0ec|#0b5149','#fdebc8|#7a4300'];
+const av = (n,big) => { const [b,c] = COLS[(String(n||'').length) % 5].split('|'); return `<div class="av" style="${big?'width:48px;height:48px;font-size:16px;':''}background:${b};color:${c}">${esc(ini(n))}</div>`; };
+
+async function api(accion, extra) {
+  const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify(Object.assign({ pin: PIN, accion }, extra || {})) });
+  const j = await r.json(); if (j.error) throw new Error(j.error); return j;
+}
+async function entrar() {
+  $('#loginErr').textContent = ''; PIN = $('#pin').value;
+  if (API_URL.startsWith('PEGAR')) { $('#loginErr').textContent = 'Falta configurar la URL del API en panel.html'; return; }
+  try { const r = await api('login'); sessionStorage.setItem('pin', PIN); $('#usr').textContent = r.usuario; $('#login').classList.add('hide'); $('#app').classList.remove('hide'); await cargar(); setInterval(() => { if (!document.hidden && $('#t3').classList.contains('hide')) cargar(true); }, 90000); }
+  catch (e) { $('#loginErr').textContent = e.message; }
+}
+$('#btnLogin').onclick = entrar; $('#pin').addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+$('#salir').onclick = e => { e.preventDefault(); sessionStorage.removeItem('pin'); location.reload(); };
+$('#btnRef').onclick = () => cargar();
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => { document.querySelectorAll('.tab').forEach(x => x.classList.toggle('tab-on', x === b)); ['t1','t2','t3','t4'].forEach(t => $('#'+t).classList.toggle('hide', t !== b.dataset.t)); if (b.dataset.t === 't3') cargarIng(); });
+
+function fixCli(c) {
+  // Totales con TODOS los paquetes que aún no vencen por fecha (incluye los ya agotados)
+  const act = c.lotes.filter(l => l.vence && l.vence > D.ahora);
+  if (!act.length) { if (c.lotes.length) { c.estado = 'vencido'; c.compradas = c.usadas = c.restantes = 0; } return; }
+  c.compradas = act.reduce((t, l) => t + l.total, 0); c.usadas = act.reduce((t, l) => t + l.usadas, 0); c.restantes = act.reduce((t, l) => t + l.restantes, 0);
+  c.valor = act.reduce((t, l) => t + l.pagado, 0);
+  if (c.restantes > 0) return;
+  c.estado = 'agotado'; c.vence = act.map(l => l.vence).sort().pop(); c.dias = null;
+}
+async function cargar(silencio) {
+  if (!silencio) $('#estado').textContent = 'Cargando…';
+  try {
+    D = await api('resumen', { incluirPruebas: true });
+    D.clientes.forEach(fixCli);
+    if (!fecha) fecha = D.hoy;
+    $('#estado').textContent = 'Actualizado ' + D.ahora.slice(11) + ' (hora de México)';
+    pintar(); if (!silencio && !$('#t3').classList.contains('hide')) cargarIng();
+  } catch (e) { $('#estado').textContent = 'Error: ' + e.message; if (/PIN|intentos/.test(e.message)) { sessionStorage.removeItem('pin'); location.reload(); } }
+}
+function coincide(c, q) { q = q.trim().toLowerCase(); if (!q) return true; const d = q.replace(/\D/g,''); return c.nombre.toLowerCase().includes(q) || (d.length >= 3 && c.tel.includes(d)); }
+$('#q').oninput = () => { pintarClientes(); pintarBusqueda(); };
+$('#q2').oninput = () => { $('#q').value = $('#q2').value; pintarClientes(); pintarBusqueda(); };
+
+function pintar() { const nc = (D.cancelaciones || []).filter(x => !x.decision).length, bc = $('#cntCanc'); bc.textContent = nc; bc.classList.toggle('hide', !nc); calcNuevos(); pintarNuevos(); pintarAlertas(); pintarKpis(); pintarCal(); pintarClientes(); pintarPanel(); pintarHoy(); pintarBusqueda(); }
+
+
+// ── Nuevos registros: clientes que aún no has marcado como vistos (se guarda en este navegador) ──
+const LS_VISTOS = 'despacios_vistos';
+let nuevos = [];
+function leerVistos() { try { return JSON.parse(localStorage.getItem(LS_VISTOS) || 'null'); } catch (e) { return null; } }
+function guardarVistos(a) { try { localStorage.setItem(LS_VISTOS, JSON.stringify(a)); } catch (e) {} }
+const esNuevo = id => nuevos.some(c => c.id === id);
+function calcNuevos() {
+  const v = leerVistos(), ids = D.clientes.map(c => c.id);
+  if (v === null) { guardarVistos(ids); nuevos = []; return; }   // primera vez en este navegador: todo lo actual cuenta como visto
+  const s = new Set(v); nuevos = D.clientes.filter(c => !s.has(c.id));
+}
+function pintarNuevos() {
+  const b = $('#cntNuevos'), box = $('#nuevos');
+  b.textContent = nuevos.length; b.classList.toggle('hide', !nuevos.length);
+  box.classList.toggle('hide', !nuevos.length);
+  if (!nuevos.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<div class="card" style="padding:18px 20px"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px"><h2 class="h2" style="flex:1">Nuevos registros <span class="chip c-red" style="margin-left:6px">${nuevos.length}</span></h2><button class="btn btn-sm" id="btnVistos" type="button">Marcar como vistos</button></div>
+  ${nuevos.map(c => { const f1 = c.lotes.map(l => l.compra).filter(Boolean).sort()[0], tipo = (c.paquete ? 'Paquete ' + esc(c.paquete) : c.sueltas ? 'Hora suelta' : 'Sin compra aún') + (f1 ? ' · compró ' + fmtF(f1) : ''); return `<div class="row" data-nid="${esc(c.id)}" style="justify-content:space-between;cursor:pointer"><div class="cell-name">${av(c.nombre)}<div><b>${esc(c.nombre)}</b><div class="muted num" style="font-size:12px">${esc(fmtTel(c.tel))} · ${tipo}</div></div></div><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${c.origen ? `<span class="chip c-grey">${esc(c.origen)}</span>` : '<span class="chip c-amber">Falta canal de origen</span>'}<span class="chip c-teal">Nuevo</span></span></div>`; }).join('')}</div>`;
+  $('#btnVistos').onclick = () => { guardarVistos(D.clientes.map(c => c.id)); nuevos = []; pintarNuevos(); pintarClientes(); };
+  box.querySelectorAll('[data-nid]').forEach(r => r.onclick = () => { selCli = r.dataset.nid; tabCli = 'datos'; pintarClientes(); pintarPanel(); $('#panelCli').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+}
+
+function pintarKpis() {
+  const k = D.kpis;
+  $('#kpis').innerHTML = [
+    ['CITAS HOY', k.citasHoy, 'reservas activas de hoy', '#16212c'],
+    ['CLIENTES CON HORAS', k.clientesActivos, 'paquetes vigentes', '#0b5149'],
+    ['VENCEN EN 7 DÍAS', k.vencen7, k.horasEnRiesgo + ' horas sin usar en riesgo', '#9c1f12'],
+    ['SIN ACCESO REGISTRADO', '—', 'se activa con el registro de TTLock', '#9aa5b1'],
+  ].map(x => `<div class="card kpi"><div class="t">${x[0]}</div><div class="v num" style="color:${x[3]}">${x[1]}</div><div class="muted" style="font-size:12px">${x[2]}</div></div>`).join('');
+}
+
+function sumD(f, n) { const d = new Date(f + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0,10); }
+let vista = 'dia', semOf = 11;
+// Colores por oficina: 11 = verde azulado (marca), 12 = violeta. Paquete = relleno; hora suelta = borde punteado; en curso = color fuerte.
+const OFI = {
+  11: { chip: 'c-teal', tinte: '#f6fbfa', borde: '#4aa396', paq: 'background:#d9f0ec;color:#0b5149', sue: 'background:#f0f9f7;color:#0b5149;border:1px dashed #4aa396', cur: 'background:#0f6b62;color:#fff' },
+  12: { chip: 'c-violet', tinte: '#faf8fd', borde: '#8c76c4', paq: 'background:#e8e3f4;color:#40286b', sue: 'background:#f6f3fb;color:#40286b;border:1px dashed #8c76c4', cur: 'background:#5b3fa0;color:#fff' },
+};
+const tipoNom = t => t === 'individual' ? 'hora suelta' : t === 'daypass' ? 'day pass' : 'paquete';
+const estBloque = (r, en) => { const o = OFI[r.oficina] || OFI[11]; if (en) return o.cur; if (r.tipo === 'daypass') return o.paq + ';border-left:4px solid ' + o.borde; return r.tipo === 'individual' ? o.sue : o.paq; };
+const paso = () => vista === 'semana' ? 7 : 1;
+$('#dPrev').onclick = () => { fecha = sumD(fecha, -paso()); pintarCal(); };
+$('#dNext').onclick = () => { fecha = sumD(fecha, paso()); pintarCal(); };
+$('#dHoy').onclick = () => { fecha = D.hoy; pintarCal(); };
+document.querySelectorAll('#vista button').forEach(b => b.onclick = () => { vista = b.dataset.v; document.querySelectorAll('#vista button').forEach(x => x.classList.toggle('on', x === b)); pintarCal(); });
+function lunesDe(f) { const d = new Date(f + 'T00:00:00Z'), w = (d.getUTCDay() + 6) % 7; return sumD(f, -w); }
+function pintarSemana() {
+  const lun = lunesDe(fecha), dias = [0,1,2,3,4,5,6].map(i => sumD(lun, i)), H0 = 8, H1 = 22, PX = 40;
+  const a = new Date(lun + 'T00:00:00Z'), z = new Date(dias[6] + 'T00:00:00Z');
+  $('#calFecha').textContent = 'semana del ' + a.getUTCDate() + ' ' + MES[a.getUTCMonth()] + ' al ' + z.getUTCDate() + ' ' + MES[z.getUTCMonth()];
+  const so = $('#selOf'); so.style.display = 'flex'; so.innerHTML = [11,12].map(o => `<button class="${o === semOf ? 'on' : ''}" data-o="${o}"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${OFI[o].borde};margin-right:7px"></span>Oficina ${o}</button>`).join('');
+  so.querySelectorAll('button').forEach(b => b.onclick = () => { semOf = +b.dataset.o; pintarCal(); });
+  let h = '<div style="display:flex;min-width:760px"><div style="width:46px;padding-top:44px">';
+  for (let i = H0; i < H1; i++) h += `<div class="hr">${i}:00</div>`; h += '</div>';
+  dias.forEach(f => {
+    const d = new Date(f + 'T00:00:00Z'), hoy = f === D.hoy;
+    h += `<div style="flex:1;min-width:100px"><div style="height:44px;text-align:center;font-weight:600;line-height:1.2;${hoy ? 'color:#0f6b62' : ''}">${DIA[d.getUTCDay()].slice(0,3)}<div style="font-weight:500;font-size:12px" class="muted">${d.getUTCDate()} ${MES[d.getUTCMonth()]}</div></div><div class="col" style="height:${(H1-H0)*PX}px;${hoy ? 'background-color:#f4faf9' : ''}">`;
+    D.reservas.filter(r => r.fecha === f && r.estado === 'activa' && r.oficina === semOf).forEach(r => {
+      const [x,y] = r.hora.split(':').map(Number), top = ((x - H0) + y/60) * PX + 1, hh = r.horas * PX - 2;
+      const est = estBloque(r, false);
+      h += `<div class="blk" style="left:2px;right:2px;top:${top}px;height:${hh}px;${est};padding:4px 6px"><b style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.nombre)}</b>${r.hora}–${r.fin}</div>`;
+    });
+    if (hoy) { const [x,y] = D.ahora.slice(11).split(':').map(Number), t = ((x - H0) + y/60) * PX; if (t >= 0 && t <= (H1-H0)*PX) h += `<div style="position:absolute;left:0;right:0;top:${t}px;border-top:2px solid #b42318"></div>`; }
+    h += '</div></div>';
+  });
+  $('#cal').innerHTML = h + '</div>';
+}
+function pintarCal() {
+  if (vista === 'semana') return pintarSemana();
+  $('#selOf').style.display = 'none';
+  const d = new Date(fecha + 'T00:00:00Z');
+  $('#calFecha').textContent = DIA[d.getUTCDay()] + ' ' + d.getUTCDate() + ' de ' + MES[d.getUTCMonth()] + (fecha === D.hoy ? ' (hoy)' : '');
+  const H0 = 8, H1 = 22, PX = 40, res = D.reservas.filter(r => r.fecha === fecha && r.estado === 'activa');
+  let h = '<div style="display:flex;min-width:560px"><div style="width:46px;padding-top:30px">';
+  for (let i = H0; i < H1; i++) h += `<div class="hr">${i}:00</div>`; h += '</div>';
+  [11, 12].forEach(of => {
+    h += `<div style="flex:1;min-width:150px"><div style="height:30px;text-align:center"><span class="chip ${OFI[of].chip}" style="font-size:13px;padding:3px 14px">Oficina ${of}</span></div><div class="col" style="height:${(H1-H0)*PX}px;background-color:${OFI[of].tinte}">`;
+    res.filter(r => r.oficina === of).forEach(r => {
+      const [a,b] = r.hora.split(':').map(Number), top = ((a - H0) + b/60) * PX + 1, hh = r.horas * PX - 2;
+      const en = fecha === D.hoy && (D.hoy + ' ' + r.hora) <= D.ahora && D.ahora < (D.hoy + ' ' + r.fin);
+      const est = estBloque(r, en);
+      h += `<div class="blk" style="top:${top}px;height:${hh}px;${est}"><b>${esc(r.nombre)}</b>${r.hora}–${r.fin} · ${tipoNom(r.tipo)}</div>`;
+    });
+    if (fecha === D.hoy) { const [a,b] = D.ahora.slice(11).split(':').map(Number), t = ((a - H0) + b/60) * PX; if (t >= 0 && t <= (H1-H0)*PX) h += `<div style="position:absolute;left:0;right:0;top:${t}px;border-top:2px solid #b42318"></div>`; }
+    h += '</div></div>';
+  });
+  $('#cal').innerHTML = h + '</div>';
+}
+
+document.querySelectorAll('#filtro button').forEach(b => b.onclick = () => { filtro = b.dataset.f; document.querySelectorAll('#filtro button').forEach(x => x.classList.toggle('on', x === b)); pintarClientes(); });
+function listaCli() {
+  const q = $('#q').value;
+  return D.clientes.filter(c => coincide(c, q) && (filtro === 'todos' || (filtro === 'activo' && c.estado === 'activo') || (filtro === 'porvencer' && c.estado === 'activo' && c.dias !== null && c.dias <= 7)))
+    .sort((a,b) => (a.estado === 'activo' ? 0 : 1) - (b.estado === 'activo' ? 0 : 1) || (a.vence || '9') .localeCompare(b.vence || '9'));
+}
+function pintarClientes() {
+  const l = listaCli();
+  $('#tbCli').innerHTML = l.map(c => `<tr data-id="${esc(c.id)}" class="${selCli === c.id ? 'tb-on' : ''}">
+  <td><div class="cell-name">${av(c.nombre)}<div><b>${esc(c.nombre)}</b>${esNuevo(c.id) ? ' <span class="chip c-teal" style="padding:1px 8px;font-size:11px">Nuevo</span>' : ''}<div class="muted num" style="font-size:12px">${esc(fmtTel(c.tel))}</div></div></div></td>
+  <td>${c.paquete ? `<b>${esc(c.paquete)}</b>` : '<span class="muted">—</span>'}${c.estado === 'agotado' ? '<div><span class="chip c-amber">Horas agotadas</span></div>' : c.estado === 'vencido' ? '<div><span class="chip c-grey">Vencido</span></div>' : ''}</td>
+  <td class="num">${c.estado === 'activo' || c.compradas ? `<b>${c.restantes}</b> de ${c.compradas}<div class="bar" style="margin-top:5px"><span style="width:${c.compradas ? c.restantes / c.compradas * 100 : 0}%"></span></div>` : '<span class="muted">—</span>'}</td>
+  <td>${c.estado === 'activo' || c.estado === 'agotado' ? `<div class="num">${fmtF(c.vence)}</div>${c.dias !== null && c.dias <= 7 ? `<span class="chip c-red">${c.dias} días</span>` : ''}${c.otros ? `<div class="muted" style="font-size:12px">+${c.otros} ${esc(c.otroNombre)} · ${fmtF(c.otroVence)}</div>` : ''}` : '<span class="muted">—</span>'}</td>
+  <td class="num">${c.valor ? money(c.valor) : '—'}</td>
+  <td>${c.origen ? `<span class="chip c-grey">${esc(c.origen)}</span>` : '<span class="muted">sin dato</span>'}${c.agente ? `<div class="muted" style="font-size:12px">${esc(c.agente)}</div>` : ''}</td>
+  <td class="num">${c.sueltas || '—'}</td></tr>`).join('') || '<tr><td colspan="7" class="muted" style="height:80px">Sin resultados</td></tr>';
+  document.querySelectorAll('#tbCli tr[data-id]').forEach(tr => tr.onclick = () => { selCli = tr.dataset.id; pintarClientes(); pintarPanel(); if (innerWidth <= 760) $('#panelCli').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+}
+
+const ORIGENES = ['Instagram','Facebook','Google','WhatsApp','Referido','Otro'];
+let tabCli = 'compras';
+function pintarPanel() {
+  const c = D.clientes.find(x => x.id === selCli);
+  if (!c) { $('#panelCli').innerHTML = '<div class="muted">Selecciona un cliente para ver su detalle.</div>'; return; }
+  const rs = D.reservas.filter(r => r.clienteId === c.id).sort((a,b) => (b.fecha + b.hora).localeCompare(a.fecha + a.hora));
+  const vig = c.lotes.filter(l => l.restantes > 0 && l.vence > D.ahora).sort((a,b) => a.vence.localeCompare(b.vence)), primero = vig[0];
+  const chipEst = l => l.restantes <= 0 ? '<span class="chip c-grey">Agotado</span>' : l.vence <= D.ahora ? '<span class="chip c-red">Vencido</span>' : '<span class="chip c-green">Activo</span>';
+  const compras = c.lotes.length ? c.lotes.slice().sort((a,b) => b.compra.localeCompare(a.compra)).map(l => { const dev = l.usadas * l.valorHora, por = l.restantes * l.valorHora, dias = Math.ceil((new Date(l.vence.replace(' ','T') + ':00Z') - new Date(D.ahora.replace(' ','T') + ':00Z')) / 86400000);
+    return `<div style="border:1px solid #dfe4ea;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b style="font-size:15px">${esc(l.paquete)} · ${l.total} h</b>${chipEst(l)}${primero && l.vence === primero.vence && l.paquete === primero.paquete ? '<span class="chip c-teal">Se consume primero</span>' : ''}</div>
+    <div class="muted" style="font-size:13px">Comprado ${fmtF(l.compra)} · vence ${fmtF(l.vence)}${l.vence > D.ahora ? ' (' + dias + ' días)' : ''}</div>
+    <div style="display:flex;justify-content:space-between;font-size:13px"><span><b>${l.usadas}</b> usadas</span><span><b>${l.restantes}</b> restantes</span></div><div class="bar"><span style="width:${l.total ? l.usadas / l.total * 100 : 0}%"></span></div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap"><div class="mini"><div class="k">Pagado</div><div class="x num">${money(l.pagado)}</div></div><div class="mini"><div class="k">Valor por hora</div><div class="x num">$${l.valorHora}</div></div><div class="mini"><div class="k">Reservado</div><div class="x num">${money(dev)}</div></div><div class="mini"><div class="k">Por reservar</div><div class="x num">${money(por)}</div></div></div></div>`; }).join('') : '<div class="muted" style="font-size:13px">Sin paquetes. Solo horas sueltas.</div>';
+  const reservas = rs.slice(0, 30).map(r => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:7px 0;border-bottom:1px solid #eef1f4"><span class="num">${fmtF(r.fecha)} ${r.hora}–${r.fin} · Of. ${r.oficina} · ${tipoNom(r.tipo)}</span><span class="chip ${r.estado === 'activa' ? 'c-teal' : 'c-grey'}">${esc(r.estado)}</span></div>`).join('') || '<div class="muted" style="font-size:13px">Sin reservas</div>';
+  const datos = `<div class="muted" style="font-size:13px;margin-bottom:12px">Tel. ${esc(fmtTel(c.tel))}${c.correo ? '<br>' + esc(c.correo) : ''}<br>ID ${esc(c.id)}</div>
+  <div style="border-top:1px solid #e9edf1;padding-top:14px"><div class="lbl">CÓMO LLEGÓ</div>
+  <label class="lbl">Canal</label><select id="fOrigen" class="fld"><option value="">— Elegir —</option>${ORIGENES.map(o => `<option ${c.origen === o ? 'selected' : ''}>${o}</option>`).join('')}</select>
+  <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-weight:600;cursor:pointer"><input id="chkAg" type="checkbox" ${c.agente ? 'checked' : ''} style="accent-color:#0f6b62;width:18px;height:18px"> Llegó por agente</label>
+  <div style="margin-top:8px"><label class="lbl">Nombre del agente</label><input id="fAgente" class="fld" list="dlAg" value="${esc(c.agente)}" placeholder="Escribe o elige el agente" ${c.agente ? '' : 'disabled'}><datalist id="dlAg">${[...new Set(D.clientes.map(x => x.agente).filter(Boolean))].map(a => `<option value="${esc(a)}">`).join('')}</datalist></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:10px"><button class="btn btn-main btn-sm" id="btnGuardar" type="button">Guardar</button><span id="msgG" class="muted" style="font-size:12px"></span></div></div>`;
+  $('#panelCli').innerHTML = `<div class="cell-name" style="gap:14px">${av(c.nombre,1)}<div><div style="font-size:18px;font-weight:600">${esc(c.nombre)}</div><div class="muted num">${esc(fmtTel(c.tel))}</div></div></div>
+  <div style="display:flex;gap:8px;margin:14px 0"><div class="stat"><div class="n num">${c.compradas}</div><div class="l">COMPRADAS</div></div><div class="stat"><div class="n num">${c.usadas}</div><div class="l">USADAS</div></div><div class="stat" style="background:#eaf6f3"><div class="n num" style="color:#0b5149">${c.restantes}</div><div class="l">RESTANTES</div></div></div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${c.origen ? `<span class="chip c-grey">${esc(c.origen)}</span>` : ''}${c.agente ? `<span class="chip c-blue">Agente: ${esc(c.agente)}</span>` : ''}${c.sueltas ? `<span class="chip c-blue">${c.sueltas} hora(s) suelta(s)</span>` : ''}${c.diasPass ? `<span class="chip c-blue">${c.diasPass} día(s) de day pass</span>` : ''}</div>
+  <div style="border-bottom:1px solid #e9edf1;display:flex;margin-bottom:12px">${[['compras','Compras'],['reservas','Reservas'],['datos','Datos']].map(t => `<button class="tabu ${tabCli === t[0] ? 'tabu-on' : ''}" data-tc="${t[0]}" type="button">${t[1]}</button>`).join('')}</div>
+  <div>${tabCli === 'compras' ? compras : tabCli === 'reservas' ? reservas : datos}</div>`;
+  document.querySelectorAll('[data-tc]').forEach(b => b.onclick = () => { tabCli = b.dataset.tc; pintarPanel(); });
+  if (tabCli === 'datos') {
+    $('#chkAg').onchange = () => { const on = $('#chkAg').checked; $('#fAgente').disabled = !on; if (on) $('#fAgente').focus(); };
+    $('#btnGuardar').onclick = async () => {
+      const o = $('#fOrigen').value, a = $('#chkAg').checked ? $('#fAgente').value.trim() : '';
+      if ($('#chkAg').checked && !a) { $('#msgG').textContent = 'Escribe el nombre del agente'; return; }
+      $('#msgG').textContent = 'Guardando…';
+      try { await api('guardarOrigen', { clienteId: c.id, origen: o, agente: a }); c.origen = o; c.agente = a; $('#msgG').textContent = 'Guardado ✓'; pintarClientes(); } catch (e) { $('#msgG').textContent = e.message; }
+    };
+  }
+}
+
+function pintarAlertas() {
+  const cl = D.clientes, venc = cl.filter(c => c.estado === 'activo' && c.dias !== null && c.dias <= 7).sort((a,b) => a.dias - b.dias);
+  const sinCodigo = D.reservas.filter(r => r.estado === 'activa' && !r.codigo && (r.fecha + ' ' + r.fin) > D.ahora);
+  const ag = {}; cl.forEach(c => { if (!c.agente) return; const a = ag[c.agente] || (ag[c.agente] = { n: 0, bruto: 0 }); a.n++; a.bruto += c.lotes.reduce((s, l) => s + l.pagado, 0); });
+  const fila = (t, sub, chip) => `<div class="row" style="justify-content:space-between"><div><b>${t}</b><div class="muted" style="font-size:12px">${sub}</div></div>${chip}</div>`;
+  $('#alertas').innerHTML = `<div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Paquetes por vencer (7 días)</h2>${venc.map(c => fila(esc(c.nombre), esc(fmtTel(c.tel)) + ' · ' + c.restantes + ' h sin usar · vence ' + fmtF(c.vence), `<span class="chip c-red">${c.dias} días</span>`)).join('') || '<div class="muted" style="font-size:13px">Ninguno</div>'}</div>
+  <div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Reservas futuras sin código de acceso</h2>${sinCodigo.map(r => fila(esc(r.nombre), 'Of. ' + r.oficina + ' · ' + fmtF(r.fecha) + ' ' + r.hora + '–' + r.fin, '<span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip c-red">Sin código</span>' + btnGen(r) + '</span>')).join('') || '<div class="muted" style="font-size:13px">Todas tienen código</div>'}</div>
+  ${cardCancel()}
+  <div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:6px">Comisiones de agentes (estimado)</h2><div class="muted" style="font-size:12px;margin-bottom:8px">Neto = vendido ÷ 1.16 (IVA) − 4.3% Mercado Pago · comisión 20% sobre el neto. Es una estimación: ajusta si el pago fue por transferencia.</div>
+  <div style="overflow-x:auto"><table class="tb" style="min-width:560px"><colgroup><col style="width:30%"><col style="width:14%"><col style="width:20%"><col style="width:18%"><col style="width:18%"></colgroup><thead><tr><th>AGENTE</th><th>CLIENTES</th><th>VENDIDO</th><th>NETO</th><th>COMISIÓN 20%</th></tr></thead><tbody>${Object.keys(ag).map(k => { const a = ag[k], neto = a.bruto / 1.16 - a.bruto * 0.043; return `<tr style="cursor:default"><td><b>${esc(k)}</b></td><td class="num">${a.n}</td><td class="num">${money(a.bruto)}</td><td class="num">${money(neto)}</td><td class="num"><b>${money(neto * 0.2)}</b></td></tr>`; }).join('') || '<tr style="cursor:default"><td colspan="5" class="muted" style="height:60px">Aún no hay clientes con agente asignado.</td></tr>'}</tbody></table></div></div>`;
+  ligarGen(); ligarReembolso();
+}
+// Cancelaciones: horas sueltas, day pass y paquetes cancelados. «Sí» = se reembolsó (se descuenta del dinero vendido); «No» = el dinero se queda.
+function cardCancel() {
+  const l = D.cancelaciones || [], pend = l.filter(x => !x.decision), hechas = l.filter(x => x.decision);
+  const desc = x => x.clase === 'paquete' ? 'Paquete ' + esc(x.paquete) + ' · ' + x.horas + ' h · comprado ' + fmtF(x.fecha) : (x.tipo === 'daypass' ? 'Day pass' : 'Hora suelta') + ' · Of. ' + x.oficina + ' · ' + fmtF(x.fecha) + ' ' + x.hora + '–' + x.fin;
+  const fila = x => `<div class="row" style="justify-content:space-between"><div><b>${esc(x.nombre)}</b> <span class="muted num" style="font-size:12px">${esc(fmtTel(x.tel))}</span><div class="muted" style="font-size:12px">${desc(x)} · <b class="num">${money(x.monto)}</b></div></div><span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${x.decision ? `<span class="chip ${x.decision === 'si' ? 'c-green' : 'c-grey'}">${x.decision === 'si' ? 'Reembolsado' : 'Sin reembolso'}</span><button class="btn btn-sm btn-ghost" data-rb="${esc(x.clase)}|${esc(x.id)}|${esc(x.clienteId || '')}|" type="button">Deshacer</button>` : `<button class="btn btn-sm btn-teal" data-rb="${esc(x.clase)}|${esc(x.id)}|${esc(x.clienteId || '')}|si" type="button">Sí se reembolsó</button><button class="btn btn-sm" data-rb="${esc(x.clase)}|${esc(x.id)}|${esc(x.clienteId || '')}|no" type="button">No se reembolsa</button>`}</span></div>`;
+  return `<div class="card" style="padding:18px 20px"><h2 class="h2" style="margin-bottom:2px">Cancelaciones por reembolsar ${pend.length ? `<span class="chip c-red" style="margin-left:6px">${pend.length}</span>` : ''}</h2><div class="muted" style="font-size:12px;margin-bottom:8px">Marca «Sí se reembolsó» cuando devuelvas el dinero: se descuenta de Dinero vendido. Mientras no decidas, la compra cuenta como vendida. Los planes cancelados devuelven sus horas al saldo; aquí solo salen paquetes cancelados, horas sueltas y day pass.</div>
+  ${pend.map(fila).join('') || '<div class="muted" style="font-size:13px">Sin cancelaciones pendientes de decidir</div>'}${hechas.length ? `<details style="margin-top:10px"><summary class="muted" style="cursor:pointer;font-size:13px">Ya decididas (${hechas.length})</summary>${hechas.map(fila).join('')}</details>` : ''}</div>`;
+}
+function ligarReembolso() {
+  document.querySelectorAll('[data-rb]').forEach(b => b.onclick = async () => {
+    if (b.disabled) return; const [clase, id, clienteId, dec] = b.dataset.rb.split('|'); b.disabled = true;
+    try {
+      await api('marcarReembolso', { clase, id, clienteId, decision: dec });
+      const x = (D.cancelaciones || []).find(z => z.clase === clase && z.id === id); if (x) x.decision = dec;
+      pintarAlertas(); aviso(dec === 'si' ? 'Anotado: reembolsado. Ya no cuenta como vendido.' : dec === 'no' ? 'Anotado: sin reembolso. Sigue contando como vendido.' : 'Decisión deshecha.', true);
+    } catch (e) { b.disabled = false; aviso('No se pudo guardar: ' + e.message, false); }
+  });
+}
+
+function estadoCodigo(r) {
+  const ini = r.fecha + ' ' + r.hora, fin = r.fecha + ' ' + r.fin;
+  if (D.ahora >= fin) return ['Terminó', 'c-grey']; if (D.ahora >= ini) return ['Vigente ahora', 'c-dark']; return ['Próximo', 'c-teal'];
+}
+function pintarHoy() {
+  const l = D.reservas.filter(r => r.fecha === D.hoy && r.estado === 'activa').sort((a,b) => a.hora.localeCompare(b.hora) || a.oficina - b.oficina);
+  $('#tbHoy').innerHTML = l.map(r => { const e = estadoCodigo(r); return `<tr><td><b>Oficina ${r.oficina}</b></td><td class="num">${r.hora}–${r.fin}</td><td>${esc(r.nombre)}<div class="muted" style="font-size:12px">${tipoNom(r.tipo).charAt(0).toUpperCase() + tipoNom(r.tipo).slice(1)}</div></td><td>${r.codigo ? `<span class="num" style="font-size:17px;font-weight:600;letter-spacing:.12em">${esc(r.codigo)}#</span>` : '<span class="chip c-red">Sin código</span>'}</td><td><span class="chip ${e[1]}">${e[0]}</span></td><td class="r">${r.codigo ? `<button class="btn btn-sm" data-cp="${esc(r.codigo)}#" type="button">Copiar código</button> <button class="btn btn-sm btn-teal" data-cp="${esc(mensajeWA(r))}" type="button">Copiar mensaje</button>` : `${btnGen(r)} <button class="btn btn-sm btn-teal" type="button" disabled title="Primero genera el código">Copiar mensaje</button>`}</td></tr>`; }).join('') || '<tr><td colspan="6" class="muted" style="height:70px">Sin citas hoy</td></tr>';
+  ligarCopiar();
+}
+function pintarBusqueda() {
+  const q = $('#q2').value || $('#q').value, cont = $('#resBusca');
+  if (!q.trim()) { cont.innerHTML = '<div class="muted">Escribe un nombre o teléfono para ver el link y los códigos del cliente (incluye todo el historial).</div>'; return; }
+  cont.innerHTML = D.clientes.filter(c => coincide(c, q)).slice(0, 8).map(c => {
+    const rs = D.reservas.filter(r => r.clienteId === c.id && r.estado === 'activa').sort((a,b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
+    const link = c.linkCuenta || '';
+    return `<div class="card" style="padding:18px 20px;display:flex;flex-direction:column;gap:12px"><div class="cell-name" style="gap:14px">${av(c.nombre,1)}<div style="flex:1"><div style="font-size:18px;font-weight:600">${esc(c.nombre)}</div><div class="muted num">${esc(fmtTel(c.tel))} · ${c.estado === 'activo' ? c.paquete + ' ' + c.restantes + ' de ' + c.compradas + ' · vence ' + fmtF(c.vence) : c.estado}</div></div></div>
+    ${link ? `<div><span class="lbl">LINK DE LA CUENTA (todas sus compras)</span><div style="display:flex;gap:8px;flex-wrap:wrap"><input class="fld num" style="flex:1 1 300px;background:#f2f4f7" readonly value="${esc(link)}"><button class="btn btn-teal" data-cp="${esc(link)}" type="button">Copiar link</button><a class="btn" href="${esc(link)}" target="_blank" rel="noopener" style="text-decoration:none">Abrir</a></div></div>` : ''}
+    <div class="lbl">CÓDIGOS (RESERVAS ACTIVAS)</div>
+    ${rs.length ? `<div style="overflow-x:auto"><table class="tb" style="min-width:760px"><colgroup><col style="width:22%"><col style="width:10%"><col style="width:16%"><col style="width:14%"><col style="width:38%"></colgroup><thead><tr><th>HORARIO</th><th>OFICINA</th><th>CÓDIGO</th><th>ESTADO</th><th class="r"></th></tr></thead><tbody>${rs.map(r => { const e = estadoCodigo(r), msg = `Hola ${c.nombre.split(' ')[0]}, tu código para la Oficina ${r.oficina} el ${fmtF(r.fecha)} de ${r.hora} a ${r.fin} es ${r.codigo}# (marca los 6 dígitos y presiona # al final).${link ? ' Tus horas y reservas: ' + link : ''}`; return `<tr style="cursor:default"><td class="num"><b>${fmtF(r.fecha)}</b> ${r.hora}–${r.fin}</td><td>Of. ${r.oficina}</td><td>${r.codigo ? `<span class="num" style="font-size:17px;font-weight:600;letter-spacing:.12em">${esc(r.codigo)}#</span>` : '<span class="chip c-red">Sin código</span>'}</td><td><span class="chip ${e[1]}">${e[0]}</span></td><td class="r">${r.link ? `<button class="btn btn-sm" data-cp="${esc(r.link)}" type="button" title="Link directo solo de esta reserva">Link de esta reserva</button> ` : ''}${r.codigo ? `<button class="btn btn-sm btn-teal" data-cp="${esc(msg)}" type="button">Copiar mensaje</button>` : `${btnGen(r)} <button class="btn btn-sm btn-teal" type="button" disabled title="Primero genera el código">Copiar mensaje</button>`}</td></tr>`; }).join('')}</tbody></table></div>` : '<div class="muted" style="font-size:13px">Sin reservas activas.</div>'}</div>`;
+  }).join('') || '<div class="muted">Sin resultados</div>';
+  ligarCopiar();
+}
+function mensajeWA(r) {
+  const c = D.clientes.find(x => x.id === r.clienteId) || {}, link = c.linkCuenta || r.link || '';
+  return `Hola ${String(r.nombre || '').split(' ')[0]}, tu reserva en D Espacios: Oficina ${r.oficina}, ${fmtF(r.fecha)} de ${r.hora} a ${r.fin}. Tu código de acceso es ${r.codigo}# (marca los 6 dígitos y presiona # al final). Abre la puerta principal y la de tu oficina, y solo es válido en tu horario.${link ? ' Administra tu reserva aquí: ' + link : ''}`;
+}
+function btnGen(r) { return `<button class="btn btn-sm btn-gen" data-gen="${esc(r.id)}" type="button">Generar código</button>`; }
+function aviso(txt, ok) {
+  let d = $('#avisoGen'); if (!d) { d = document.createElement('div'); d.id = 'avisoGen'; d.style.cssText = 'position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:92vw;padding:12px 16px;border-radius:12px;font-size:14px;font-weight:600;z-index:99;box-shadow:0 6px 24px rgba(0,0,0,.18)'; document.body.appendChild(d); }
+  d.style.background = ok ? '#0f6b62' : '#9b1c1c'; d.style.color = '#fff'; d.textContent = txt; d.style.display = 'block';
+  clearTimeout(d._t); d._t = setTimeout(() => d.style.display = 'none', ok ? 5000 : 9000);
+}
+function ligarGen() {
+  document.querySelectorAll('[data-gen]').forEach(b => b.onclick = async () => {
+    if (b.disabled) return; b.disabled = true; b.textContent = 'Generando…';
+    try {
+      const x = await api('generarCodigo', { reservaId: b.dataset.gen });
+      const r = D.reservas.find(z => z.id === b.dataset.gen); if (r) r.codigo = x.codigo;
+      pintarHoy(); pintarBusqueda(); pintarAlertas();
+      aviso(x.aviso ? ('Código ' + x.codigo + '# creado. ' + x.aviso) : ('Código ' + x.codigo + '# creado y guardado en el Sheet. Copia el mensaje para WhatsApp.'), !x.aviso);
+    } catch (e) {
+      b.disabled = false; b.textContent = 'Reintentar'; aviso('No se pudo generar: ' + e.message, false);
+    }
+  });
+}
+function ligarCopiar() { ligarGen(); document.querySelectorAll('[data-cp]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.cp); const t = b.textContent; b.textContent = 'Copiado ✓'; setTimeout(() => b.textContent = t, 1400); } catch (e) { prompt('Copia manualmente:', b.dataset.cp); } }); }
+
+// ── Pestaña Oficinas: mes / año ──
+const DISP = 280, RENTA_ALT = 7600, META_OCU = 35;   // h por oficina al mes · renta fija alternativa de 11+12 · meta de ocupación (%)
+const OFS = [11, 12];
+let modoOfi = 'mes', INGA = null;
+const MESES_L = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+document.querySelectorAll('#vistaOfi button').forEach(bt => bt.onclick = () => {
+  modoOfi = bt.dataset.m; document.querySelectorAll('#vistaOfi button').forEach(x => x.classList.toggle('on', x === bt));
+  $('#navMes').classList.toggle('hide', modoOfi !== 'mes'); $('#anio').classList.toggle('hide', modoOfi !== 'anio'); cargarIng();
+});
+$('#mes').onchange = () => cargarIng();
+const movMes = n => { const v = $('#mes').value || (D ? D.hoy.slice(0, 7) : ''); if (!v) return; let [y, m] = v.split('-').map(Number); m += n; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } $('#mes').value = y + '-' + String(m).padStart(2, '0'); cargarIng(); };
+$('#mPrev').onclick = () => movMes(-1); $('#mNext').onclick = () => movMes(1); $('#anio').onchange = () => cargarIng();
+async function cargarIng() {
+  const hoyA = D ? +D.hoy.slice(0, 4) : new Date().getFullYear();
+  if (!$('#anio').options.length) { for (let y = 2026; y <= Math.max(2026, hoyA) + 1; y++) $('#anio').add(new Option(y, y)); $('#anio').value = String(Math.max(2026, hoyA)); }
+  const prev = $('#ofi').children.length; if (prev) $('#ofi').style.opacity = '.45'; else $('#ofi').innerHTML = '<div class="muted">Cargando…</div>';
+  try {
+    if (modoOfi === 'mes') { const mes = $('#mes').value || (D ? D.hoy.slice(0, 7) : ''); $('#mes').value = mes; ING = await api('ingresos', { mes, incluirPruebas: true }); pintarIngMes(); $('#ofiAct').textContent = 'Actualizado ' + ING.ahora.slice(11); }
+    else { INGA = await api('ingresosAnio', { anio: $('#anio').value, incluirPruebas: true }); pintarIngAnio(); $('#ofiAct').textContent = 'Actualizado ' + INGA.ahora.slice(11); }
+    $('#ofi').style.opacity = '';
+  } catch (e) { $('#ofi').style.opacity = ''; if (!$('#ofi').children.length) $('#ofi').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; else $('#ofiAct').textContent = 'No se pudo actualizar: ' + e.message; }
+}
+// Totales de las oficinas por hora (11 y 12), ignorando cualquier otra que traiga el API
+function sumOfi(lista) {
+  const t = { horas: 0, horasHechas: 0, devengado: 0, programado: 0, vencido: 0, suelta: 0, paquete: 0, daypass: 0, ventas: 0, ventasPaquete: 0, ventasSuelta: 0, ventasDaypass: 0, porUsar: 0, horasVencidas: 0 };
+  lista.filter(o => OFS.includes(o.oficina)).forEach(o => ['horas','horasHechas','devengado','programado','vencido','suelta','paquete','daypass','ventas','ventasPaquete','ventasSuelta','ventasDaypass','porUsar','horasVencidas'].forEach(k => t[k] += o[k] || 0));
+  t.ingreso = t.ventas; return t;
+}
+const pctO = (h, d) => d ? Math.round(h / d * 1000) / 10 : 0;
+function pxHora(t) { return t.horasHechas > 0 && t.devengado > 0 ? t.devengado / t.horasHechas : 110; }
+function kpiOfi(t, disp, meses) {
+  const px = pxHora(t), hEq = Math.ceil(RENTA_ALT * meses / px), hMeta = Math.round(disp * META_OCU / 100), falta = hEq - t.horas;
+  const tot = t.ventas || 0, p11 = tot ? (t.v11 || 0) / tot * 100 : 50;
+  return `<div class="row3">
+  <div class="card kk"><div class="lb">Dinero vendido</div><div class="bg num">${money(t.ventas)}</div><div class="split"><span style="width:${p11}%;background:#4aa396"></span><span style="width:${100 - p11}%;background:#8c76c4"></span></div><div class="nt"><b style="color:#0f6b62">■</b> Oficina 11 ${money(t.v11 || 0)} &nbsp; <b style="color:#5b3fa0">■</b> Oficina 12 ${money(t.v12 || 0)}</div></div>
+  <div class="card kk"><div class="lb">Horas reservadas</div><div class="bg num">${t.horas} <span class="de">de ${disp}</span></div><div class="nt">${pctO(t.horas, disp)}% del mes ocupado</div></div>
+  <div class="card kk" style="display:flex;gap:16px;align-items:center"><div class="th"><i style="height:${Math.min(100, t.horas / hEq * 100)}%"></i></div><div><div class="lb">Para cubrir la renta (${money(RENTA_ALT * meses)})</div><div style="font-size:19px;font-weight:600">${t.horas} de ${hEq} horas</div><div class="nt">${falta > 0 ? 'faltan ' + falta + ' horas' : 'renta cubierta ✓'} · meta del mes: ${hMeta} h</div></div></div></div>`;
+}
+function tarjetaOfi(o) {
+  const c = OFI[o.oficina], ocu = pctO(o.horas, DISP);
+  return `<div class="card" style="padding:20px 22px;border-top:4px solid ${c.borde}"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><span class="chip ${c.chip}" style="font-size:13px;padding:3px 14px">Oficina ${o.oficina}</span><div style="text-align:right"><div class="num" style="font-size:28px;font-weight:700;line-height:1.1">${money(o.ventas)}</div><div class="muted" style="font-size:12px">dinero vendido</div></div></div>
+  <div style="margin:16px 0 6px;display:flex;justify-content:space-between;font-size:14px"><span>Horas reservadas</span><b class="num">${o.horas} de ${DISP}</b></div><div class="bar" style="height:10px"><span style="width:${Math.max(Math.min(100, ocu), o.horas ? 1 : 0)}%;background:${c.borde}"></span></div>
+  <div style="display:flex;gap:8px;margin-top:16px"><div class="stat"><div class="n num" style="font-size:20px">${o.paquete} h</div><div class="l">PAQUETE</div></div><div class="stat"><div class="n num" style="font-size:20px">${o.suelta} h</div><div class="l">HORA SUELTA</div></div><div class="stat"><div class="n num" style="font-size:20px">${o.daypass || 0} h</div><div class="l">DAY PASS</div></div><div class="stat"><div class="n num" style="font-size:20px">${o.porUsar || 0} h</div><div class="l">POR USAR</div></div><div class="stat"><div class="n num" style="font-size:20px">${o.horasVencidas || 0} h</div><div class="l">VENCIDAS</div></div></div></div>`;
+}
+function pintarIngMes() {
+  const of = ING.oficinas.filter(o => OFS.includes(o.oficina)), t = sumOfi(of);
+  t.v11 = (of.find(o => o.oficina === 11) || {}).ventas || 0; t.v12 = (of.find(o => o.oficina === 12) || {}).ventas || 0;
+  $('#ofi').innerHTML = kpiOfi(t, DISP * OFS.length, 1) + '<div class="sec">POR OFICINA</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">' + of.map(tarjetaOfi).join('') + '</div>';
+}
+function pintarIngAnio() {
+  const meses = INGA.meses.map((m, i) => ({ i, of: m.oficinas.filter(o => OFS.includes(o.oficina)) })).map(x => ({ i: x.i, of: x.of, t: sumOfi(x.of) }));
+  const act = meses.filter(x => x.t.horas > 0 || x.t.ventas > 0 || x.t.horasVencidas > 0), tot = sumOfi(meses.flatMap(x => x.of));
+  const nAct = meses.filter(x => x.t.horas > 0).length || 1, hEq = Math.ceil(RENTA_ALT / pxHora(tot));
+  const s11 = sumOfi(meses.flatMap(x => x.of.filter(o => o.oficina === 11))), s12 = sumOfi(meses.flatMap(x => x.of.filter(o => o.oficina === 12)));
+  const hOf = (x, n) => ((x.of.find(o => o.oficina === n) || {}).horas || 0);
+  const maxH = Math.max(hEq * 1.2, ...meses.map(x => x.t.horas)), AH = 156, sc = AH / maxH;
+  const cols = meses.map((x, k) => { const a = hOf(x, 11), b = hOf(x, 12); return `<div><div class="st" style="height:${(a + b) * sc}px"><span style="background:#4aa396;height:${a * sc}px"></span><span style="background:#8c76c4;height:${b * sc}px"></span></div><span style="margin-top:4px;font-weight:600;color:#16212c">${a + b ? (a + b) + ' h' : '&nbsp;'}</span><span>${MESES_L[k]}</span></div>`; }).join('');
+  const fila = x => `<tr><td><b>${MESES_L[x.i]}</b></td><td>${hOf(x, 11)} h${hOf(x, 11) ? ' · ' + Math.round(pctO(hOf(x, 11), DISP)) + '%' : ''}</td><td>${hOf(x, 12)} h${hOf(x, 12) ? ' · ' + Math.round(pctO(hOf(x, 12), DISP)) + '%' : ''}</td><td><b>${pctO(x.t.horas, DISP * 2)}%</b></td><td>${money((x.of.find(o => o.oficina === 11) || {}).ventas || 0)}</td><td>${money((x.of.find(o => o.oficina === 12) || {}).ventas || 0)}</td><td><b>${money(x.t.ventas)}</b></td></tr>`;
+  const sin = txt => `<tr><td colspan="7" class="muted" style="height:38px">${txt}</td></tr>`;
+  const primero = act.length ? act[0].i : 12, ultimo = act.length ? act[act.length - 1].i : -1;
+  let filas = ''; if (primero > 0) filas += sin(MESES_L[0] + (primero > 1 ? ' – ' + MESES_L[primero - 1] : '') + ': sin operación');
+  act.forEach(x => filas += fila(x)); if (ultimo < 11 && act.length) filas += sin(MESES_L[ultimo + 1] + (ultimo < 10 ? ' – ' + MESES_L[11] : '') + ': aún no ocurren');
+  const totFila = `<tr class="tt"><td>Año</td><td>${s11.horas} h</td><td>${s12.horas} h</td><td>${pctO(tot.horas, DISP * 2 * nAct)}%</td><td>${money(s11.ventas)}</td><td>${money(s12.ventas)}</td><td>${money(tot.ventas)}</td></tr>`;
+  $('#ofi').innerHTML = `<div class="row3">
+    <div class="card kk"><div class="lb">Dinero vendido en el año</div><div class="bg num">${money(tot.ventas)}</div><div class="nt">Paquetes ${money(tot.ventasPaquete)} · Horas sueltas ${money(tot.ventasSuelta)} · Day pass ${money(tot.ventasDaypass)}</div></div>
+    <div class="card kk"><div class="lb">Horas reservadas en el año</div><div class="bg num">${tot.horas} h</div><div class="nt">${s11.horas} h Oficina 11 · ${s12.horas} h Oficina 12</div></div>
+    <div class="card kk"><div class="lb">Ocupación promedio</div><div class="bg num" style="color:#0b5149">${pctO(tot.horas, DISP * 2 * nAct)}%</div><div class="nt">promedio de ${nAct} mes${nAct > 1 ? 'es' : ''} con horas reservadas</div></div></div>
+  <div class="card kk"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;font-weight:600;font-size:15px">Horas reservadas por mes · ${esc(INGA.anio)}</div><span class="nt"><b style="color:#4aa396">■</b> Oficina 11 &nbsp; <b style="color:#8c76c4">■</b> Oficina 12</span></div>
+    <div class="yr"><div class="eq" style="bottom:${hEq * sc + 34}px"><span class="eqt">Renta cubierta · ${hEq} h</span></div>${cols}</div></div>
+  <div class="card kk"><div style="font-weight:600;font-size:15px;margin-bottom:6px">Resumen del año</div><div style="overflow-x:auto"><table class="tb2"><thead><tr><th>MES</th><th>OF. 11 · HORAS</th><th>OF. 12 · HORAS</th><th>OCUPACIÓN</th><th>DINERO OF. 11</th><th>DINERO OF. 12</th><th>DINERO TOTAL</th></tr></thead><tbody>${filas}${totFila}</tbody></table></div></div>
+  <div class="muted" style="font-size:12px">La ocupación promedio solo cuenta los meses con horas reservadas.</div>`;
+}
+
+
+function etiquetar() {
+  document.querySelectorAll('table.tb').forEach(t => {
+    const h = [...t.querySelectorAll('thead th')].map(x => x.textContent.trim());
+    t.querySelectorAll('tbody tr').forEach(tr => [...tr.children].forEach((td, i) => { if (h[i] && !td.hasAttribute('colspan') && td.dataset.l !== h[i]) td.dataset.l = h[i]; }));
+  });
+}
+new MutationObserver(etiquetar).observe(document.body, { childList: true, subtree: true });
+(async () => { const p = sessionStorage.getItem('pin'); if (p) { $('#pin').value = p; entrar(); } })();
+</script></body></html>
