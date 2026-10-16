@@ -217,6 +217,10 @@
       <p style="text-align:center; margin-top:14px">
         <a class="btn-link" id="linkOtraReservaDetalle" href="https://despacios.com.mx/despacios_2_v4.html?abrir=suelta" target="_blank" rel="noopener">+ Hacer otra reserva</a>
       </p>
+      <div id="bloqueCuenta" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #EFE7D9;text-align:center">
+        <p style="font-size:13px;color:#6E655A;margin:0 0 10px">Tienes más compras en tu cuenta (plan, day pass u otras reservas).</p>
+        <a class="btn-gold" id="linkMiCuenta" href="#" style="display:flex;align-items:center;justify-content:center;text-decoration:none;width:100%;box-sizing:border-box">Ver mi cuenta con todas mis compras</a>
+      </div>
     </div>
 
     <div id="bloqueCambio" class="card" style="display:none">
@@ -340,6 +344,20 @@
     return `${base}?${qs}`;
   }
 
+  // Si el cliente tiene mas que esta reserva (plan, day pass u otras reservas), ofrece su cuenta unica.
+  async function mostrarLinkCuenta(d) {
+    try {
+      if (!d || !d.clienteId) return;
+      const r = await fetch(`${SERVER_URL}/cliente/resumen?clienteId=${encodeURIComponent(d.clienteId)}`);
+      const c = await r.json();
+      if (c.error) return;
+      if (c.plan || (c.reservas || []).length > 1) {
+        $("linkMiCuenta").href = `${location.origin}/mi-cuenta_v4.html?id=${encodeURIComponent(d.clienteId)}`;
+        $("bloqueCuenta").style.display = "block";
+      }
+    } catch (e) { /* si falla, no se muestra y la reserva sigue igual */ }
+  }
+
   async function cargarReserva() {
     if (!token) {
       mostrarError("El link no incluye tu clave de reserva. Contáctanos por WhatsApp para que te reenviemos tu link.");
@@ -356,6 +374,7 @@
       }
       reservaActual = data;
       renderReserva();
+      mostrarLinkCuenta(data);
     } catch (err) {
       mostrarError("Error de conexión. Intenta de nuevo en unos minutos o contáctanos por WhatsApp.");
       console.error(err);
