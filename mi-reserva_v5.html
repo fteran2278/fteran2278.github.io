@@ -343,6 +343,24 @@
     return `${base}?${qs}`;
   }
 
+  // El link a la cuenta solo se muestra si el cliente tiene algo más que esta reserva (otra reserva o un plan).
+  async function mostrarLinkCuenta() {
+    const id = reservaActual && reservaActual.clienteId;
+    if (!id) return;
+    try {
+      const q = encodeURIComponent(id);
+      const [a, b] = await Promise.all([
+        fetch(SERVER_URL + "/mis-reservas?clienteId=" + q).then(r => r.json()).catch(() => ({})),
+        fetch(SERVER_URL + "/saldo-paquete?clienteId=" + q).then(r => r.json()).catch(() => ({}))
+      ]);
+      const otras = ((a && a.reservas) || []).filter(r => r.reservaId !== reservaActual.reservaId).length;
+      const plan = !!(b && b.exito && !b.cancelado);
+      if (otras > 0 || plan) {
+        const l = $("linkCuenta"); l.href = "mi-cuenta_v4.html?id=" + q; l.style.display = "inline";
+      }
+    } catch (e) {}
+  }
+
   async function cargarReserva() {
     if (!token) {
       mostrarError("El link no incluye tu clave de reserva. Contáctanos por WhatsApp para que te reenviemos tu link.");
@@ -405,9 +423,7 @@
 
     const cod = fmtCodigo(reservaActual.codigoAcceso || reservaActual.codigo);
     if (cod) { $("dCodigo").textContent = cod; $("bloqueCodigo").style.display = "block"; }
-    if (reservaActual.clienteId) {
-      const a = $("linkCuenta"); a.href = "mi-cuenta_v4.html?id=" + encodeURIComponent(reservaActual.clienteId); a.style.display = "inline";
-    }
+    mostrarLinkCuenta();
     $("accionesActivas").style.display = reservaActual.puedeCambiar ? "flex" : "none";
     $("avisoNoPermite").style.display = reservaActual.puedeCambiar ? "none" : "block";
   }
