@@ -162,13 +162,13 @@
     .detalle-grid { grid-template-columns: 1fr; gap: 8px; }
     .acciones-row { flex-direction: column; }
   }
+  .num, .brand, #dCodigo { font-variant-numeric: lining-nums; font-feature-settings: "lnum" 1; }
 </style>
 </head>
 <body>
 <div style="background:#b3261e;color:#fff;text-align:center;font:600 12px sans-serif;padding:6px">ENTORNO DE PRUEBAS · no es producción</div>
 
 <div class="wrap">
-  <p id="volverFila" style="display:none;margin-bottom:12px"><a id="volverLink" href="#" style="color:var(--gold);text-decoration:none;font-size:14px">← Volver</a></p>
   <header class="top">
     <div class="brand">D<span>·</span>Espacios</div>
     <div class="brand-sub">Mi reserva</div>
@@ -209,15 +209,11 @@
       <div class="aviso-24h" id="avisoNoPermite" style="display:none">
         Ya no puedes cambiar ni cancelar esta reserva desde aquí — falta menos de 24 horas para tu horario. Si necesitas ayuda, escríbenos por WhatsApp.
       </div>
+      <div class="detalle-stat" id="bloqueCodigo" style="display:none;margin-top:18px;text-align:center"><div class="num" id="dCodigo" style="letter-spacing:.1em;font-size:26px">—</div><div class="lbl">Tu código de acceso</div></div>
 
       <div class="acciones-row" id="accionesActivas" style="display:none">
         <button type="button" class="btn-gold" onclick="mostrarFormularioCambio()">Cambiar</button>
         <button type="button" class="btn-danger" id="btnCancelarReserva" onclick="cancelarReserva()">Cancelar</button>
-      </div>
-
-      <div class="detalle-stat" id="bloqueCodigo" style="display:none;margin-top:14px;text-align:center">
-        <div class="num" id="dCodigo" style="letter-spacing:.12em">—</div>
-        <div class="lbl">Tu código de acceso</div>
       </div>
       <p style="text-align:center; margin-top:14px" id="filaCuenta"><a class="btn-link" id="linkCuenta" style="display:none;color:var(--gold)" href="#">Ver mi cuenta con todas mis compras →</a></p>
       <p style="text-align:center; margin-top:14px">
@@ -303,18 +299,6 @@
 
   const params = new URLSearchParams(location.search);
   const token = params.get("token");
-
-  // volver: solo se acepta el mismo dominio o despacios.com.mx
-  (function(){
-    const v = params.get("volver");
-    if (!v) return;
-    try {
-      const u = new URL(v);
-      if (u.origin === location.origin || /(^|\.)despacios\.com\.mx$/.test(u.hostname)) {
-        $("volverLink").href = u.href; $("volverFila").style.display = "block";
-      }
-    } catch (e) {}
-  })();
   function fmtCodigo(c) { const d = String(c || "").replace(/\D/g, ""); return d ? (d.length === 6 ? d.slice(0,3)+" "+d.slice(3) : d) + "#" : ""; }
 
   let reservaActual = null;
