@@ -722,12 +722,6 @@
       return;
     }
 
-    // Cerrado los domingos
-    const diaSemana = new Date(fecha + "T00:00:00").getDay(); // 0 = domingo
-    if (diaSemana === 0) {
-      box.innerHTML = '<div class="slots-empty">Cerrado los domingos — elige otro día.</div>';
-      return;
-    }
 
     box.innerHTML = '<div class="slots-loading">Consultando disponibilidad...</div>';
     try {
