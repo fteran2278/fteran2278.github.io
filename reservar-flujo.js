@@ -207,7 +207,7 @@
   }
   // Cerrar con un pago pendiente pide confirmación (liberar el horario)
   function closeFlow() {
-    if (S.pago && S.step === 2) { askCancel(hideAfterCancel); return; }
+    
     hideFlow();
   }
   function hideAfterCancel() { releasePago(function () { hideFlow(); }); }
@@ -279,7 +279,7 @@
     h += '<div class="rf-s2-foot">';
     if (s.holds) h += '<div class="rf-timer" id="rfTimerBox" hidden>' + ICO_CLOCK_S + 'Horario apartado · quedan <b id="rfTimer">15:00</b></div>';
     else h += '<div id="rfPlanNote">Tu plan se activa en cuanto recibimos tu pago.</div>';
-    h += '<button type="button" class="rf-link" id="rfCancel">' + (s.holds ? "Cancelar y liberar el horario" : "Cancelar") + "</button></div></div>";
+    if (s.holds) h += '<div class="rf-fine" style="margin-top:6px">Si no recibimos tu transferencia en este tiempo, el horario se libera solo.</div>'; h += "</div></div>";
     $("rfStep2").innerHTML = h;
     showStep(2);
     bindStep2();
@@ -341,8 +341,8 @@
     });
   }
   function bindStep2() {
-    $("rfBack").onclick = function () { S.pago ? askCancel(function () { backToStep1(true); }) : backToStep1(false); };
-    $("rfCancel").onclick = $("rfBack").onclick;
+    $("rfBack").onclick = function () { backToStep1(false); };
+    
     var ids = ["rfNombre", "rfTel", "rfCorreo"], fn = [validName, validTel, validMail];
     ids.forEach(function (id, i) {
       var el = $(id);
@@ -409,7 +409,7 @@
         api("/pago/estado?pagoId=" + encodeURIComponent(id))
           .then(function (r) {
             if (!S.pago || S.pago.pagoId !== id) return;
-            if (r.estado === "pagado") { showDone({ estado: "pagado" }); }
+            if (r.estado === "pagado") { showDone(r); }
             else if (r.estado === "tardio_sin_horario" || r.estado === "reembolsado") { showLate(); }
             else if (r.estado === "vencido" || r.estado === "cancelado") { stopTimer(); S.pago = null; S.av = {}; showExpired(); }
             else loop();
