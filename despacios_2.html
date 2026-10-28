@@ -1819,6 +1819,7 @@
   // Cambiar de fecha reinicia "número de horas" a 1 — evita que un bloqueo
   // por cierre calculado con una duración anterior confunda al elegir un
   // horario nuevo en la fecha nueva.
+  (function(){ try { $("fecha").min = fechaLocalISO(new Date()); } catch(e){} })();
   function onFechaChange() {
     $("horas").value = 1;
     onEspacioOFechaChange();
@@ -1839,6 +1840,12 @@
       return;
     }
 
+    // Bloquea fechas anteriores a hoy (min no basta: se puede teclear una fecha pasada).
+    if (fecha < fechaLocalISO(new Date())) {
+      box.innerHTML = '<div class="slots-empty">No se pueden reservar fechas anteriores a hoy.</div>';
+      updateSummary();
+      return;
+    }
 
     box.innerHTML = '<div class="slots-loading">Consultando disponibilidad...</div>';
 
