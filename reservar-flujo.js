@@ -473,13 +473,14 @@
     var res = (r && r.resultado) || r || {}, ac = res.accesos || [], link = res.linkPersonal || "";
     S.pago = null; S.av = {};
     var of = NOMBRES[S.of], cal = [];
-    var title = k === "plan" ? "¡Plan activado!" : (k === "daypass" ? "¡Day pass confirmado!" : "¡Reserva confirmada!");
+    var sinCod = k === "suelta" ? !(ac[0] && ac[0].codigo) : (k === "daypass" ? S.days.some(function (f) { var q = ac.filter(function (z) { return z.fecha === f; })[0]; return !(q && q.codigo); }) : false);
+var title = sinCod ? "Recibimos tu pago" : (k === "plan" ? "¡Plan activado!" : (k === "daypass" ? "¡Day pass confirmado!" : "¡Reserva confirmada!"));
     var l1, l2, card, extra = "";
     if (k === "suelta") {
       var a = Math.min.apply(null, S.hours), b = Math.max.apply(null, S.hours) + 1, n = S.hours.length;
       l1 = of + " · Privada"; l2 = fmtShort(fromYmd(S.date)) + " · " + a + ":00 – " + b + ":00 · " + n + (n === 1 ? " hora" : " horas");
       cal.push({ f: S.date, a: a, b: b, t: of });
-      card = '<div class="rf-coderow"><div><small>Tu código de acceso</small><div class="rf-code">' + (ac[0] ? fmtCode(ac[0].codigo) : "—") + '</div></div>' + ICO_LOCK_G + '</div><div class="rf-codeval">' + (ac[0] ? "Válido de " + addMin(a, -10).replace(/^(\d):/, "$1:") + " a " + addMin(b, 10) + " · Puerta principal y oficina." : "Te lo enviamos por SMS.") + "</div>";
+      card = '<div class="rf-coderow"><div><small>Tu código de acceso</small><div class="rf-code">' + (ac[0] && ac[0].codigo ? fmtCode(ac[0].codigo) : "En breve") + '</div></div>' + ICO_LOCK_G + '</div><div class="rf-codeval">' + (ac[0] && ac[0].codigo ? "Válido de " + addMin(a, -10).replace(/^(\d):/, "$1:") + " a " + addMin(b, 10) + " · Puerta principal y oficina." : "Tu código de acceso se compartirá en breve.") + "</div>";
     } else if (k === "daypass") {
       var ds = S.days.slice().sort(), np = ds.length;
       l1 = of + " · Privada"; l2 = "Day pass · " + np + (np === 1 ? " día" : " días") + " · 8:00 a 16:00";
@@ -487,7 +488,7 @@
       ds.forEach(function (f) {
         var x = ac.filter(function (q) { return q.fecha === f; })[0];
         cal.push({ f: f, a: 8, b: 16, t: of + " (day pass)" });
-        card += '<div class="rf-day-row"><div><b>' + fmtLong(fromYmd(f)) + "</b><span>8:00 – 16:00</span></div><strong>" + (x ? fmtCode(x.codigo) : "—") + "</strong></div>";
+        card += '<div class="rf-day-row"><div><b>' + fmtLong(fromYmd(f)) + "</b><span>8:00 – 16:00</span></div><strong>" + (x && x.codigo ? fmtCode(x.codigo) : "En breve") + "</strong></div>";
       });
       card += "</div>"; extra = '<div class="rf-n2">Cambia o cancela tus días desde tu link personal, hasta 24 horas antes de cada día.</div>';
     } else {
@@ -495,12 +496,12 @@
       l1 = "Plan " + pl.n + " · " + pl.h + " horas"; l2 = of + " · " + money(pl.p / pl.h) + " por hora";
       card = '<div class="rf-coderow"><div><small>Horas disponibles</small><div class="rf-hrs">' + pl.h + " <i>de " + pl.h + "</i></div></div>" + ICO_CLOCK_G + '</div><div class="rf-codeval rf-plan-val">Vigente hasta el ' + v.getDate() + " de " + MESES[v.getMonth()] + " de " + v.getFullYear() + "</div>";
     }
-    var h = '<div class="rf-ok"><div class="rf-done-ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2f7d5b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h3>' + title + '</h3><div class="rf-sub">Tu pago fue recibido.</div>';
+    var h = '<div class="rf-ok"><div class="rf-done-ico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2f7d5b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h3>' + title + '</h3><div class="rf-sub">' + (sinCod ? "Tu pago fue recibido y tu horario está apartado." : "Tu pago fue recibido.") + '</div>';
     h += '<div class="rf-summary"><img alt="" src="' + photoOf(S.of) + '"><div class="rf-summary-txt"><b>' + l1 + "</b><span>" + l2 + "</span></div></div>";
     h += '<div class="rf-codecard' + (k === "daypass" ? " rf-dp" : "") + '">' + card + "</div>" + extra;
     if (k === "plan") h += '<div class="rf-n2 rf-n2p"><b>Aún no tienes horario.</b> Agenda tus horas cuando quieras desde tu link personal. Cada vez que agendes, recibes tu código de acceso.</div>';
     var en = res.enviado || {}, viaSms = en.canal === "sms";
-    var what = k === "plan" ? "tu link personal" : (k === "daypass" ? "tu link y tus códigos" : "tu link y tu código");
+    var what = k === "plan" ? "tu link personal" : (sinCod ? "la confirmación de tu pago" : (k === "daypass" ? "tu link y tus códigos" : "tu link y tu código"));
     h += '<div class="rf-sentok"><span class="rf-sentck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><b>Te enviamos ' + what + (viaSms ? " por SMS" : " por correo") + "</b><span>" + esc(viaSms ? "Al " + maskTel(c.tel || "0000000000") : (c.correo || "")) + "</span></div></div>";
     if (!viaSms) h += '<button type="button" class="rf-smsopt" id="rfSmsOpt" role="checkbox" aria-checked="false"><span class="rf-box"></span>' + ICO_SMS + '<div><b>Quiero recibirlo también por SMS</b><span id="rfSmsSub">Al ' + esc(maskTel(c.tel || "0000000000")) + "</span></div></button>";
     h += '<div class="rf-fine">Si no ves el correo, revisa tu carpeta de spam. ¿Sigue sin llegar? <a href="https://wa.me/524448295401" target="_blank" rel="noopener"><b>Escríbenos por WhatsApp</b></a> y te lo reenviamos.' + (TEST ? " <b>Modo de prueba: el SMS es simulado y no se envía.</b>" : "") + "</div>";
