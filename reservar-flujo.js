@@ -56,7 +56,7 @@
     return false;
   }
   function blocks(d) { var a = S.av[avKey(d)]; return Array.isArray(a) ? a : []; }
-  function closedDay(d) { return d < today() || d.getDay() === 0; }
+  function closedDay(d) { return d < today(); }
 
   /* ── calendario ── */
   var dpT = null;
@@ -130,7 +130,7 @@
       h += '<div class="rf-sec" style="margin-top:12px">Elige ' + S.pack + (S.pack === 1 ? " día" : " días") + "<span>" + S.days.length + " de " + S.pack + " seleccionados</span></div>";
       h += calendar("daypass");
       if (S.dpMsg) h += '<div class="rf-note rf-warn"><span>' + S.dpMsg + "</span></div>";
-      h += '<div class="rf-note">' + ICO_CLOCK + "<span>Cada día es de <b>8:00 a 16:00</b> (lunes a sábado).</span></div>";
+      h += '<div class="rf-note">' + ICO_CLOCK + "<span>Cada día es de <b>8:00 a 16:00</b> (todos los días).</span></div>";
       h += '<div class="rf-fine">Podrás cambiar o cancelar tus días desde tu link personal, hasta 24 horas antes de cada día.</div>';
     }
     p.innerHTML = h;
